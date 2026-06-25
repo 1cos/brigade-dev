@@ -2,11 +2,15 @@
 let SHOP_RECIPES=[];
 let feedMode=false;
 let recipeLinks={}; // ora su Supabase in prep_tasks.recipe_id
+let closingItems=[]; // closing_checks separati da prep_tasks
 
 async function init(){
   const{data}=await supa.from('prep_tasks').select('*').order('name');
   items=(data||[]).filter(i=>!i.archived); tasks={};
   items.forEach(i=>tasks[i.id]=i);
+  // Carica closing_checks separati
+  const{data:closingData}=await supa.from('closing_checks').select('*').eq('archived',false).order('name');
+  closingItems=closingData||[];
   // carica recipe links da prep_tasks
   recipeLinks={};
   items.forEach(i=>{ if(i.recipe_id) recipeLinks[i.id]=i.recipe_id; });
@@ -61,5 +65,6 @@ document.getElementById('toggleView').onclick=()=>{
   document.getElementById('toggleView').textContent=feedMode?'Griglia':'Feed';
   if(feedMode) renderFeed();
 };
+
 
 
