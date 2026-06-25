@@ -2,7 +2,7 @@
 
 function renderS(){
   var list=closingItems.filter(function(i){return station2==='All'||i.station===station2;});
-  var allStations=['Oven Station','Fresh Pasta Station','Pasta Station','Sauté Station','Saucier Station','Plating Station','Salad Station','Pastry Station','Table Side','Freezer'];
+  var allStations=Array.from(new Set(closingItems.map(function(i){return i.station;}))).sort();
   var counts=allStations.map(function(s){
     var c=closingItems.filter(function(i){return closingAnswers[i.id]===false&&i.station===s;}).length;
     return c?s.replace(' Station','')+': '+c+' '+tr('closeCount'):null;
@@ -169,3 +169,4 @@ function updateCloseTurnBtn(){
     btn.onclick=closeTurn;
   }
 }
+
