@@ -51,6 +51,15 @@ async function loadItemAlerts(){
   }catch(e){}
 }
 
+// Set di prep_task_id che hanno almeno uno step
+window.prepTasksWithSteps = new Set();
+async function loadStepsMap(){
+  try{
+    const{data}=await supa.from('prep_steps').select('prep_task_id');
+    window.prepTasksWithSteps = new Set((data||[]).map(r=>String(r.prep_task_id)));
+  }catch(e){}
+}
+
 function getAlertLevel(itemName){
   const a=itemAlerts[itemName];
   if(!a) return null;
@@ -188,6 +197,7 @@ function renderM(){
             (badge ? '<div style="margin-top:4px;">' + badge + '</div>' : '') +
             '<div style="margin-top:3px;">' +
               (i.recipe_id ? '<span style="font-size:11px;color:#059669;font-weight:500;">'+tr('recipe')+'</span>' :
+               window.prepTasksWithSteps?.has(String(iid)) ? '<span style="font-size:11px;color:#7c3aed;font-weight:500;">▶ steps</span>' :
                i.note ? '<span style="font-size:11px;color:#d97706;">'+tr('note')+'</span>' :
                isAdmin() ? '<span style="font-size:11px;color:#94a3b8;">'+tr('noRecipeLink')+'</span>' : '') +
             '</div>' +
@@ -276,8 +286,7 @@ async function quickSave(id){
   tasks[id].need_tomorrow=false;
   tasks[id].in_progress=false;
   await loadItemAlerts();
-  showConfetti();
-  setTimeout(()=>{renderM();renderS();renderHomeStations();if(!document.getElementById('vr').classList.contains('hidden'))loadReport('today');},400);
+  await loadStepsMap();
 }
 
 function openDoneSheet(id){
@@ -381,6 +390,7 @@ async function detailSave(id, btn){
   tasks[id].need_tomorrow=false;
   tasks[id].in_progress=false;
   await loadItemAlerts();
+  await loadStepsMap();
   sheet.remove();
   showConfetti();
   setTimeout(()=>{renderM();renderS();renderHomeStations();if(!document.getElementById('vr').classList.contains('hidden'))loadReport('today');},300);
@@ -456,3 +466,5 @@ async function feedSave(id,qty,btn){
 
 
 
+// Carica steps map all'avvio
+loadStepsMap();
