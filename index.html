@@ -318,7 +318,16 @@ function pinDel(){if(typeof window._pinDel==='function')window._pinDel();}
     </section>
 
     <!-- PREP -->
-    <section id="vm" class="hidden px-3 pt-2" style="min-height:100vh;">
+    <section id="vm" class="hidden px-3 pt-2" style="min-height:100vh;position:relative;overflow:hidden;">
+  <!-- Blob background per liquid glass -->
+  <div style="pointer-events:none;position:fixed;inset:0;z-index:0;overflow:hidden;">
+    <div style="position:absolute;top:-80px;left:-60px;width:320px;height:320px;border-radius:50%;background:radial-gradient(circle,rgba(99,102,241,0.18) 0%,rgba(99,102,241,0) 70%);filter:blur(32px);"></div>
+    <div style="position:absolute;top:120px;right:-80px;width:280px;height:280px;border-radius:50%;background:radial-gradient(circle,rgba(59,130,246,0.20) 0%,rgba(59,130,246,0) 70%);filter:blur(28px);"></div>
+    <div style="position:absolute;top:340px;left:30px;width:240px;height:240px;border-radius:50%;background:radial-gradient(circle,rgba(14,165,233,0.16) 0%,rgba(14,165,233,0) 70%);filter:blur(36px);"></div>
+    <div style="position:absolute;bottom:200px;right:20px;width:260px;height:260px;border-radius:50%;background:radial-gradient(circle,rgba(139,92,246,0.14) 0%,rgba(139,92,246,0) 70%);filter:blur(30px);"></div>
+    <div style="position:absolute;bottom:80px;left:-40px;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,rgba(56,189,248,0.18) 0%,rgba(56,189,248,0) 70%);filter:blur(28px);"></div>
+  </div>
+  <div style="position:relative;z-index:1;">
       <!-- urgentProgress rimosso -->
       <div class="flex items-center gap-2 mb-2">
         <div id="stations" class="flex gap-2 overflow-x-auto scrollbar-hide flex-1"></div>
@@ -327,7 +336,8 @@ function pinDel(){if(typeof window._pinDel==='function')window._pinDel();}
       </div>
       <div id="grid" class="grid grid-cols-1 gap-2"></div>
       <div id="feed" class="hidden -mx-3 h-[calc(100vh-170px)] overflow-y-auto snap-y snap-mandatory bg-[#f5f7fb]"></div>
-    </section>
+      </div>
+</section>
 
     <!-- CHIUSURA -->
     <section id="vs" class="hidden px-3 pt-2">
