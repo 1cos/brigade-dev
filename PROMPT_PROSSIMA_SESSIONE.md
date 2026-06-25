@@ -61,6 +61,10 @@ chirurgica — zero rischi di rompere funzionalità esistenti. Testare prima di 
 - `closing.js` v367: allStations dinamico dal closingItems
 - `souschef-core.js` v368: scScheduleAutoScan() DISABILITATA — andava in timeout ogni ora consumando token OpenRouter
 
+### ✅ Collegamento closing_checks → prep_tasks COMPLETATO
+- 83 closing checks collegate via `prep_task_id` — zero senza collegamento
+- Quando la sera si segna "manca" → prep task si attiva automaticamente la mattina
+
 ### 🔴 DA FARE — souschef-scan
 - `souschef-scan` Edge Function manda 400+ ingredienti a OpenRouter → timeout 500 ogni ora
 - **Fix:** riscrivere con SQL diretto (GHOST e NOLINK si trovano con query SQL, AI serve solo per testo)
@@ -208,4 +212,5 @@ Bottom bar: Home / Chat / Schedule / Tell Chef
 - Domenica chiuso
 - **App in produzione — modifiche chirurgiche, zero rischi**
 - **MAI assumere — confermare SEMPRE con Max prima di agire**
+
 
