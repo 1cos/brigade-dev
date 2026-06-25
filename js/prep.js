@@ -181,7 +181,7 @@ function renderM(){
       const badge=isUrgent?'<span style="font-size:10px;font-weight:700;color:#ef4444;background:rgba(239,68,68,0.1);padding:2px 6px;border-radius:6px;letter-spacing:.04em;">'+tr('urgent')+'</span>':
                    isWip?'<span style="font-size:10px;font-weight:600;color:#3b82f6;background:rgba(59,130,246,0.1);padding:2px 6px;border-radius:6px;">'+tr('inProgress')+'</span>':'';
       const iid = i.id;
-      return '<div class="col-span-2 mb-2 cursor-pointer active:scale-[0.98] transition-transform" style="background:rgba(255,255,255,0.45);backdrop-filter:blur(24px) saturate(180%);-webkit-backdrop-filter:blur(24px) saturate(180%);border-radius:18px;border:1.5px solid ' + accentColor + ';box-shadow:0 4px 20px rgba(30,58,95,0.10),0 1.5px 6px rgba(30,58,95,0.07),inset 0 1px 0 rgba(255,255,255,0.75);">' +
+      return '<div class="col-span-2 mb-2 cursor-pointer active:scale-[0.98] transition-transform" style="background:rgba(255,255,255,0.45);backdrop-filter:blur(24px) saturate(180%);-webkit-backdrop-filter:blur(24px) saturate(180%);border-radius:18px;border-left:4px solid ' + accentColor + ';box-shadow:0 4px 20px rgba(30,58,95,0.10),0 1.5px 6px rgba(30,58,95,0.07),inset 0 1px 0 rgba(255,255,255,0.75);">' +
         '<div style="padding:12px 12px 12px 14px;display:flex;align-items:center;justify-content:space-between;gap:8px;">' +
           '<div style="flex:1;min-width:0;" onclick="openRecipeForItem(' + JSON.stringify(iid) + ')">' +
             '<div style="font-size:15px;font-weight:600;color:' + nameColor + ';line-height:1.3;">' + i.name + '</div>' +
