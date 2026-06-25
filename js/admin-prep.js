@@ -8,8 +8,11 @@ async function adminDel(id){
   if(choice===null) return;
   if(choice){
     await supa.from('prep_tasks').update({archived:true,need_tomorrow:false}).eq('id',id);
+    // Archivia anche le closing_checks collegate
+    await supa.from('closing_checks').update({archived:true}).eq('prep_task_id',id);
   } else {
     if(!confirm('Eliminare definitivamente?')) return;
+    await supa.from('closing_checks').delete().eq('prep_task_id',id);
     await supa.from('prep_tasks').delete().eq('id',id);
   }
   location.reload();
@@ -34,22 +37,43 @@ async function showArchivedPreps(){
 
 async function restorePrep(id){
   await supa.from('prep_tasks').update({archived:false}).eq('id',id);
+  await supa.from('closing_checks').update({archived:false}).eq('prep_task_id',id);
   location.reload();
 }
 window.adminRename=adminRename; window.adminDel=adminDel;
 
-const STATION_OPTIONS = ['Oven Station','Fresh Pasta Station','Pasta Station','Sauté Station','Saucier Station','Plating Station','Salad Station','Pastry Station','Tableside','Freezer'];
+const STATION_OPTIONS = ['Oven Station','Fresh Pasta Station','Pasta Station','Sauté Station','Saucier Station','Plating Station','Salad Station','Pastry Station','Table Side','Freezer','Manager Station'];
 
 async function openPrepEditor(prep=null){
   const isNew = !prep;
-  // Assicurati che le ricette siano caricate
   if(!window.SHOP_RECIPES || !window.SHOP_RECIPES.length){
     const {data:recs} = await supa.from('recipes').select('id,title').order('title');
     if(recs) window.SHOP_RECIPES = recs;
   }
+
+  // Carica closing_checks esistenti per questa prep (stazioni che controllano)
+  let existingCheckStations = [];
+  if(!isNew && prep.id){
+    const {data:cc} = await supa.from('closing_checks')
+      .select('station')
+      .eq('prep_task_id', prep.id)
+      .eq('archived', false);
+    existingCheckStations = (cc||[]).map(r=>r.station);
+  }
+
   const modal = document.createElement('div');
   modal.className = 'fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4';
   const currentRecipeId = prep ? (prep.recipe_id||null) : null;
+
+  const checkStationsHTML = STATION_OPTIONS.map(s=>{
+    const checked = existingCheckStations.includes(s) ? 'checked' : '';
+    return `<label style="display:flex;align-items:center;gap:8px;padding:6px 0;cursor:pointer;">
+      <input type="checkbox" class="pepCheckStation" value="${s}" ${checked}
+        style="width:16px;height:16px;accent-color:#059669;cursor:pointer;">
+      <span style="font-size:13px;color:#1e293b;">${s.replace(' Station','')}</span>
+    </label>`;
+  }).join('');
+
   modal.innerHTML = `
     <div class="bg-white w-full max-w-lg rounded-3xl shadow-2xl max-h-[90vh] flex flex-col">
       <div class="p-4 border-b flex items-center justify-between">
@@ -62,10 +86,18 @@ async function openPrepEditor(prep=null){
           <input id="pepName" placeholder="es. Salsa Arrabbiata" class="w-full px-3 py-2.5 border rounded-xl" value="${prep?.name||''}">
         </div>
         <div>
-          <label class="text-xs font-semibold text-slate-500 mb-1 block">Stazione</label>
+          <label class="text-xs font-semibold text-slate-500 mb-1 block">🍳 Stazione che produce</label>
           <select id="pepStation" class="w-full px-3 py-2.5 border rounded-xl bg-white">
-            ${STATION_OPTIONS.map(s=>`<option ${(prep?.category||'Plating Station')===s?'selected':''}>${s}</option>`).join('')}
+            ${STATION_OPTIONS.map(s=>`<option ${(prep?.category||'Oven Station')===s?'selected':''}>${s}</option>`).join('')}
           </select>
+          <p class="text-[10px] text-slate-400 mt-1">Chi prepara questo item la mattina.</p>
+        </div>
+        <div>
+          <label class="text-xs font-semibold text-slate-500 mb-1 block">👁 Stazioni che controllano la sera</label>
+          <div style="border:1px solid #e2e8f0;border-radius:12px;padding:8px 12px;max-height:180px;overflow-y:auto;">
+            ${checkStationsHTML}
+          </div>
+          <p class="text-[10px] text-slate-400 mt-1">Seleziona una o più stazioni che devono verificare questo item nel check serale.</p>
         </div>
         <div>
           <label class="text-xs font-semibold text-slate-500 mb-1 block">Collega ricetta</label>
@@ -76,7 +108,7 @@ async function openPrepEditor(prep=null){
         </div>
         <div>
           <label class="text-xs font-semibold text-slate-500 mb-1 block">Nota / Procedimento rapido</label>
-          <textarea id="pepNote" class="w-full px-3 py-2.5 border rounded-xl h-28 resize-none" placeholder="Scrivi un procedimento rapido se non hai una ricetta collegata...">${prep?.note||''}</textarea>
+          <textarea id="pepNote" class="w-full px-3 py-2.5 border rounded-xl h-24 resize-none" placeholder="Scrivi un procedimento rapido se non hai una ricetta collegata...">${prep?.note||''}</textarea>
           <p class="text-[10px] text-slate-400 mt-1">Se colleghi una ricetta, questa nota viene ignorata al tap.</p>
         </div>
         ${!isNew?`<div>
@@ -90,6 +122,7 @@ async function openPrepEditor(prep=null){
       </div>
     </div>`;
   document.body.appendChild(modal);
+
   modal.querySelector('#pepSave').onclick = async() => {
     const name = modal.querySelector('#pepName').value.trim();
     if(!name){ alert('Nome obbligatorio'); return; }
@@ -97,18 +130,53 @@ async function openPrepEditor(prep=null){
     const recipe_id = modal.querySelector('#pepRecipe').value || null;
     const note = modal.querySelector('#pepNote').value.trim() || null;
     const duration = modal.querySelector('#pepDuration')?.value ? parseInt(modal.querySelector('#pepDuration').value) : null;
+
+    // Stazioni check selezionate
+    const selectedCheckStations = Array.from(modal.querySelectorAll('.pepCheckStation:checked')).map(cb=>cb.value);
+
     const btn = modal.querySelector('#pepSave');
     btn.disabled = true; btn.textContent = 'Salvataggio...';
     try{
+      let prepId = prep?.id;
       if(isNew){
-        const{error} = await supa.from('prep_tasks').insert({name, category, note, recipe_id, need_tomorrow: false}).select().single();
+        const{data:newPrep, error} = await supa.from('prep_tasks')
+          .insert({name, category, note, recipe_id, need_tomorrow: false})
+          .select().single();
         if(error) throw error;
+        prepId = newPrep.id;
       } else {
         const updates = {name, category, note, recipe_id};
         if(duration) updates.expected_duration_days = duration;
         const{error} = await supa.from('prep_tasks').update(updates).eq('id', prep.id);
         if(error) throw error;
       }
+
+      // Sincronizza closing_checks:
+      // 1. Rimuovi le stazioni deselezionate
+      if(!isNew){
+        const toRemove = existingCheckStations.filter(s=>!selectedCheckStations.includes(s));
+        for(const s of toRemove){
+          await supa.from('closing_checks')
+            .update({archived:true})
+            .eq('prep_task_id', prepId)
+            .eq('station', s);
+        }
+      }
+      // 2. Aggiungi le stazioni nuove
+      const toAdd = selectedCheckStations.filter(s=>!existingCheckStations.includes(s));
+      for(const s of toAdd){
+        await supa.from('closing_checks').insert({
+          name, station: s, prep_task_id: prepId, archived: false
+        });
+      }
+      // 3. Aggiorna nome se cambiato (su tutte le closing_checks collegate)
+      if(!isNew && name !== prep.name){
+        await supa.from('closing_checks')
+          .update({name})
+          .eq('prep_task_id', prepId)
+          .eq('archived', false);
+      }
+
       modal.remove();
       await init();
       if(typeof renderRecipes === 'function') renderRecipes();
