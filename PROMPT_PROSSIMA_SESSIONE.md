@@ -255,6 +255,8 @@ Bottom bar: Home / Chat / Schedule / Tell Chef
 - **Autocomplete ricette nel Calendar editor**: `<datalist>` non funziona su iOS — da rivedere con sheet separato
 - **Cleaning Checklist**: tabelle `cleaning_tasks` e `cleaning_log` non ancora create
 - **Riallineamento stazioni**: Manager → Coordinator, verificare Expo Line e Grill
+- **Smart mode — unità vincolante (ingrediente acquisto)**: quando lo Smart scala la ricetta Arrabbiata a 25.87 kg, dovrebbe mostrare "X latte di pomodoro da 3 kg" invece di soli grammi. Richiede: (1) fornitore con peso latta in ingredient_vendors, (2) logica nel bot/UI per arrotondare al multiplo dell'unità di acquisto e mostrarlo tra parentesi. Da fare DOPO che Max inserisce i fornitori nel DB.
+- **UI label "BOTSUGGESTION · THISWEEK" → "Chef AI · Questa settimana"**: in recipes.js la label sopra il box verde Smart mostra ancora il testo tecnico. Cambiare in testo human-readable usando tr() — IT: "Chef AI · Questa settimana", EN: "Chef AI · This week", ES: "Chef AI · Esta semana". Tutto quello che viene dai bot e che i ragazzi vedono deve chiamarsi "Chef AI", non "bot suggestion".
 
 ### REPO ATTIVO
 **ATTENZIONE**: questa sessione ha lavorato su `1cos/brigade-dev` branch `brigade-main` (v375).
