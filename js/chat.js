@@ -133,7 +133,7 @@ function _showChatOverlay(){
     '<div id="_focusChatBody" style="flex:1;overflow-y:auto;padding:12px;"></div>' +
     '<div style="padding:12px;background:white;border-top:1px solid #e2e8f0;display:flex;gap:8px;flex-shrink:0;">' +
       '<input id="_focusChatInput" type="text" placeholder="Scrivi un messaggio..." style="flex:1;height:44px;border-radius:12px;border:1px solid #e2e8f0;padding:0 14px;font-size:15px;outline:none;" />' +
-      '<button onclick="_focusChatSend()" style="height:44px;padding:0 18px;border-radius:12px;background:#1e3a5f;color:white;font-size:15px;font-weight:600;border:none;cursor:pointer;">Invia</button>' +
+      '<button onclick="_focusChatSend()" style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#0369a1,#0284c7);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;box-shadow:0 4px 12px rgba(3,105,161,0.35);"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button>' +
     '</div>';
 
   document.body.appendChild(overlay);
