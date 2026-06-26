@@ -1,5 +1,5 @@
 # BRIGADE — BACKLOG
-*Aggiornato: 2026-06-24 — v342*
+*Aggiornato: 2026-06-26 — v375*
 *Leggi dopo SPEC e DECISIONS.*
 
 ---
@@ -10,7 +10,7 @@
 - Branch: brigade-main (MAI main)
 - **KITCHEN DISPLAY (display.html): SOLO INGLESE** — UI, alert, chat, prep, stazioni, tutto. Mai italiano sul TV. Regola permanente.
 - **BRIGADE APP: inglese UI, spagnolo/inglese per la brigata** — traduzione multilingua attiva
-- Versione frontend: **v342** — 🟢 **APP IN PRODUZIONE** (brigata attiva)
+- Versione frontend: **v375** — 🟢 **APP IN PRODUZIONE** (brigata attiva)
 - souschef-chat: **v24** (confirmation gate "Sì Chef")
 
 - ai-translate: **v28** (Google Translate attivo)
@@ -38,7 +38,7 @@
 | office-ai | v1 | Analisi AI office_items |
 | bot-price-guard | v1 | 🤖 Guardiano Prezzi — confronta prezzi fattura vs media storica |
 | bot-chat-analyst | v2 | 🤖 Analista Chat — analisi notturna AI chat brigata |
-| bot-preplist-builder | v1 | 🤖 Costruttore Preplist — suggested_qty automatiche ogni notte |
+| bot-preplist-builder | v14 | 🤖 Costruttore Preplist — BOM ricorsivo + dow-aware + log esploso in bot_preplist_log |
 | bot-tell-chef-reader | v5 | 🤖 Lettore Tell Chef — classifica, smista per folder, ciclo vita 7gg, chef_action→chef_reports |
 | bot-food-cost-guard | v1 | 🤖 Guardiano Food Cost — impatto $ ingredienti su ricette vendute |
 
@@ -54,7 +54,7 @@ Alimentano L'Ufficio mentre Max dorme. Non rispondono — osservano e preparano.
 |---|---|---|---|
 | Bot 1 — Guardiano Prezzi | Dopo ogni import fattura | ✅ v1 attivo | Soglia 10%, min 3 storici |
 | Bot 2 — Analista Chat | Cron 3AM CDT lun-sab + domenica recap | ✅ v2 attivo | AI legge contesto, non keyword |
-| Bot 3 — Costruttore Preplist | Cron 4AM CDT ogni notte | ✅ v1 attivo | 3 sett. storia, +10% buffer |
+| Bot 3 — Costruttore Preplist | Cron 4AM CDT ogni notte | ✅ v14 attivo | dow-aware, BOM ricorsivo, log esploso, RPC aggregate |
 | Bot 4 — Lettore Tell Chef | Cron ogni ora | ✅ v1 attivo | Fase 1: classificazione + suggestion |
 | Bot 5 — Guardiano Food Cost | Dopo ogni import fattura | ✅ v1 attivo (versione A) | Impatto $ — upgrade a % quando selling_price popolato |
 | Bot 6 — Guardiano Accuratezza Prep | Cron 17:30 CDT ogni giorno | ✅ v1 attivo | No Need + prep log pomeridiano = identifica chi ha sbagliato |
@@ -172,6 +172,17 @@ Schermo: Insignia Fire TV Silk Browser kiosk
 ---
 
 ## Log sessioni
+
+### Sessione 2026-06-26 — Bot Smart preplist v14 + BOM fixes (v375)
+- BOM cleanup: "Arrabbiata Sauce" ingrediente eliminato dal DB
+- 4 ricette aggiornate da ingrediente a sub-recipe ARRABBIATA
+- Chicken Parmesan BOM: +ARRABBIATA 200g (pasta side) +SPAGHETTI FRESH PASTA 0.5 each (nuovo menu)
+- bot-preplist-builder v5→v14: dow-aware, BOM ricorsivo completo, visited fix, log esploso, fix PostgREST 1000 limit via RPC aggregate SQL
+- Nuove funzioni DB: get_sales_by_dow(), get_modifiers_by_dow()
+- Nuova tabella: bot_preplist_log (log esploso giornaliero)
+- Nuova colonna: prep_tasks.suggested_note
+- UI recipes.js v375: suggested_note mostrata nel box Smart
+- recipes.js v375: selected_note visualizzata sotto il numero Smart
 
 ### Sessione 2026-06-24 — L'Ufficio pulizia e riordino (v337→v342)
 - v337→v342: pulizia menu admin, Purchase History unificata, fix Focus Mode, fix Report, fix Riapri
