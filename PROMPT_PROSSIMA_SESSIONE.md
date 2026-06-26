@@ -214,3 +214,49 @@ Bottom bar: Home / Chat / Schedule / Tell Chef
 - **MAI assumere — confermare SEMPRE con Max prima di agire**
 
 
+
+
+---
+
+## Sessione 2026-06-26 — Bot Smart preplist + BOM fixes (v375)
+
+### ✅ FATTO — BOM cleanup Arrabbiata
+- Ingrediente "Arrabbiata Sauce" eliminato dal DB (non si compra, si produce)
+- 4 ricette aggiornate da ingrediente a sub-recipe ARRABBIATA: CHICKEN PIZZAIOLA, MACCHERONI ARRABBIATA, PENNE ARRABBIATA BUFFET (qty corretta 2.5g→2500g), Ciopino
+- Fried Calamari: ARRABBIATA linkato come sub-recipe (50g)
+- Chicken Parmesan BOM aggiornato: ora ha ARRABBIATA 75g (salsa sul pollo) + ARRABBIATA 200g (pasta side) + SPAGHETTI FRESH PASTA 0.5 each (dal nuovo menu domani CP viene SEMPRE con half spaghetti)
+
+### ✅ FATTO — Bot preplist-builder v14 (da v5)
+- **v6**: ragionamento per giorno della settimana (dow-aware) + `suggested_note` in `prep_tasks`
+- **v7**: fix strutturale BOM — espande SEMPRE tutti i piatti via `subUsedBy[recipe_id]`
+- **v8/v9**: report esploso in `bot_preplist_log` (nuova tabella) — un solo INSERT, veloce
+- **v10**: fix `visited` set — i piatti finali (con pos_name) sempre inclusi anche da percorsi diversi (Chicken Parm: 75g salsa + 200g pasta side entrambi contati)
+- **v14**: fix critico PostgREST — limite 1000 righe tagliava dati silenziosamente. Soluzione: RPC SQL aggregate (`get_sales_by_dow`, `get_modifiers_by_dow`) che ritornano medie già calcolate per dow (935 righe invece di 1713 raw)
+
+### ✅ FATTO — DB nuove tabelle/colonne
+- `prep_tasks.suggested_note` text — spiegazione ragionamento bot
+- `bot_preplist_log` — log esploso giornaliero del bot (run_date, task_name, detail JSONB, etc.)
+- Funzioni SQL: `get_sales_by_dow()`, `get_modifiers_by_dow()`, `get_sales_history()`, `get_modifier_history()`
+
+### ✅ FATTO — UI recipes.js v375
+- Box Smart mostra `suggested_note` sotto il numero verde
+
+### 📊 STATO DATI POS (al 2026-06-26)
+- Dati dal: martedì 9 giugno 2026
+- Martedì/Mercoledì/Giovedì: **3 settimane** ✅
+- Lunedì/Venerdì/Sabato: **2 settimane** (venerdì 26/6 importa stasera → domani 3 settimane)
+- Il bot migliora automaticamente ogni settimana
+
+### 🔴 NON RISOLTO — da fare prossima sessione
+- **SW.js versione**: verificare versione live su `1cos/back-of-house` (memoria dice v383 ma questa sessione ha pushato su `1cos/brigade-dev` → verificare quale repo è quello attivo e allineare
+- **Arrabbiata shelf_life**: attualmente 7 giorni in DB — il bot suggerisce ~25 kg per settimana. Verificare se shelf life è corretta o se va ridotta (es. 3-4 giorni = batch più frequenti ma quantità più gestibili)
+- **Chicken Parmesan pasta side**: il BOM ora ha 200g arrabbiata per la pasta, ma NON include ancora il consumo di Penne Midnight Half/Kids che usano arrabbiata — già nel BOM ma verificare che il bot le conti tutte
+- **Focus Mode**: disabilitata (return false) — riabilitare quando orari 7shifts allineati
+- **Autocomplete ricette nel Calendar editor**: `<datalist>` non funziona su iOS — da rivedere con sheet separato
+- **Cleaning Checklist**: tabelle `cleaning_tasks` e `cleaning_log` non ancora create
+- **Riallineamento stazioni**: Manager → Coordinator, verificare Expo Line e Grill
+
+### REPO ATTIVO
+**ATTENZIONE**: questa sessione ha lavorato su `1cos/brigade-dev` branch `brigade-main` (v375).
+Le memorie dicono che il repo corretto è `1cos/back-of-house`. Verificare all'inizio della prossima sessione quale dei due è quello live su GitHub Pages e allineare tutto.
+
