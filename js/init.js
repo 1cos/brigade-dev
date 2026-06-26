@@ -31,8 +31,9 @@ async function init(){
       if(station!==DISH_STATION) station=DISH_STATION;
       if(station2!==DISH_STATION) station2=DISH_STATION;
     } else {
-      if(station==='All' || station===DISH_STATION) station='Oven Station';
-      if(station2==='All' || station2===DISH_STATION) station2='Oven Station';
+      const defaultSt = (user && user.default_station && user.default_station !== DISH_STATION) ? user.default_station : 'Oven Station';
+      if(station==='All' || station===DISH_STATION) station=defaultSt;
+      if(station2==='All' || station2===DISH_STATION) station2=defaultSt;
     }
   }
   const stationsEl=document.getElementById('stations');
