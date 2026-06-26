@@ -1250,7 +1250,7 @@ async function loadRecipePrepStats(rec, sheetEl) {
     // Cerca prep_task collegata direttamente (prep_tasks.recipe_id = rec.id)
     let ptDirect = null;
     const { data: ptRows } = await sb.from('prep_tasks')
-      .select('id, name, suggested_qty, suggested_by, suggested_at')
+      .select('id, name, suggested_qty, suggested_by, suggested_at, suggested_note')
       .eq('recipe_id', rec.id)
       .not('suggested_qty', 'is', null)
       .limit(1);
@@ -1262,7 +1262,7 @@ async function loadRecipePrepStats(rec, sheetEl) {
     let ptVia = null;
     if (!ptDirect) {
       const { data: bomRows } = await sb.from('recipe_bom')
-        .select('prep_task_id, prep_tasks(id, name, suggested_qty, suggested_by, suggested_at)')
+        .select('prep_task_id, prep_tasks(id, name, suggested_qty, suggested_by, suggested_at, suggested_note)')
         .eq('sub_recipe_id', rec.id)
         .not('prep_task_id', 'is', null)
         .limit(1);
@@ -1298,6 +1298,7 @@ async function loadRecipePrepStats(rec, sheetEl) {
           '<div>' +
             '<div style="font-size:17px;font-weight:900;color:#059669;line-height:1;">' + sugKg + ' kg</div>' +
             `<div style="font-size:10px;color:#6b7280;margin-top:2px;">${tr('recommended')}</div>` +
+            (pt.suggested_note ? `<div style="font-size:10px;color:#059669;margin-top:4px;line-height:1.3;">${pt.suggested_note}</div>` : '') +
           '</div>' +
         '</div>' +
       '</div>';
