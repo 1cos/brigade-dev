@@ -258,3 +258,242 @@ async function openPrepEditor(prep=null){
     }
   };
 }
+
+// ── ADMIN CLOSING CHECKS ──
+// Gestione closing checks: aggiungi, modifica, archivia, sposta stazione
+
+const CLOSING_STATION_OPTIONS = [
+  'Oven Station','Fresh Pasta Station','Pasta Station','Sauté Station',
+  'Saucier Station','Plating Station','Salad Station','Pastry Station',
+  'Table Side','Freezer','Grill & Features','Coordinator Station','Dish Crew'
+];
+
+async function openClosingAdmin() {
+  let overlay = document.getElementById('closingAdminOverlay');
+  if (!overlay) {
+    overlay = document.createElement('div');
+    overlay.id = 'closingAdminOverlay';
+    overlay.style.cssText = 'position:fixed;inset:0;z-index:80;background:#f0f4f8;overflow-y:auto;-webkit-overflow-scrolling:touch;';
+    document.body.appendChild(overlay);
+  }
+  overlay.innerHTML = `
+    <div style="max-width:480px;margin:0 auto;padding:0 0 80px;">
+      <div style="position:sticky;top:0;z-index:10;background:#f0f4f8;padding:16px 16px 10px;display:flex;align-items:center;gap:10px;border-bottom:0.5px solid #e2e8f0;">
+        <button onclick="closeClosingAdmin()" style="width:36px;height:36px;border-radius:50%;border:none;background:white;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 4px rgba(0,0,0,0.1);cursor:pointer;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1e3a5f" stroke-width="2" stroke-linecap="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+        </button>
+        <div>
+          <div style="font-size:17px;font-weight:700;color:#1e3a5f;">Closing Checks</div>
+          <div style="font-size:11px;color:#94a3b8;">Gestione admin — tutti i check serali</div>
+        </div>
+        <button onclick="_showClosingCheckEditor(null)" style="margin-left:auto;padding:7px 14px;border-radius:20px;border:none;background:#1e3a5f;color:white;font-size:12px;font-weight:600;cursor:pointer;">+ Aggiungi</button>
+      </div>
+      <div id="closingAdminList" style="padding:12px 12px 0;">
+        <div style="text-align:center;padding:40px;color:#94a3b8;font-size:13px;">Caricamento...</div>
+      </div>
+    </div>
+
+    <!-- Editor modal -->
+    <div id="closingCheckEditorModal" style="display:none;position:fixed;inset:0;z-index:90;background:rgba(15,23,42,0.5);" onclick="if(event.target===this)_closeClosingCheckEditor()">
+      <div id="closingCheckEditorContent" style="position:absolute;bottom:0;left:0;right:0;max-width:480px;margin:0 auto;background:white;border-radius:24px 24px 0 0;padding:20px 16px 40px;max-height:92vh;overflow-y:auto;-webkit-overflow-scrolling:touch;"></div>
+    </div>
+  `;
+  overlay.classList.remove('hidden');
+  await _loadClosingAdminList();
+}
+
+async function _loadClosingAdminList() {
+  const container = document.getElementById('closingAdminList');
+  if (!container) return;
+
+  const { data: checks, error } = await supa
+    .from('closing_checks')
+    .select('*, prep_tasks(name, category)')
+    .eq('archived', false)
+    .order('station')
+    .order('name');
+
+  if (error) { container.innerHTML = `<div style="padding:20px;color:#ef4444;font-size:13px;">Errore: ${error.message}</div>`; return; }
+  if (!checks || checks.length === 0) {
+    container.innerHTML = '<div style="text-align:center;padding:40px;color:#94a3b8;font-size:13px;">Nessun closing check attivo</div>';
+    return;
+  }
+
+  // Raggruppa per stazione
+  const byStation = {};
+  checks.forEach(c => {
+    const s = c.station || 'Senza stazione';
+    if (!byStation[s]) byStation[s] = [];
+    byStation[s].push(c);
+  });
+
+  container.innerHTML = Object.entries(byStation).map(([station, items]) => `
+    <div style="margin-bottom:16px;">
+      <div style="font-size:10px;font-weight:700;color:#94a3b8;letter-spacing:0.08em;text-transform:uppercase;padding:0 4px 6px;">${station.replace(' Station','')}</div>
+      ${items.map(c => `
+        <div onclick="_showClosingCheckEditor(${c.id})" style="background:white;border-radius:12px;padding:11px 14px;margin-bottom:6px;box-shadow:0 1px 3px rgba(30,58,95,0.07);cursor:pointer;border:0.5px solid #e2e8f0;display:flex;align-items:center;gap:10px;">
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:14px;font-weight:600;color:#1e3a5f;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${c.name}</div>
+            <div style="font-size:10px;color:#94a3b8;margin-top:2px;display:flex;gap:6px;flex-wrap:wrap;">
+              ${c.prep_tasks ? `<span style="color:#6366f1;">→ ${c.prep_tasks.name}</span>` : '<span>Stand-alone</span>'}
+              ${c.daily_reset ? '<span style="color:#059669;">↺ Daily reset</span>' : ''}
+            </div>
+          </div>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="2" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg>
+        </div>
+      `).join('')}
+    </div>
+  `).join('');
+}
+
+async function _showClosingCheckEditor(checkId) {
+  const modal = document.getElementById('closingCheckEditorModal');
+  const content = document.getElementById('closingCheckEditorContent');
+  if (!modal || !content) return;
+
+  content.innerHTML = '<div style="text-align:center;padding:40px;color:#94a3b8;">Caricamento...</div>';
+  modal.style.display = 'block';
+
+  const isNew = !checkId;
+  let check = null;
+
+  if (!isNew) {
+    const { data } = await supa.from('closing_checks').select('*').eq('id', checkId).single();
+    check = data;
+  }
+
+  // Carica prep tasks per il collegamento
+  const { data: prepTasks } = await supa
+    .from('prep_tasks')
+    .select('id, name, category')
+    .eq('archived', false)
+    .order('name');
+
+  const prepOptions = (prepTasks || []).map(p =>
+    `<option value="${p.id}" ${check?.prep_task_id == p.id ? 'selected' : ''}>${p.name} (${(p.category||'').replace(' Station','')})</option>`
+  ).join('');
+
+  const stationOpts = CLOSING_STATION_OPTIONS.map(s =>
+    `<option value="${s}" ${(check?.station || 'Oven Station') === s ? 'selected' : ''}>${s.replace(' Station','')}</option>`
+  ).join('');
+
+  content.innerHTML = `
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px;">
+      <button onclick="_closeClosingCheckEditor()" style="width:32px;height:32px;border-radius:50%;border:none;background:#f1f5f9;cursor:pointer;display:flex;align-items:center;justify-content:center;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1e3a5f" stroke-width="2" stroke-linecap="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+      </button>
+      <div style="font-size:16px;font-weight:700;color:#1e3a5f;">${isNew ? 'Nuovo Closing Check' : 'Modifica Check'}</div>
+    </div>
+
+    <!-- Nome -->
+    <div style="margin-bottom:14px;">
+      <div style="font-size:10px;font-weight:700;color:#94a3b8;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:6px;">Nome</div>
+      <input id="ccName" value="${check?.name || ''}" placeholder="es. Arrabbiata sauce"
+        style="width:100%;font-size:14px;border:0.5px solid #e2e8f0;border-radius:10px;padding:10px 12px;color:#1e3a5f;font-family:inherit;box-sizing:border-box;">
+    </div>
+
+    <!-- Stazione -->
+    <div style="margin-bottom:14px;">
+      <div style="font-size:10px;font-weight:700;color:#94a3b8;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:6px;">Stazione che controlla la sera</div>
+      <select id="ccStation" style="width:100%;font-size:13px;border:0.5px solid #e2e8f0;border-radius:10px;padding:10px 12px;background:white;color:#1e3a5f;">
+        ${stationOpts}
+      </select>
+    </div>
+
+    <!-- Collega prep task -->
+    <div style="margin-bottom:14px;">
+      <div style="font-size:10px;font-weight:700;color:#94a3b8;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:6px;">Collegamento prep task (opzionale)</div>
+      <select id="ccPrepTask" style="width:100%;font-size:13px;border:0.5px solid #e2e8f0;border-radius:10px;padding:10px 12px;background:white;color:#1e3a5f;">
+        <option value="">— nessun collegamento —</option>
+        ${prepOptions}
+      </select>
+      <div style="font-size:10px;color:#94a3b8;margin-top:4px;">Se collegato: segnare "Manca" attiva automaticamente la prep task la mattina.</div>
+    </div>
+
+    <!-- Daily reset -->
+    <div style="margin-bottom:20px;background:#f0fdf4;border-radius:12px;padding:12px 14px;border:0.5px solid #bbf7d0;">
+      <label style="display:flex;align-items:center;gap:10px;cursor:pointer;">
+        <div style="position:relative;width:44px;height:26px;flex-shrink:0;">
+          <input type="checkbox" id="ccDailyReset" ${check?.daily_reset ? 'checked' : ''}
+            style="opacity:0;width:0;height:0;position:absolute;"
+            onchange="document.getElementById('ccDailyResetTrack').style.background=this.checked?'#059669':'#e2e8f0';document.getElementById('ccDailyResetThumb').style.transform=this.checked?'translateX(18px)':'translateX(0)'">
+          <div id="ccDailyResetTrack" style="position:absolute;inset:0;border-radius:13px;background:${check?.daily_reset ? '#059669' : '#e2e8f0'};transition:background 0.2s;"></div>
+          <div id="ccDailyResetThumb" style="position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:white;box-shadow:0 1px 3px rgba(0,0,0,0.2);transition:transform 0.2s;transform:${check?.daily_reset ? 'translateX(18px)' : 'translateX(0)'};"></div>
+        </div>
+        <div>
+          <div style="font-size:13px;font-weight:600;color:#065f46;">↺ Reset automatico giornaliero</div>
+          <div style="font-size:10px;color:#6b7280;margin-top:1px;">Il check si azzera ogni notte e torna da rispondere il giorno dopo.</div>
+        </div>
+      </label>
+    </div>
+
+    <!-- Note -->
+    <div style="margin-bottom:20px;">
+      <div style="font-size:10px;font-weight:700;color:#94a3b8;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:6px;">Nota (opzionale)</div>
+      <textarea id="ccNote" placeholder="es. Verificare anche il livello nel contenitore di riserva"
+        style="width:100%;font-size:13px;border:0.5px solid #e2e8f0;border-radius:10px;padding:10px 12px;resize:none;height:60px;color:#1e3a5f;font-family:inherit;box-sizing:border-box;">${check?.note || ''}</textarea>
+    </div>
+
+    <!-- Salva -->
+    <button id="ccSaveBtn" onclick="_saveClosingCheck(${checkId || 'null'})"
+      style="width:100%;padding:13px;border-radius:12px;border:none;background:#1e3a5f;color:white;font-size:15px;font-weight:700;cursor:pointer;margin-bottom:10px;">
+      ${isNew ? 'Crea closing check' : 'Salva modifiche'}
+    </button>
+
+    ${!isNew ? `
+    <button onclick="_archiveClosingCheck(${checkId})"
+      style="width:100%;padding:11px;border-radius:12px;border:0.5px solid #fecaca;background:#fff5f5;color:#ef4444;font-size:13px;font-weight:600;cursor:pointer;">
+      Archivia questo check
+    </button>
+    ` : ''}
+  `;
+}
+
+async function _saveClosingCheck(checkId) {
+  const btn = document.getElementById('ccSaveBtn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Salvataggio...'; }
+
+  const name = document.getElementById('ccName')?.value?.trim();
+  if (!name) { alert('Il nome è obbligatorio'); if (btn) { btn.disabled = false; btn.textContent = checkId ? 'Salva modifiche' : 'Crea closing check'; } return; }
+
+  const station = document.getElementById('ccStation')?.value;
+  const prep_task_id = document.getElementById('ccPrepTask')?.value || null;
+  const daily_reset = document.getElementById('ccDailyReset')?.checked || false;
+  const note = document.getElementById('ccNote')?.value?.trim() || null;
+
+  const payload = { name, station, prep_task_id, daily_reset, note };
+
+  let error;
+  if (!checkId) {
+    ({ error } = await supa.from('closing_checks').insert({ ...payload, archived: false }));
+  } else {
+    ({ error } = await supa.from('closing_checks').update(payload).eq('id', checkId));
+  }
+
+  if (error) {
+    alert('Errore: ' + error.message);
+    if (btn) { btn.disabled = false; btn.textContent = checkId ? 'Salva modifiche' : 'Crea closing check'; }
+    return;
+  }
+
+  _closeClosingCheckEditor();
+  await _loadClosingAdminList();
+}
+
+async function _archiveClosingCheck(checkId) {
+  if (!confirm('Archiviare questo closing check? Verrà nascosto dalla lista serale.')) return;
+  await supa.from('closing_checks').update({ archived: true }).eq('id', checkId);
+  _closeClosingCheckEditor();
+  await _loadClosingAdminList();
+}
+
+function _closeClosingCheckEditor() {
+  const modal = document.getElementById('closingCheckEditorModal');
+  if (modal) modal.style.display = 'none';
+}
+
+function closeClosingAdmin() {
+  const overlay = document.getElementById('closingAdminOverlay');
+  if (overlay) overlay.remove();
+}
+
