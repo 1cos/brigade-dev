@@ -3,11 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Brigade</title>
+<title>Brigade — Workspace Lab</title>
 <meta name="theme-color" content="#059669">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Brigade">
+<meta name="apple-mobile-web-app-title" content="Brigade Lab">
 <link rel="apple-touch-icon" href="./icon-192.png">
 <link rel="manifest" href="./manifest.json">
 <script src="https://cdn.tailwindcss.com"></script>
@@ -37,18 +37,20 @@
 </style>
   <style>
     /* ── TYPOGRAPHY & COLOR OVERRIDES ── */
+    /* Base font +1px su tutto il body — richiesta Zuu/staff */
+    body { font-size: 15px; }
     /* Top bar */
-    #app .text-sm { font-size: 14px !important; }
+    #app .text-sm { font-size: 15px !important; }
     /* Brigade title */
-    .app-title { font-size: 17px !important; font-weight: 600 !important; }
+    .app-title { font-size: 18px !important; font-weight: 600 !important; }
     /* Username nel top bar */
-    #who { font-size: 14px !important; font-weight: 500 !important; }
+    #who { font-size: 15px !important; font-weight: 500 !important; }
     /* News bar */
-    #newsBar { font-size: 13px !important; }
-    #newsScroll { font-size: 13px !important; }
+    #newsBar { font-size: 14px !important; }
+    #newsScroll { font-size: 14px !important; }
     /* Widget titles (SERVICE UPDATES, YOUR STATION, etc) */
-    .text-\[11px\] { font-size: 12px !important; }
-    .text-\[10px\] { font-size: 11px !important; }
+    .text-\[11px\] { font-size: 13px !important; }
+    .text-\[10px\] { font-size: 12px !important; }
     /* Tono celeste più scuro — sostituzione variabili colore */
     :root {
       --color-blue-light: #bfdbfe;   /* era #93c5fd */
@@ -60,7 +62,7 @@
     [style*="color:#93c5fd"] { color: #60a5fa !important; }
     [style*="color: #93c5fd"] { color: #60a5fa !important; }
     /* Tab labels */
-    .tab-label { font-size: 11px !important; }
+    .tab-label { font-size: 12px !important; }
     /* Avatar utenti online nel top bar — più grandi */
     #online .online-dot,
     #online img,
@@ -68,7 +70,7 @@
       width: 36px !important;
       height: 36px !important;
       min-width: 36px !important;
-      font-size: 13px !important;
+      font-size: 14px !important;
       border: 2px solid white !important;
     }
     /* Section headers (UPCOMING DEMAND, SERVICE UPDATES...) */
@@ -80,6 +82,184 @@
     width: 100%;
     top: 0;
   }
+</style>
+
+<script>
+(function(){
+  if(window.location.search.indexOf('dev=1')!==-1){
+    document.documentElement.classList.add('dev-mode');
+  }
+})();
+</script>
+<style>
+/* == BRIGADE DEV THEME ?dev=1 — light, stesso linguaggio L'Ufficio == */
+
+/* ── SFONDO GLOBALE — stesso gradient dell'Ufficio ── */
+html.dev-mode body {
+  background: linear-gradient(160deg,#eff6ff 0%,#dbeafe 60%,#e0f2fe 100%) !important;
+  background-attachment: fixed !important;
+  color: #1e3a5f !important;
+  font-size: 15px !important;
+  font-family: Inter,system-ui,sans-serif !important;
+}
+
+/* ── CARD GLASS — identica all'Ufficio ── */
+html.dev-mode .glass,
+html.dev-mode .glass-card {
+  background: rgba(255,255,255,0.6) !important;
+  backdrop-filter: blur(14px) !important;
+  -webkit-backdrop-filter: blur(14px) !important;
+  border: 0.5px solid rgba(59,130,246,0.18) !important;
+  border-radius: 18px !important;
+  box-shadow: 0 2px 8px rgba(30,58,95,0.06),0 6px 20px rgba(30,58,95,0.04) !important;
+}
+
+/* ── CARD generica bianca ── */
+html.dev-mode .bg-white {
+  background: rgba(255,255,255,0.6) !important;
+  backdrop-filter: blur(14px) !important;
+  -webkit-backdrop-filter: blur(14px) !important;
+  border: 0.5px solid rgba(59,130,246,0.14) !important;
+  border-radius: 16px !important;
+}
+
+/* ── TOP BAR ── */
+html.dev-mode #app > div:first-child,
+html.dev-mode .sticky.top-0 {
+  background: rgba(255,255,255,0.75) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  border-bottom: 0.5px solid rgba(59,130,246,0.15) !important;
+}
+
+/* ── BOTTOM NAV ── */
+html.dev-mode nav.fixed {
+  background: rgba(255,255,255,0.88) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  border-top: 0.5px solid rgba(59,130,246,0.15) !important;
+}
+
+/* ── ACCENTO BLU — icone e tab attiva ── */
+html.dev-mode .tab-active { color: #2563eb !important; }
+html.dev-mode .tab-active svg { stroke: #2563eb !important; }
+html.dev-mode .tab-active span { color: #2563eb !important; }
+
+/* ── TESTO PRIMARIO ── */
+html.dev-mode h1,
+html.dev-mode h2,
+html.dev-mode h3,
+html.dev-mode .text-slate-800,
+html.dev-mode .text-slate-900,
+html.dev-mode .text-gray-800,
+html.dev-mode .text-gray-900 {
+  color: #1e3a5f !important;
+}
+
+/* ── TESTO SECONDARIO ── */
+html.dev-mode .text-slate-500,
+html.dev-mode .text-slate-600,
+html.dev-mode .text-gray-500,
+html.dev-mode .text-gray-600 {
+  color: #60a5fa !important;
+}
+html.dev-mode .text-slate-400,
+html.dev-mode .text-gray-400 {
+  color: rgba(30,58,95,0.4) !important;
+}
+
+/* ── FONT SIZE — testo normale più grande ── */
+html.dev-mode p,
+html.dev-mode li,
+html.dev-mode .text-sm { font-size: 15px !important; }
+html.dev-mode .text-xs { font-size: 13px !important; }
+html.dev-mode .text-base { font-size: 15px !important; }
+
+/* ── SECTION LABEL — stile Ufficio ── */
+html.dev-mode .text-\[11px\],
+html.dev-mode .tracking-wider {
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.06em !important;
+  text-transform: uppercase !important;
+  color: #60a5fa !important;
+}
+
+/* ── INPUT ── */
+html.dev-mode input,
+html.dev-mode textarea,
+html.dev-mode select {
+  background: rgba(255,255,255,0.7) !important;
+  border: 0.5px solid rgba(59,130,246,0.25) !important;
+  color: #1e3a5f !important;
+  border-radius: 12px !important;
+}
+html.dev-mode input::placeholder,
+html.dev-mode textarea::placeholder {
+  color: rgba(30,58,95,0.35) !important;
+}
+
+/* ── SFONDO SEZIONI ── */
+html.dev-mode .bg-slate-50,
+html.dev-mode .bg-gray-50,
+html.dev-mode .bg-slate-100,
+html.dev-mode .bg-gray-100 {
+  background: rgba(255,255,255,0.4) !important;
+}
+
+/* ── BORDI ── */
+html.dev-mode .border,
+html.dev-mode .border-t,
+html.dev-mode .border-b,
+html.dev-mode .border-slate-200,
+html.dev-mode .border-gray-200 {
+  border-color: rgba(59,130,246,0.15) !important;
+}
+
+/* ── PILLS / BADGE — stile Ufficio ── */
+html.dev-mode .bg-blue-100 { background: rgba(59,130,246,0.12) !important; color: #2563eb !important; }
+html.dev-mode .bg-green-100 { background: rgba(16,185,129,0.12) !important; color: #059669 !important; }
+html.dev-mode .bg-amber-100 { background: rgba(245,158,11,0.12) !important; color: #d97706 !important; }
+html.dev-mode .bg-red-100 { background: rgba(239,68,68,0.12) !important; color: #dc2626 !important; }
+
+/* ── BOTTONI PRIMARI ── */
+html.dev-mode button.bg-blue-500,
+html.dev-mode button.bg-blue-600,
+html.dev-mode button[style*="background:#2563eb"],
+html.dev-mode button[style*="background:#059669"] {
+  border-radius: 10px !important;
+  font-weight: 600 !important;
+}
+
+/* ── EMOJI ICONE CASSETTI — nascondi, rimpiazzate da ribbon dot ── */
+html.dev-mode .office-folder-emoji { display: none !important; }
+
+/* ── SCROLLBAR — sottile, stile Apple ── */
+html.dev-mode ::-webkit-scrollbar { width: 3px; height: 3px; }
+html.dev-mode ::-webkit-scrollbar-track { background: transparent; }
+html.dev-mode ::-webkit-scrollbar-thumb { background: rgba(59,130,246,0.25); border-radius: 2px; }
+
+/* ── PREP CARD BORDER URGENZA ── */
+html.dev-mode [style*="border-left"][style*="#ef4444"] { border-left-color: #ef4444 !important; }
+html.dev-mode [style*="border-left"][style*="#f59e0b"] { border-left-color: #f59e0b !important; }
+html.dev-mode [style*="border-left"][style*="#10b981"] { border-left-color: #10b981 !important; }
+
+/* ── DEV BADGE ── */
+html.dev-mode body::after {
+  content: 'DEV';
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  background: #2563eb;
+  color: white;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  padding: 3px 7px;
+  border-radius: 4px;
+  z-index: 9999;
+  pointer-events: none;
+}
 </style>
 </head>
 
@@ -132,6 +312,22 @@ function pinPress(d){if(typeof window._pinPress==='function')window._pinPress(d)
 function pinDel(){if(typeof window._pinDel==='function')window._pinDel();}
 </script>
 
+<!-- ── WORKSPACE LAB BANNER ── -->
+<div id="ws-lab-topbanner" style="position:fixed;top:0;left:0;right:0;z-index:99999;background:linear-gradient(90deg,#7c3aed,#5b21b6);color:white;font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;text-align:center;padding:5px 16px;font-family:-apple-system,BlinkMacSystemFont,sans-serif;user-select:none;box-shadow:0 1px 6px rgba(124,58,237,0.35);">⚗️ WORKSPACE LAB · brigade-dev · Not for kitchen use</div>
+<script>
+document.addEventListener('DOMContentLoaded',function(){
+  var b=document.getElementById('ws-lab-topbanner');
+  if(!b)return;
+  var h=b.offsetHeight||22;
+  // shrink to corner pill after 12s
+  setTimeout(function(){
+    b.style.cssText='position:fixed;top:6px;right:6px;left:auto;z-index:99999;background:#7c3aed;color:white;font-size:9px;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;border-radius:8px;padding:4px 9px;cursor:pointer;box-shadow:0 2px 6px rgba(124,58,237,0.4);';
+    b.textContent='⚗️ LAB';
+    b.title='Workspace Lab — tap to dismiss';
+    b.onclick=function(){b.style.display='none';};
+  },12000);
+});
+</script>
 <div id="app" class="hidden min-h-screen flex flex-col" style="background:transparent;">
 
   <!-- FOCUS MODE OVERLAY — staff only, 8AM-8PM CDT -->
@@ -168,9 +364,9 @@ function pinDel(){if(typeof window._pinDel==='function')window._pinDel();}
       <div onclick="openProfile()" style="display:flex;align-items:center;gap:10px;cursor:pointer;flex-shrink:0;-webkit-tap-highlight-color:transparent;">
         <div id="topbarAvatar" style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#1e3a5f,#2563eb);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:white;overflow:hidden;flex-shrink:0;box-shadow:0 3px 8px rgba(30,58,95,0.3);"></div>
         <div style="line-height:1.2;">
-          <div id="topbarGreeting" style="font-size:11px;color:#60a5fa;line-height:1;"></div>
+          <div id="topbarGreeting" style="font-size:12px;color:#60a5fa;line-height:1;"></div>
           <div style="display:flex;align-items:baseline;gap:5px;">
-            <div id="who" style="font-size:16px;font-weight:600;color:#1e3a5f;line-height:1.3;"></div>
+            <div id="who" style="font-size:17px;font-weight:600;color:#1e3a5f;line-height:1.3;"></div>
             <div id="appVersion" style="display:none;"></div>
           </div>
         </div>
@@ -192,6 +388,9 @@ function pinDel(){if(typeof window._pinDel==='function')window._pinDel();}
       </div>
 
     </div>
+
+    <!-- Timer bar — appare nella top bar quando ci sono timer attivi -->
+    <div id="topTimerBar" style="display:none;border-top:0.5px solid rgba(59,130,246,0.10);"></div>
 
     <!-- News pill blu scorrevole — visibile solo se ci sono news -->
     <div id="newsBar" class="hidden" style="padding:0 14px 8px;">
@@ -334,6 +533,12 @@ function pinDel(){if(typeof window._pinDel==='function')window._pinDel();}
         <button id="toggleView" class="px-2.5 py-1.5 bg-white border border-slate-200 rounded-xl text-[11px] font-semibold shadow-sm">Feed</button>
         <button id="addPrepBtn" onclick="adminAdd()" class="hidden px-2.5 py-1.5 bg-emerald-600 text-white rounded-xl text-[11px] font-semibold shadow-sm">+ Prep</button>
       </div>
+      <div class="relative mb-2">
+        <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:14px;color:#94a3b8;pointer-events:none;">🔍</span>
+        <input id="prepSearch" type="search" placeholder="Cerca prep..." autocomplete="off" autocorrect="off" spellcheck="false"
+          style="width:100%;padding:8px 12px 8px 32px;border:1px solid #e2e8f0;border-radius:12px;font-size:13px;background:rgba(255,255,255,0.85);backdrop-filter:blur(8px);outline:none;-webkit-appearance:none;"
+          oninput="window._prepSearchQuery=this.value;renderM();">
+      </div>
       <div id="grid" class="grid grid-cols-1 gap-2"></div>
       <div id="feed" class="hidden -mx-3 h-[calc(100vh-170px)] overflow-y-auto snap-y snap-mandatory bg-[#f5f7fb]"></div>
       </div>
@@ -372,12 +577,12 @@ function pinDel(){if(typeof window._pinDel==='function')window._pinDel();}
         <!-- Hidden file input — punta a rullino/foto iPhone -->
         <input id="chatImgInput" type="file" accept="image/*" style="display:none;" onchange="onChatImgSelected(this)">
         <!-- Bottone foto -->
-        <button type="button" onclick="document.getElementById('chatImgInput').click()" style="width:40px;height:40px;border-radius:50%;background:rgba(241,245,249,0.9);border:0.5px solid rgba(148,163,184,0.3);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;">
+        <button id="chatCameraBtn" type="button" onclick="document.getElementById('chatImgInput').click()" style="width:40px;height:40px;border-radius:50%;background:rgba(241,245,249,0.9);border:0.5px solid rgba(148,163,184,0.3);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><circle cx="12" cy="14" r="3"/><path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
         </button>
-        <input id="txt" autocomplete="off"
-          style="flex:1;padding:11px 16px;background:rgba(241,245,249,0.8);backdrop-filter:blur(10px);border:0.5px solid rgba(255,255,255,0.8);border-radius:24px;font-size:14px;color:#1e293b;outline:none;box-shadow:inset 0 1px 3px rgba(0,0,0,0.05);"
-          placeholder="Scrivi un messaggio...">
+        <textarea id="txt" autocomplete="off" rows="1"
+          style="flex:1;padding:11px 16px;background:rgba(241,245,249,0.8);backdrop-filter:blur(10px);border:0.5px solid rgba(255,255,255,0.8);border-radius:20px;font-size:14px;color:#1e293b;outline:none;box-shadow:inset 0 1px 3px rgba(0,0,0,0.05);resize:none;overflow-y:hidden;max-height:120px;line-height:1.4;font-family:inherit;"
+          placeholder="Scrivi un messaggio..."></textarea>
         <button type="submit" style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#0369a1,#0284c7);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;box-shadow:0 4px 12px rgba(3,105,161,0.35);">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
         </button>
@@ -477,10 +682,11 @@ function pinDel(){if(typeof window._pinDel==='function')window._pinDel();}
         <div style="font-size:18px;font-weight:700;color:#1e3a5f;">Schedule</div>
         <button onclick="syncSevenShift()" id="schedSyncBtn" style="font-size:12px;background:#1e3a5f;color:white;border:none;border-radius:20px;padding:6px 14px;cursor:pointer;">Sincronizza</button>
       </div>
-      <!-- Toggle Oggi / Settimana -->
-      <div style="display:flex;gap:8px;margin-bottom:16px;">
-        <button id="schedBtnOggi" onclick="schedShowView('oggi')" style="flex:1;padding:8px;border-radius:12px;border:none;background:#1e3a5f;color:white;font-size:13px;font-weight:600;cursor:pointer;">Oggi</button>
-        <button id="schedBtnSettimana" onclick="schedShowView('settimana')" style="flex:1;padding:8px;border-radius:12px;border:1.5px solid #1e3a5f;background:white;color:#1e3a5f;font-size:13px;font-weight:600;cursor:pointer;">Settimana</button>
+      <!-- Toggle Oggi / Settimana / Genera -->
+      <div style="display:flex;gap:6px;margin-bottom:16px;">
+        <button id="schedBtnOggi" onclick="schedShowView('oggi')" style="flex:1;padding:8px;border-radius:12px;border:none;background:#1e3a5f;color:white;font-size:12px;font-weight:600;cursor:pointer;">Oggi</button>
+        <button id="schedBtnSettimana" onclick="schedShowView('settimana')" style="flex:1;padding:8px;border-radius:12px;border:1.5px solid #1e3a5f;background:white;color:#1e3a5f;font-size:12px;font-weight:600;cursor:pointer;">Settimana</button>
+        <button id="schedBtnGenera" onclick="schedShowView('genera')" style="display:none;flex:1;padding:8px;border-radius:12px;border:1.5px solid #059669;background:white;color:#059669;font-size:12px;font-weight:700;cursor:pointer;">✦ Genera</button>
       </div>
       <div id="schedLastSync" style="font-size:11px;color:#94a3b8;margin-bottom:12px;text-align:right;"></div>
       <div id="schedContent" style="display:flex;flex-direction:column;gap:10px;">
@@ -561,6 +767,62 @@ function pinDel(){if(typeof window._pinDel==='function')window._pinDel();}
     </div>
   </nav>
 
+  <!-- Chef Hat Button — solo admin/pablo, Phase 1 -->
+  <div id="chefHatBtn" onclick="openSousChef()" style="display:none;position:fixed;bottom:88px;right:16px;z-index:55;width:52px;height:52px;border-radius:50%;cursor:pointer;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(30,58,95,0.18);transition:transform 0.15s ease;" onmouseenter="this.style.transform='scale(1.08)'" onmouseleave="this.style.transform='scale(1)'">
+    <svg id="chefHatSvg" width="44" height="52" viewBox="0 0 44 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <!-- tesa -->
+      <ellipse id="hatBrim" cx="22" cy="46" rx="22" ry="6"/>
+      <!-- corpo -->
+      <rect id="hatBody" x="5" y="26" width="34" height="22" rx="3"/>
+      <!-- cupola centrale -->
+      <ellipse id="hatDome" cx="22" cy="26" rx="17" ry="14"/>
+      <!-- lobi -->
+      <ellipse id="hatL1" cx="12" cy="20" rx="8" ry="11"/>
+      <ellipse id="hatL2" cx="22" cy="16" rx="8" ry="12"/>
+      <ellipse id="hatL3" cx="32" cy="20" rx="8" ry="11"/>
+    </svg>
+  </div>
+
+  <style>
+    /* Chef Hat — colori di stato */
+    #chefHatBtn.hat-idle  { background:#f5f5f5; border:1.5px solid #ccc; }
+    #chefHatBtn.hat-ok    { background:#E1F5EE; border:1.5px solid #1D9E75; }
+    #chefHatBtn.hat-warn  { background:#FAEEDA; border:1.5px solid #BA7517; }
+    #chefHatBtn.hat-alert { background:#FCEBEB; border:1.5px solid #A32D2D; }
+
+    /* Tesa */
+    #chefHatBtn.hat-idle  #hatBrim { fill:#e0e0e0; stroke:#ccc; stroke-width:1; }
+    #chefHatBtn.hat-ok    #hatBrim { fill:#1D9E75; stroke:#0F6E56; stroke-width:1; }
+    #chefHatBtn.hat-warn  #hatBrim { fill:#BA7517; stroke:#854F0B; stroke-width:1; }
+    #chefHatBtn.hat-alert #hatBrim { fill:#A32D2D; stroke:#791F1F; stroke-width:1; }
+
+    /* Corpo + cupola + lobi */
+    #chefHatBtn.hat-idle  #hatBody,
+    #chefHatBtn.hat-idle  #hatDome,
+    #chefHatBtn.hat-idle  #hatL1,
+    #chefHatBtn.hat-idle  #hatL2,
+    #chefHatBtn.hat-idle  #hatL3 { fill:#f5f5f5; stroke:#ddd; stroke-width:1; }
+
+    #chefHatBtn.hat-ok    #hatBody,
+    #chefHatBtn.hat-ok    #hatDome,
+    #chefHatBtn.hat-ok    #hatL1,
+    #chefHatBtn.hat-ok    #hatL2,
+    #chefHatBtn.hat-ok    #hatL3 { fill:#5DCAA5; stroke:#0F6E56; stroke-width:1; }
+
+    #chefHatBtn.hat-warn  #hatBody,
+    #chefHatBtn.hat-warn  #hatDome,
+    #chefHatBtn.hat-warn  #hatL1,
+    #chefHatBtn.hat-warn  #hatL2,
+    #chefHatBtn.hat-warn  #hatL3 { fill:#EF9F27; stroke:#854F0B; stroke-width:1; }
+
+    #chefHatBtn.hat-alert #hatBody,
+    #chefHatBtn.hat-alert #hatDome,
+    #chefHatBtn.hat-alert #hatL1,
+    #chefHatBtn.hat-alert #hatL2,
+    #chefHatBtn.hat-alert #hatL3 { fill:#E24B4A; stroke:#791F1F; stroke-width:1; }
+  </style>
+
+
   <!-- ADMIN MENU TENDINA -->
   <div id="adminMenuSheet" class="fixed inset-0 z-[60] hidden" style="background:rgba(15,23,42,0.4);touch-action:none;">
     <div id="adminMenuContent" style="position:absolute;bottom:0;left:0;right:0;max-width:448px;margin:0 auto;background:linear-gradient(160deg,#f0f6ff 0%,#f8faff 100%);border-radius:28px 28px 0 0;padding:16px 14px 32px;box-shadow:0 -8px 40px rgba(30,58,95,0.15);will-change:transform;">
@@ -572,7 +834,7 @@ function pinDel(){if(typeof window._pinDel==='function')window._pinDel();}
           <span>Prep</span>
         </button>
 
-        <button onclick="hideAdminMenu();openClosingAdmin()" class="amenu-btn">
+        <button onclick="hideAdminMenu();document.querySelector('[data-t=s]').click()" class="amenu-btn">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="1.8" stroke-linecap="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><path d="m9 14 2 2 4-4"/></svg>
           <span>Closing</span>
         </button>
@@ -653,6 +915,21 @@ function pinDel(){if(typeof window._pinDel==='function')window._pinDel();}
           <span style="color:#059669;font-weight:700;">Staff</span>
         </button>
 
+        <button onclick="openClosedDates()" class="amenu-btn" style="border:1.5px solid #fce7f3;background:#fdf2f8;">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#db2777" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="12" y1="14" x2="12" y2="18"/><line x1="10" y1="16" x2="14" y2="16"/></svg>
+          <span style="color:#db2777;font-weight:700;">Closed</span>
+        </button>
+
+        <button onclick="openBotDebug()" class="amenu-btn" style="border:1.5px solid #e0e7ff;background:#eef2ff;">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4f46e5" stroke-width="1.8" stroke-linecap="round"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2v-4M9 21H5a2 2 0 0 1-2-2v-4m0 0h18"/></svg>
+          <span style="color:#4f46e5;font-weight:700;">Bot Debug</span>
+        </button>
+
+        <button onclick="hideAdminMenu();openMappingControlRoom()" class="amenu-btn" style="border:1.5px solid #d1fae5;background:#ecfdf5;">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="1.8" stroke-linecap="round"><path d="M3 3h7v7H3zM14 3h7v7h-7zM14 14h7v7h-7zM3 14h7v7H3z"/></svg>
+          <span style="color:#059669;font-weight:700;">Mapping</span>
+        </button>
+
         <!-- Logout — rosso, in fondo -->
         <button onclick="hideAdminMenu();user=null;location.reload()" class="amenu-btn amenu-logout">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="1.8" stroke-linecap="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
@@ -704,6 +981,7 @@ function pinDel(){if(typeof window._pinDel==='function')window._pinDel();}
 <script src="js/admin-chef-ai.js"></script>
 <script src="js/prep.js"></script>
 <script src="js/closing.js"></script>
+<script src="js/recipe-modal.js"></script>
 <script src="js/recipes.js"></script>
 <script src="js/chat.js"></script>
 <script src="js/presence.js"></script>
@@ -721,10 +999,27 @@ function pinDel(){if(typeof window._pinDel==='function')window._pinDel();}
 <script src="js/focus-mode.js"></script>
 <script src="js/calendar.js"></script>
 <script src="js/office.js"></script>
+<script src="js/mapping-control-room.js"></script>
 <script src="js/demo-bot.js"></script>
+<script src="js/workspace.js"></script>
 <script src="js/schedule.js"></script>
 <script src="js/staff-manager.js"></script>
 <script>if('serviceWorker'in navigator){navigator.serviceWorker.register('./sw.js')}</script>
+<script>
+// ── WORKSPACE LAB AUTO-ACTIVATE ─────────────────────────────────────────────
+// This is the workspace lab deployment at https://1cos.github.io/brigade-dev/
+// Workspace mode is ON by default here.
+// Kitchen staff never see this URL — they use https://1cos.github.io/back-of-house/
+// To disable workspace: wsDeactivate() in console. To re-enable: wsActivate()
+(function() {
+  try {
+    if (localStorage.getItem('bohWorkspace') !== '1') {
+      localStorage.setItem('bohWorkspace', '1');
+    }
+  } catch(e) {}
+  console.log('[brigade-dev] WORKSPACE LAB — workspace auto-enabled. wsDeactivate() to turn off.');
+})();
+</script>
 <script>
 // App version — single source of truth: CACHE_NAME in sw.js (boh-vNN).
 // Bumped on every deploy; label and title update automatically.
@@ -738,7 +1033,7 @@ fetch('sw.js?nocache=' + Date.now())
     if (el) el.textContent = v;
     const elPin = document.getElementById('appVersionPin');
     if (elPin) elPin.textContent = v;
-    document.title = 'Brigade — ' + v;
+    document.title = '⚗️ Brigade Lab — ' + v;
   })
   .catch(() => {});
 </script>
@@ -770,7 +1065,12 @@ function updateTVButtonState(active) {
   }
 }
 </script>
+<div id="workspace-root" aria-modal="true" role="dialog" aria-label="Workspace"></div>
 </html>
+
+
+
+
 
 
 
