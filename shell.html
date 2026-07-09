@@ -537,6 +537,17 @@ input,select,textarea{font-family:inherit}
 
 /* ════ BOTS ═══════════════════════════════════════════════════════════════ */
 .pipelist{display:flex;flex-direction:column;gap:8px}
+/* ── Page placeholder (Sales, future pages not yet implemented) ── */
+.pg-placeholder{display:flex;flex-direction:column;align-items:center;
+  justify-content:center;padding:52px 24px 60px;text-align:center;gap:10px}
+.pgp-ico{font-size:48px;line-height:1;margin-bottom:4px}
+.pgp-title{font-size:22px;font-weight:800;color:var(--tx1);letter-spacing:-.02em}
+.pgp-sub{font-size:13px;color:var(--tx2);margin-bottom:4px}
+.pgp-chips{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:4px 0 12px}
+.pgp-chip{font-size:11px;font-weight:600;padding:4px 10px;border-radius:999px;
+  background:var(--bg2);border:1px solid var(--bd);color:var(--tx2)}
+.pgp-note{font-size:12px;color:var(--tx3,var(--tx2));max-width:280px;
+  line-height:1.55;opacity:.75}
 .pitem{display:flex;align-items:center;gap:12px;
   padding:12px 16px;background:var(--surf-r);
   border:1px solid var(--bd);border-radius:var(--r2)}
@@ -892,6 +903,10 @@ it:{
   um_online:'Online adesso',
   srch_placeholder:'Cerca...',  srch_open:'Apri',  srch_noResults:'Nessun risultato per "{q}"',
   tp:'Vendite',
+  tpsub:'Dashboard vendite · POS · food cost · labor',
+  tpsales:'Vendite per categoria',  tpmod:'Modifier & depletion',
+  tplabor:'Labor cost',             tpfood:'Food cost %',
+  tpnote:'Connessione TouchBistro in arrivo. I dati reali appariranno qui.',
   yct:'Sì Chef! ✅', ycclose:'Chiudi',
 },
 en:{
@@ -950,6 +965,10 @@ en:{
   um_online:'Online now',
   srch_placeholder:'Search...',  srch_open:'Open',  srch_noResults:'No results for "{q}"',
   tp:'Sales',
+  tpsub:'Sales dashboard · POS · food cost · labor',
+  tpsales:'Sales by category',      tpmod:'Modifier & depletion',
+  tplabor:'Labor cost',             tpfood:'Food cost %',
+  tpnote:'TouchBistro connection coming soon. Real data will appear here.',
   yct:'Yes Chef! ✅', ycclose:'Close',
 },
 es:{
@@ -1008,6 +1027,10 @@ es:{
   um_online:'En línea ahora',
   srch_placeholder:'Buscar...',  srch_open:'Abrir',  srch_noResults:'Sin resultados para "{q}"',
   tp:'Ventas',
+  tpsub:'Dashboard ventas · POS · food cost · labor',
+  tpsales:'Ventas por categoría',   tpmod:'Modificadores & depletion',
+  tplabor:'Costo laboral',          tpfood:'Food cost %',
+  tpnote:'Conexión TouchBistro próximamente. Los datos reales aparecerán aquí.',
   yct:'¡Sí Chef! ✅', ycclose:'Cerrar',
 }
 };
@@ -1114,6 +1137,7 @@ function _tabTitle(type, p){
   if(type==='daily_journal') return t('tj_short');
   if(type==='recipe')        return t('tr',{n:p.name||''});
   if(type==='inventory')     return t('ti',{n:p.name||''});
+  if(type==='pos')           return t('tp');
   return type;
 }
 
@@ -1296,6 +1320,23 @@ function homeAfterRender(){
       openTab(type, p);
     });
   });
+}
+
+/* SALES / POS */
+function pageSales(){
+  return '<div class="pg-placeholder">'
+    +'<div class="pgp-ico">📊</div>'
+    +'<div class="pgp-title">'+t('tp')+'</div>'
+    +'<div class="pgp-sub">'+t('tpsub')+'</div>'
+    +'<div class="pgp-chips">'
+    +'<span class="pgp-chip">POS · TouchBistro</span>'
+    +'<span class="pgp-chip">'+t('tpsales')+'</span>'
+    +'<span class="pgp-chip">'+t('tpmod')+'</span>'
+    +'<span class="pgp-chip">'+t('tplabor')+'</span>'
+    +'<span class="pgp-chip">'+t('tpfood')+'</span>'
+    +'</div>'
+    +'<div class="pgp-note">'+t('tpnote')+'</div>'
+    +'</div>';
 }
 
 /* BOTS */
@@ -1651,7 +1692,8 @@ var PAGES={
   bot_center:   {render:pageBots,      after:null},
   recipe:       {render:pageRecipe,    after:null},
   inventory:    {render:pageInventory, after:null},
-  daily_journal:{render:pageJournal,   after:journalAfterRender, rerender:true}
+  daily_journal:{render:pageJournal,   after:journalAfterRender, rerender:true},
+  pos:          {render:pageSales,     after:null}
 };
 
 /* ══ SHELL RENDERERS ══════════════════════════════════════════════════════ */
@@ -1865,7 +1907,8 @@ function caiContext(){
     bot_center:    t('cai_ctx_bots'),
     recipe:        t('cai_ctx_recipe') + (tab.params&&tab.params.name?' — '+tab.params.name:''),
     inventory:     t('cai_ctx_inv')    + (tab.params&&tab.params.name?' — '+tab.params.name:''),
-    daily_journal: t('cai_ctx_journal')
+    daily_journal: t('cai_ctx_journal'),
+    pos:           t('tp')+' · '+t('tpsub')
   };
   return ctx[tab.type] || tab.title;
 }
@@ -2004,7 +2047,7 @@ function validatePage(type){
   /* This is a lightweight heuristic, not exhaustive */
 
   /* 2. Check caiContext covers this page type */
-  var knownCtx=['home','bot_center','recipe','inventory','daily_journal'];
+  var knownCtx=['home','bot_center','recipe','inventory','daily_journal','pos'];
   if(type && knownCtx.indexOf(type)<0){
     issues.push('⚠️  Page type "'+type+'" not registered in caiContext() — add it');
   }
