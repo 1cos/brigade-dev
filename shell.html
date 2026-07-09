@@ -1,0 +1,2214 @@
+<!-- ── NEW SHELL LAB BANNER ── -->
+<div id="shell-lab-banner" style="position:fixed;top:0;left:0;right:0;z-index:99999;background:linear-gradient(90deg,#0f766e,#0891b2);color:white;font-size:11px;font-weight:800;letter-spacing:0.09em;text-transform:uppercase;text-align:center;padding:5px 16px;font-family:-apple-system,BlinkMacSystemFont,sans-serif;user-select:none;box-shadow:0 1px 6px rgba(8,145,178,0.4);">
+  🎨 NEW SHELL LAB &nbsp;·&nbsp; brigade-dev/shell.html &nbsp;·&nbsp; Not for kitchen use
+</div>
+<style>
+/* push shell content below banner */
+#shell-lab-banner ~ * { margin-top: 0; }
+body { padding-top: 26px; }
+</style>
+<script>
+// Shrink banner to corner pill after 10s
+setTimeout(function(){
+  var b=document.getElementById('shell-lab-banner');
+  if(!b)return;
+  b.style.cssText='position:fixed;top:6px;right:6px;left:auto;z-index:99999;background:#0891b2;color:white;font-size:9px;font-weight:800;letter-spacing:0.09em;text-transform:uppercase;border-radius:8px;padding:4px 9px;cursor:pointer;box-shadow:0 2px 6px rgba(8,145,178,0.5);';
+  b.textContent='🎨 SHELL LAB';
+  b.title='New Shell Lab — tap to dismiss';
+  b.onclick=function(){b.style.display='none';};
+},10000);
+</script>
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Brigade — New Shell Lab</title>
+<style>
+:root{
+  --bg:#eff6ff;--bg2:#dbeafe;--bg3:#e0f2fe;
+  --surf:#fff;--surf-g:rgba(255,255,255,.75);--surf-r:rgba(255,255,255,.95);
+  --tx:#1e3a5f;--tx2:#3b6ea8;--txm:#7a9cc4;--txi:#fff;
+  --b9:#1e3a5f;--b7:#1d4ed8;--b6:#2563eb;--b5:#3b82f6;--b4:#60a5fa;
+  --b2:#bfdbfe;--b1:#dbeafe;--b0:#eff6ff;
+  --ok:#16a34a;--ok-bg:#f0fdf4;--ok-bd:#bbf7d0;
+  --wn:#d97706;--wn-bg:#fffbeb;--wn-bd:#fde68a;
+  --er:#dc2626;--er-bg:#fef2f2;--er-bd:#fecaca;
+  --in:#2563eb;--in-bg:#eff6ff;--in-bd:#bfdbfe;
+  --bd:rgba(37,99,235,.11);--bd2:rgba(37,99,235,.22);--bd-tab:rgba(37,99,235,.14);
+  --sh0:0 1px 3px rgba(30,58,95,.06);
+  --sh1:0 2px 8px rgba(30,58,95,.09);
+  --sh2:0 6px 24px rgba(30,58,95,.12);
+  --sh3:0 14px 48px rgba(30,58,95,.17);
+  --shg:0 4px 24px rgba(30,58,95,.07),inset 0 1px 0 rgba(255,255,255,.8);
+  --r1:8px;--r2:14px;--r3:20px;--rp:999px;
+  --ff:-apple-system,BlinkMacSystemFont,'SF Pro Text','Helvetica Neue',Arial,sans-serif;
+  --fm:'SF Mono','Fira Code',monospace;
+  --th:56px;--tbh:46px
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:var(--ff);font-size:15px;color:var(--tx);
+  background:var(--bg);-webkit-font-smoothing:antialiased;overscroll-behavior:none}
+button{cursor:pointer;border:none;background:none;font-family:inherit;color:inherit}
+input,select,textarea{font-family:inherit}
+
+/* ── Shell ────────────────────────────────────────────────────────────────── */
+#app{display:flex;flex-direction:column;height:100dvh;overflow:hidden;
+  background:linear-gradient(148deg,var(--bg) 0%,var(--bg2) 58%,var(--bg3) 100%)}
+
+/* ── TOPBAR ─────────────────────────────────────────────────────────────── */
+#topbar{
+  flex-shrink:0;height:var(--th);
+  display:flex;align-items:center;gap:8px;padding:0 14px;
+  background:rgba(239,246,255,.85);
+  backdrop-filter:blur(28px) saturate(1.9);
+  -webkit-backdrop-filter:blur(28px) saturate(1.9);
+  border-bottom:1px solid var(--bd);box-shadow:var(--sh1);z-index:100
+}
+
+/* ── Brand ── */
+.t-brand{display:flex;align-items:center;gap:7px;flex-shrink:0}
+.t-mark{
+  width:30px;height:30px;border-radius:9px;
+  background:linear-gradient(135deg,var(--b6) 0%,var(--b4) 100%);
+  display:flex;align-items:center;justify-content:center;
+  font-size:16px;font-weight:800;color:#fff;
+  box-shadow:0 2px 8px rgba(37,99,235,.35);flex-shrink:0
+}
+.t-words{display:flex;flex-direction:column;line-height:1}
+.t-name{font-size:14px;font-weight:700;color:var(--b7);letter-spacing:-.03em}
+.t-sub{font-size:9px;font-weight:500;color:var(--txm);letter-spacing:.05em}
+
+/* ── Search ── */
+.t-search{
+  flex:1;
+  display:flex;align-items:center;gap:6px;
+  background:var(--surf-r);border:1px solid var(--bd);border-radius:var(--rp);
+  padding:6px 12px;color:var(--txm);font-size:13px;cursor:text;
+  transition:border-color .15s,box-shadow .15s,max-width .2s;
+  max-width:300px
+}
+.t-search:hover{border-color:var(--bd2);box-shadow:var(--sh0)}
+
+/* ── Right cluster ── */
+.t-right{display:flex;align-items:center;gap:6px;flex-shrink:0;margin-left:auto}
+
+/* ── Chef AI button ── */
+.chef-ai-btn{
+  display:flex;align-items:center;gap:6px;
+  background:linear-gradient(135deg,rgba(37,99,235,.11),rgba(96,165,250,.11));
+  border:1px solid rgba(37,99,235,.22);border-radius:var(--rp);
+  padding:5px 11px 5px 7px;cursor:pointer;
+  transition:all .15s;flex-shrink:0
+}
+.chef-ai-btn:hover{
+  background:linear-gradient(135deg,rgba(37,99,235,.2),rgba(96,165,250,.18));
+  border-color:var(--b5);box-shadow:0 0 0 3px rgba(37,99,235,.1)
+}
+.chef-ai-btn.active{
+  background:var(--b6);border-color:var(--b7);
+  box-shadow:0 2px 12px rgba(37,99,235,.35)
+}
+.chef-ai-btn.active .cai-label,.chef-ai-btn.active .cai-status{color:#fff}
+.cai-av{
+  width:24px;height:24px;border-radius:50%;
+  background:var(--b6);display:flex;align-items:center;justify-content:center;
+  font-size:13px;flex-shrink:0;border:1.5px solid rgba(255,255,255,.5)
+}
+.chef-ai-btn.active .cai-av{background:#fff;border-color:rgba(37,99,235,.3)}
+.cai-text{display:flex;flex-direction:column;line-height:1.1}
+.cai-label{font-size:12px;font-weight:700;color:var(--b7);letter-spacing:-.01em}
+.cai-status{font-size:10px;color:var(--txm)}
+
+/* ── Online pills (desktop) ── */
+.online-pills{display:flex;align-items:center;flex-shrink:0}
+.op-av{
+  width:26px;height:26px;border-radius:50%;
+  border:2px solid rgba(239,246,255,.95);
+  display:flex;align-items:center;justify-content:center;
+  font-size:10px;font-weight:700;color:#fff;
+  cursor:default;position:relative;transition:transform .12s;flex-shrink:0
+}
+.op-av:hover{transform:scale(1.15);z-index:10}
+.op-av+.op-av{margin-left:-6px}
+.op-tooltip{
+  position:absolute;bottom:calc(100% + 6px);left:50%;
+  transform:translateX(-50%);white-space:nowrap;
+  background:var(--b9);color:#fff;font-size:10px;font-weight:500;
+  padding:3px 8px;border-radius:var(--r1);
+  pointer-events:none;opacity:0;transition:opacity .15s;z-index:20
+}
+.op-av:hover .op-tooltip{opacity:1}
+
+/* Online count — compact badge, mobile only */
+.online-n{
+  display:none;/* shown on mobile via media query */
+  align-items:center;gap:3px;
+  font-size:11px;font-weight:600;color:var(--b6);
+  background:var(--b0);border:1px solid var(--b2);
+  border-radius:var(--r-pill);padding:3px 8px;cursor:default;flex-shrink:0
+}
+
+/* ── Demo badge — desktop only ── */
+.demo-tag{
+  font-size:9px;font-weight:800;letter-spacing:.1em;
+  color:var(--wn);background:var(--wn-bg);
+  border:1px solid var(--wn-bd);border-radius:var(--rp);
+  padding:2px 8px;flex-shrink:0
+}
+
+/* ── User menu button ── */
+.usr-wrap{position:relative}
+.usr-btn{
+  display:flex;align-items:center;gap:6px;
+  background:var(--b0);border:1px solid var(--b2);border-radius:var(--rp);
+  padding:4px 9px 4px 5px;cursor:pointer;transition:all .13s
+}
+.usr-btn:hover{background:var(--b1);border-color:var(--b4)}
+.usr-av{
+  width:26px;height:26px;border-radius:50%;
+  background:var(--b6);color:#fff;
+  font-size:10px;font-weight:800;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0
+}
+.usr-name{font-size:12px;font-weight:600;color:var(--b7)}
+.usr-arr{font-size:10px;color:var(--txm);margin-left:1px;transition:transform .13s}
+.usr-wrap.open .usr-arr{transform:rotate(180deg)}
+
+/* ── User dropdown ── */
+.usr-menu{
+  position:absolute;top:calc(100% + 6px);right:0;
+  background:var(--surf);border:1px solid var(--bd2);
+  border-radius:var(--r2);box-shadow:var(--sh3);
+  min-width:220px;z-index:300;
+  animation:pIn .18s cubic-bezier(.34,1.4,.64,1);overflow:hidden
+}
+.usr-menu.hi{display:none}
+.um-section{padding:6px 0;border-bottom:1px solid var(--bd)}
+.um-section:last-child{border-bottom:none}
+.um-lbl{
+  font-size:10px;font-weight:700;color:var(--txm);
+  letter-spacing:.07em;text-transform:uppercase;padding:6px 14px 2px
+}
+.um-item{
+  display:flex;align-items:center;gap:9px;
+  padding:9px 14px;font-size:13px;color:var(--tx);
+  cursor:pointer;transition:background .1s;text-align:left;width:100%
+}
+.um-item:hover{background:var(--b0)}
+.um-item-ico{font-size:15px;width:18px;text-align:center;flex-shrink:0}
+.um-lang{display:flex;gap:4px;padding:8px 14px}
+.um-lbtn{
+  flex:1;font-size:12px;font-weight:600;padding:5px 8px;
+  border-radius:var(--r1);border:1px solid var(--bd);
+  color:var(--txm);text-align:center;cursor:pointer;transition:all .12s
+}
+.um-lbtn:hover{border-color:var(--b4);color:var(--b6)}
+.um-lbtn.on{background:var(--b6);color:#fff;border-color:var(--b6)}
+.um-role-sel{
+  margin:4px 14px 8px;width:calc(100% - 28px);
+  background:var(--bg);border:1px solid var(--bd2);border-radius:var(--r1);
+  padding:7px 10px;font-size:12px;color:var(--tx);outline:none
+}
+
+/* ── Chef AI Drawer ── */
+#cai-overlay{
+  position:fixed;inset:0;z-index:400;
+  pointer-events:none;display:flex;justify-content:flex-end
+}
+#cai-overlay.open{pointer-events:all}
+.cai-backdrop{
+  position:absolute;inset:0;
+  background:rgba(30,58,95,.18);
+  opacity:0;transition:opacity .22s;cursor:pointer
+}
+#cai-overlay.open .cai-backdrop{opacity:1}
+.cai-drawer{
+  position:relative;width:340px;max-width:90vw;height:100%;
+  background:rgba(248,252,255,.97);
+  backdrop-filter:blur(24px) saturate(1.6);
+  -webkit-backdrop-filter:blur(24px) saturate(1.6);
+  border-left:1px solid var(--bd2);
+  box-shadow:var(--sh3);
+  display:flex;flex-direction:column;
+  transform:translateX(100%);
+  transition:transform .26s cubic-bezier(.34,1.3,.64,1)
+}
+#cai-overlay.open .cai-drawer{transform:translateX(0)}
+.cai-head{
+  display:flex;align-items:center;gap:10px;
+  padding:16px 18px;border-bottom:1px solid var(--bd);flex-shrink:0
+}
+.cai-head-av{
+  width:36px;height:36px;border-radius:50%;
+  background:var(--b6);display:flex;align-items:center;justify-content:center;
+  font-size:18px;flex-shrink:0;box-shadow:0 2px 8px rgba(37,99,235,.3)
+}
+.cai-head-info{flex:1;min-width:0}
+.cai-head-name{font-size:15px;font-weight:700;color:var(--tx);margin-bottom:1px}
+.cai-head-ctx{
+  font-size:11px;color:var(--txm);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis
+}
+.cai-close{
+  width:28px;height:28px;border-radius:50%;
+  background:var(--bg2);color:var(--txm);font-size:12px;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;transition:all .12s;flex-shrink:0
+}
+.cai-close:hover{background:var(--er-bg);color:var(--er)}
+.cai-body{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px}
+.cai-status-card{
+  background:var(--surf-g);border:1px solid var(--b2);
+  border-radius:var(--r2);padding:13px 15px
+}
+.cai-st-row{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.cai-st-dot{
+  width:8px;height:8px;border-radius:50%;background:var(--ok);
+  box-shadow:0 0 0 3px rgba(22,163,74,.2);flex-shrink:0
+}
+.cai-st-lbl{font-size:13px;font-weight:600;color:var(--tx)}
+.cai-st-sub{font-size:12px;color:var(--txm);line-height:1.5}
+.cai-msg{display:flex;gap:8px;align-items:flex-start}
+.cai-msg-av{
+  width:26px;height:26px;border-radius:50%;
+  background:var(--b6);display:flex;align-items:center;justify-content:center;
+  font-size:13px;flex-shrink:0;margin-top:2px
+}
+.cai-bubble{
+  background:var(--surf);border:1px solid var(--bd);
+  border-radius:0 var(--r2) var(--r2) var(--r2);
+  padding:10px 13px;font-size:13px;color:var(--tx);
+  line-height:1.55;max-width:calc(100% - 38px)
+}
+.cai-msg.usr{flex-direction:row-reverse}
+.cai-msg.usr .cai-bubble{
+  background:var(--b6);color:#fff;
+  border-radius:var(--r2) 0 var(--r2) var(--r2);border-color:var(--b7)
+}
+.cai-foot{
+  padding:12px 14px;border-top:1px solid var(--bd);flex-shrink:0;
+  display:flex;gap:7px;align-items:flex-end
+}
+.cai-input{
+  flex:1;background:var(--bg);border:1px solid var(--bd2);
+  border-radius:var(--r2);padding:9px 11px;
+  font-size:13px;color:var(--tx);outline:none;resize:none;
+  max-height:100px;overflow-y:auto;
+  transition:border-color .13s,box-shadow .13s;font-family:var(--ff)
+}
+.cai-input:focus{border-color:var(--b5);box-shadow:0 0 0 3px rgba(59,130,246,.13)}
+.cai-send{
+  width:38px;height:38px;border-radius:var(--r2);
+  background:var(--b6);color:#fff;font-size:16px;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;transition:all .12s;flex-shrink:0
+}
+.cai-send:hover{background:var(--b7);transform:scale(1.05)}
+.cai-send:active{transform:scale(.97)}
+.cai-suggestions{display:flex;flex-wrap:wrap;gap:6px;margin-top:2px}
+.sug{
+  font-size:11px;padding:5px 11px;border-radius:var(--rp);
+  border:1px solid var(--b2);background:var(--b0);color:var(--b6);
+  cursor:pointer;transition:all .12s;font-weight:500
+}
+.sug:hover{background:var(--b1);border-color:var(--b4)}
+
+/* ══════════════════════════════════════════════════════════════
+   MOBILE OVERRIDES  ≤ 640px
+   Goal: [B] Brigade | Search | 🤖 | MZ
+   ══════════════════════════════════════════════════════════════ */
+@media(max-width:640px){
+  /* Topbar padding tighter */
+  #topbar{gap:6px;padding:0 10px}
+
+  /* Brand: hide word + subtitle, keep only B mark */
+  .t-sub{display:none}
+  .t-name{display:none}
+  .t-words{display:none}
+  .t-brand{gap:0}
+
+  /* Search: narrower pill, flex shrinks */
+  .t-search{max-width:none;flex:1;min-width:0;padding:6px 10px;font-size:12px}
+
+  /* Chef AI: icon-only — .cai-text already hidden by .cai-text CSS below */
+  .chef-ai-btn{padding:5px 7px}
+
+  /* Online: hide desktop pills, show compact badge */
+  .online-pills{display:none}
+  .online-n{display:flex}
+
+  /* Demo badge: hide on mobile (footer note is enough) */
+  .demo-tag{display:none}
+
+  /* User name: hide text on narrow screens, keep avatar */
+  .usr-name{display:none}
+  .usr-arr{display:none}
+  .usr-btn{padding:3px 3px}
+
+  /* CAI drawer: bottom sheet on mobile */
+  #cai-overlay{align-items:flex-end;justify-content:center}
+  .cai-drawer{
+    width:100%;max-width:100%;
+    /* 65% height — half-ish, feels like assistant not full page */
+    height:65dvh;
+    border-left:none;border-top:1px solid var(--bd2);
+    border-radius:var(--r3) var(--r3) 0 0;
+    transform:translateY(100%)
+  }
+  #cai-overlay.open .cai-drawer{transform:translateY(0)}
+}
+
+/* cai-text hidden on <640px: already in chef-ai-btn rule, make explicit */
+@media(max-width:640px){
+  .cai-text{display:none}
+}
+
+/* ══ Tablet 641-900px: show online pills, hide demo ══ */
+@media(min-width:641px) and (max-width:900px){
+  .demo-tag{display:none}
+  .t-sub{display:none}
+  .online-n{display:none}
+}
+
+/* ══ Desktop 901px+: full topbar ══ */
+@media(min-width:901px){
+  .online-n{display:none}   /* show pills instead */
+  .online-pills{display:flex}
+}
+
+/* ── END TOPBAR CSS ──────────────────────────────────────────── */
+/* ── TAB BAR ─────────────────────────────────────────────────────────────── */
+#tabbar{
+  flex-shrink:0;height:var(--tbh);
+  background:rgba(235,244,255,.72);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--bd);
+  overflow:hidden;position:relative
+}
+/* fade right edge so + button has clean space */
+#tabbar::after{
+  content:'';position:absolute;right:44px;top:0;bottom:0;
+  width:28px;background:linear-gradient(to right,transparent,rgba(235,244,255,.9));
+  pointer-events:none;z-index:1
+}
+.tb-inner{
+  display:flex;align-items:stretch;height:100%;
+  overflow-x:auto;overflow-y:hidden;
+  scrollbar-width:none;padding:0 4px;gap:2px
+}
+.tb-inner::-webkit-scrollbar{display:none}
+
+/* individual tab */
+.tab{
+  display:flex;align-items:center;gap:5px;
+  padding:0 11px;min-width:90px;max-width:195px;
+  height:100%;flex-shrink:0;
+  color:var(--tx2);font-size:13px;
+  cursor:pointer;user-select:none;
+  border-bottom:2px solid transparent;
+  border-radius:var(--r1) var(--r1) 0 0;
+  transition:background .13s,color .13s,border-color .13s;
+  position:relative
+}
+.tab:hover{background:rgba(255,255,255,.5);color:var(--tx)}
+
+/* ACTIVE TAB — more glass, stronger signal */
+.tab.on{
+  background:rgba(255,255,255,.96);
+  color:var(--b9);font-weight:600;
+  border-bottom-color:var(--b6);
+  box-shadow:
+    0 -2px 12px rgba(37,99,235,.08),
+    0 1px 0 0 rgba(255,255,255,.95),
+    inset 0 1px 0 rgba(255,255,255,1);
+  z-index:2
+}
+.tab-ico{font-size:14px;flex-shrink:0;opacity:.8}
+.tab.on .tab-ico{opacity:1}
+.tab-lbl{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0}
+.tab-x{
+  flex-shrink:0;width:18px;height:18px;
+  border-radius:50%;font-size:10px;
+  color:var(--txm);
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;transition:all .13s;margin-left:1px
+}
+.tab:hover .tab-x,.tab.on .tab-x{opacity:.65}
+.tab-x:hover{opacity:1!important;background:var(--er-bg);color:var(--er)}
+.tab-plus{
+  flex-shrink:0;width:42px;height:100%;
+  font-size:21px;font-weight:300;color:var(--txm);
+  display:flex;align-items:center;justify-content:center;
+  border-radius:var(--r1);
+  transition:all .13s;z-index:2;position:relative
+}
+.tab-plus:hover{color:var(--b6);background:rgba(255,255,255,.6)}
+
+/* ── WORKSPACE ────────────────────────────────────────────────────────────── */
+#workspace{
+  flex:1;overflow-y:auto;
+  padding:36px 28px 52px;
+  scroll-behavior:smooth;position:relative
+}
+@media(max-width:640px){#workspace{padding:20px 14px 40px}}
+.pi{width:100%;max-width:1100px;margin:0 auto}
+
+/* ── Shared ───────────────────────────────────────────────────────────────── */
+.ph{margin-bottom:28px}
+.ph-row{display:flex;align-items:center;justify-content:space-between;
+  gap:12px;flex-wrap:wrap;margin-bottom:4px}
+.ptitle{font-size:26px;font-weight:700;letter-spacing:-.025em;line-height:1.15}
+.psub{font-size:13px;color:var(--tx2);margin-top:4px}
+
+.sec{
+  background:var(--surf-g);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  border:1px solid var(--bd);border-radius:var(--r3);
+  padding:22px 24px;margin-bottom:14px;box-shadow:var(--shg)
+}
+.sec-h{font-size:11px;font-weight:700;color:var(--txm);
+  letter-spacing:.07em;text-transform:uppercase;margin-bottom:16px}
+
+.note{display:flex;align-items:center;gap:7px;
+  font-size:11px;color:var(--txm);padding:6px 0}
+.nd{width:5px;height:5px;border-radius:50%;background:var(--wn);flex-shrink:0}
+
+/* Badge */
+.bdg{display:inline-flex;align-items:center;font-size:11px;font-weight:600;
+  padding:3px 9px;border-radius:var(--rp);white-space:nowrap}
+.b-ok  {background:var(--ok-bg);color:var(--ok);border:1px solid var(--ok-bd)}
+.b-wn  {background:var(--wn-bg);color:var(--wn);border:1px solid var(--wn-bd)}
+.b-er  {background:var(--er-bg);color:var(--er);border:1px solid var(--er-bd)}
+.b-in  {background:var(--in-bg);color:var(--in);border:1px solid var(--in-bd)}
+
+/* Buttons */
+.btnp{background:var(--b6);color:#fff;font-size:13px;font-weight:600;
+  padding:9px 18px;border-radius:var(--r2);transition:all .12s;white-space:nowrap}
+.btnp:hover{background:var(--b7);transform:translateY(-1px);box-shadow:var(--sh2)}
+.btnp:active{transform:none;box-shadow:none}
+.btns{background:var(--surf-r);color:var(--tx2);font-size:13px;font-weight:500;
+  padding:9px 16px;border-radius:var(--r2);border:1px solid var(--bd);transition:all .12s}
+.btns:hover{background:var(--b1);color:var(--b6)}
+
+/* ════ HOME ═══════════════════════════════════════════════════════════════ */
+.greet{margin-bottom:40px}
+.greet-ey{font-size:11px;font-weight:600;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--txm);margin-bottom:9px}
+.greet-h{font-size:33px;font-weight:700;color:var(--b9);
+  letter-spacing:-.04em;line-height:1.12}
+.greet-s{font-size:15px;color:var(--tx2);margin-top:6px}
+
+.hgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:28px}
+@media(max-width:920px){.hgrid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:560px){.hgrid{grid-template-columns:1fr}}
+
+.hcard{
+  display:flex;flex-direction:column;
+  background:var(--surf-g);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  border:1px solid var(--bd);border-radius:var(--r3);
+  text-align:left;cursor:pointer;overflow:hidden;
+  box-shadow:var(--shg);
+  transition:transform .22s cubic-bezier(.34,1.3,.64,1),
+             box-shadow .22s,border-color .22s
+}
+.hcard:hover{transform:translateY(-3px);box-shadow:var(--sh3);border-color:var(--b4)}
+.hcard:active{transform:translateY(0);box-shadow:var(--sh1)}
+
+.hcard-top{padding:22px 22px 14px;display:flex;align-items:flex-start;justify-content:space-between}
+.hcard-ico{font-size:28px;width:52px;height:52px;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--b0);border:1px solid var(--b1);border-radius:var(--r2)}
+.hcard-arr{font-size:17px;color:var(--txm);transition:transform .15s,color .15s}
+.hcard:hover .hcard-arr{transform:translate(2px,-2px);color:var(--b5)}
+.hcard-body{padding:0 22px 18px;flex:1}
+.hcard-title{font-size:16px;font-weight:700;color:var(--tx);margin-bottom:5px}
+.hcard-desc{font-size:12px;color:var(--txm);line-height:1.58}
+.hcard-foot{
+  border-top:1px solid var(--bd);padding:9px 22px;
+  font-size:11px;font-weight:500;color:var(--txm);
+  display:flex;align-items:center;gap:6px;
+  background:rgba(239,246,255,.38)
+}
+.sdot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.s-ok{background:var(--ok)}.s-wn{background:var(--wn)}.s-in{background:var(--in)}
+
+/* ════ BOTS ═══════════════════════════════════════════════════════════════ */
+.pipelist{display:flex;flex-direction:column;gap:8px}
+.pitem{display:flex;align-items:center;gap:12px;
+  padding:12px 16px;background:var(--surf-r);
+  border:1px solid var(--bd);border-radius:var(--r2)}
+.pstep{width:26px;height:26px;border-radius:50%;
+  background:var(--b1);color:var(--b7);font-size:11px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.pbody{flex:1;min-width:0}
+.pname{display:block;font-size:13px;font-weight:500;
+  color:var(--tx);font-family:var(--fm);margin-bottom:1px}
+.pmeta{font-size:11px;color:var(--txm)}
+
+.obslist{display:flex;flex-direction:column;gap:8px}
+.obs{display:flex;align-items:flex-start;gap:10px;
+  padding:11px 14px;border-radius:var(--r2);
+  border:1px solid var(--bd);background:var(--surf-r);
+  font-size:13px;line-height:1.5}
+.obs-wn{border-color:var(--wn-bd);background:var(--wn-bg)}
+.obs-in{border-color:var(--in-bd);background:var(--in-bg)}
+
+/* ════ RECIPE ════════════════════════════════════════════════════════════ */
+.rlayout{display:grid;grid-template-columns:1fr 1.45fr;gap:16px}
+@media(max-width:740px){.rlayout{grid-template-columns:1fr}}
+
+.bom-hd{display:grid;grid-template-columns:1fr auto;gap:14px;
+  padding:0 2px 9px;border-bottom:1px solid var(--bd);margin-bottom:2px;
+  font-size:10px;font-weight:700;color:var(--txm);
+  text-transform:uppercase;letter-spacing:.06em}
+.brow{display:grid;grid-template-columns:1fr auto;gap:14px;
+  padding:8px 2px;border-bottom:1px solid var(--bd);align-items:center}
+.brow:last-child{border-bottom:none}
+.bitem{font-size:13px;color:var(--tx)}
+.bqty{font-size:12px;font-weight:600;font-family:var(--fm);color:var(--b6);white-space:nowrap}
+
+.slist{display:flex;flex-direction:column;gap:12px}
+.sitem{display:flex;align-items:flex-start;gap:12px;font-size:13px;line-height:1.58}
+.snum{width:24px;height:24px;border-radius:50%;
+  background:var(--b6);color:#fff;font-size:11px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+
+/* ════ INVENTORY ════════════════════════════════════════════════════════ */
+.istats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:14px}
+@media(max-width:560px){.istats{grid-template-columns:1fr 1fr}}
+.istat{background:var(--surf-g);backdrop-filter:blur(10px);
+  border:1px solid var(--bd);border-radius:var(--r2);
+  padding:16px 18px;box-shadow:var(--shg)}
+.ilbl{font-size:10px;color:var(--txm);text-transform:uppercase;
+  letter-spacing:.06em;margin-bottom:5px;display:block}
+.ival{font-size:20px;font-weight:700;color:var(--tx)}
+.v-ok{color:var(--ok)}.v-er{color:var(--er);font-size:13px!important}
+
+.mlist{display:flex;flex-direction:column;gap:6px}
+.mrow{display:grid;grid-template-columns:90px 62px 1fr;
+  align-items:center;gap:12px;
+  padding:10px 14px;background:var(--surf-r);
+  border:1px solid var(--bd);border-radius:var(--r2);font-size:13px}
+@media(max-width:480px){.mrow{grid-template-columns:70px 52px 1fr;gap:8px}}
+.md{font-size:11px;color:var(--txm);font-family:var(--fm)}
+.mq{font-weight:700;font-family:var(--fm)}
+.qp{color:var(--ok)}.qn{color:var(--er)}
+.mm{display:flex;flex-direction:column;gap:1px;min-width:0}
+.ms{font-weight:500;font-size:13px;color:var(--tx)}
+.mn{font-size:11px;color:var(--txm)}
+
+/* ════ JOURNAL ══════════════════════════════════════════════════════════ */
+.frow{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px}
+.chip{font-size:12px;font-weight:500;padding:5px 13px;
+  border-radius:var(--rp);border:1px solid var(--bd);
+  color:var(--tx2);background:var(--surf-r);cursor:pointer;transition:all .12s}
+.chip:hover{border-color:var(--b4);color:var(--b6)}
+.chip.on{background:var(--b6);color:#fff;border-color:var(--b6)}
+
+.jlist{display:flex;flex-direction:column;gap:10px;margin-bottom:16px}
+.jent{background:var(--surf-g);backdrop-filter:blur(10px);
+  border:1px solid var(--bd);border-radius:var(--r2);
+  padding:16px 20px;transition:box-shadow .13s}
+.jent:hover{box-shadow:var(--sh2)}
+.jent.sv-ok{border-left:3px solid var(--ok)}
+.jent.sv-wn{border-left:3px solid var(--wn)}
+.jmeta{display:flex;align-items:center;gap:5px;margin-bottom:6px;flex-wrap:wrap}
+.jcat{font-size:10px;font-weight:700;color:var(--tx2);letter-spacing:.06em}
+.jdot{font-size:9px;color:var(--txm)}
+.jtm{font-size:11px;color:var(--txm);font-family:var(--fm)}
+.jau{font-size:11px;color:var(--txm)}
+.jtit{font-size:15px;font-weight:600;color:var(--tx);margin-bottom:4px}
+.jbod{font-size:13px;color:var(--tx2);line-height:1.55}
+
+/* ════ MODAL ════════════════════════════════════════════════════════════ */
+.mbk{
+  position:absolute;inset:0;
+  background:rgba(30,58,95,.3);
+  backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);
+  display:flex;align-items:flex-end;justify-content:center;
+  z-index:200;min-height:240px
+}
+.mbk.hi{display:none}
+@media(min-width:600px){.mbk{align-items:center;padding:24px}}
+.msh{background:var(--surf);border-radius:var(--r3) var(--r3) 0 0;
+  width:100%;max-width:520px;box-shadow:var(--sh3);
+  animation:sUp .26s cubic-bezier(.34,1.45,.64,1)}
+@media(min-width:600px){.msh{border-radius:var(--r3);animation:pIn .22s cubic-bezier(.34,1.45,.64,1)}}
+@keyframes sUp{from{transform:translateY(56px);opacity:0}to{transform:none;opacity:1}}
+@keyframes pIn{from{transform:scale(.92);opacity:0}to{transform:none;opacity:1}}
+.mhd{display:flex;align-items:center;justify-content:space-between;
+  padding:18px 22px 14px;border-bottom:1px solid var(--bd)}
+.mt{font-size:16px;font-weight:600}
+.mx{width:28px;height:28px;border-radius:50%;
+  background:var(--bg2);color:var(--txm);font-size:12px;
+  display:flex;align-items:center;justify-content:center;transition:all .12s}
+.mx:hover{background:var(--er-bg);color:var(--er)}
+.mbody{padding:18px 22px;display:flex;flex-direction:column;gap:12px}
+.mfoot{display:flex;justify-content:flex-end;gap:8px;
+  padding:14px 22px 22px;border-top:1px solid var(--bd)}
+.flbl{font-size:11px;font-weight:700;color:var(--tx2);
+  text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:4px}
+.fin{width:100%;background:var(--bg);border:1px solid var(--bd2);
+  border-radius:var(--r1);padding:9px 12px;font-size:13px;color:var(--tx);
+  outline:none;transition:border-color .13s,box-shadow .13s}
+.fin:focus{border-color:var(--b5);box-shadow:0 0 0 3px rgba(59,130,246,.14)}
+.fta{resize:vertical;min-height:80px}
+
+/* ════ YES CHEF ═════════════════════════════════════════════════════════ */
+#ycs{
+  position:absolute;inset:0;
+  display:flex;align-items:center;justify-content:center;
+  z-index:300;pointer-events:none;opacity:0;transition:opacity .2s
+}
+#ycs.on{pointer-events:all;opacity:1}
+.yb{position:absolute;inset:0;background:rgba(30,58,95,.42);
+  backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px)}
+.yc{
+  position:relative;background:var(--surf);border-radius:var(--r3);
+  width:88%;max-width:360px;
+  padding:46px 36px 50px;text-align:center;box-shadow:var(--sh3);
+  transform:scale(.86) translateY(18px);
+  transition:transform .3s cubic-bezier(.34,1.5,.64,1)
+}
+#ycs.on .yc{transform:scale(1) translateY(0)}
+.yi{font-size:54px;margin-bottom:14px}
+.yh{font-size:25px;font-weight:700;color:var(--tx);margin-bottom:10px}
+.ym{font-size:14px;color:var(--tx2);margin-bottom:28px;line-height:1.55}
+
+/* ════ JOURNAL PAGE ══════════════════════════════════════════════════════ */
+.j-page{display:flex;flex-direction:column;gap:0}
+
+/* Day section headers */
+.j-day-hd{
+  display:flex;align-items:center;gap:12px;
+  padding:6px 0 10px;margin-top:4px
+}
+.j-day-lbl{
+  font-size:12px;font-weight:700;color:var(--txm);
+  text-transform:uppercase;letter-spacing:.07em;white-space:nowrap
+}
+.j-day-line{flex:1;height:1px;background:var(--bd)}
+
+/* Entry cards */
+.jent{
+  background:var(--surf-g);
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  border:1px solid var(--bd);border-radius:var(--r2);
+  padding:14px 18px;margin-bottom:10px;
+  transition:box-shadow .13s;cursor:default
+}
+.jent:hover{box-shadow:var(--sh2)}
+.jent.sv-ok{border-left:3px solid var(--ok)}
+.jent.sv-wn{border-left:3px solid var(--wn)}
+.jent.sv-er{border-left:3px solid var(--er)}
+.jmeta{display:flex;align-items:center;gap:6px;margin-bottom:6px;flex-wrap:wrap}
+.jtime{font-size:11px;color:var(--txm);font-family:var(--fm)}
+.jdot{font-size:9px;color:var(--bd2)}
+.jcat-pill{
+  font-size:10px;font-weight:700;letter-spacing:.05em;
+  padding:2px 8px;border-radius:var(--rp);
+  background:var(--b0);border:1px solid var(--b2);color:var(--b6)
+}
+.jvis{font-size:10px;color:var(--txm);background:rgba(37,99,235,.07);
+  padding:2px 7px;border-radius:var(--rp)}
+.jauth{font-size:11px;color:var(--txm);margin-left:auto}
+.jtit{font-size:14px;font-weight:600;color:var(--tx);margin-bottom:4px;line-height:1.3}
+.jbod{font-size:13px;color:var(--tx2);line-height:1.55}
+
+/* Inline add-entry form panel */
+.j-form-panel{
+  background:rgba(255,255,255,.97);
+  border:1px solid var(--b2);border-radius:var(--r2);
+  padding:20px 22px;margin-bottom:16px;
+  box-shadow:var(--sh2);
+  animation:slideDown .2s cubic-bezier(.34,1.3,.64,1)
+}
+@keyframes slideDown{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:none}}
+.j-form-title{font-size:14px;font-weight:700;color:var(--tx);margin-bottom:16px}
+.j-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:560px){.j-form-grid{grid-template-columns:1fr}}
+.j-form-row{display:flex;flex-direction:column;gap:4px}
+.j-form-row.full{grid-column:1/-1}
+.flbl2{font-size:11px;font-weight:600;color:var(--tx2);
+  letter-spacing:.04em;text-transform:uppercase}
+.fin2{background:var(--bg);border:1px solid var(--bd2);
+  border-radius:var(--r1);padding:8px 11px;
+  font-size:13px;color:var(--tx);outline:none;
+  transition:border-color .13s,box-shadow .13s;width:100%}
+.fin2:focus{border-color:var(--b5);box-shadow:0 0 0 3px rgba(59,130,246,.13)}
+.fta2{resize:vertical;min-height:72px}
+.j-form-foot{display:flex;justify-content:flex-end;gap:8px;margin-top:14px;
+  padding-top:12px;border-top:1px solid var(--bd)}
+
+/* Filter bar */
+.j-filter-bar{
+  display:flex;align-items:center;gap:6px;
+  flex-wrap:wrap;margin-bottom:16px
+}
+.j-filter-lbl{font-size:11px;font-weight:600;color:var(--txm);
+  text-transform:uppercase;letter-spacing:.05em;margin-right:2px}
+
+/* Header row */
+.j-hrow{
+  display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:10px;margin-bottom:6px
+}
+.j-date-str{font-size:13px;color:var(--tx2)}
+
+/* Empty state */
+.j-empty{
+  text-align:center;padding:52px 20px;color:var(--txm);
+  font-size:14px;border:1px dashed var(--bd2);
+  border-radius:var(--r2);margin-top:8px
+}
+.j-empty-ico{font-size:36px;margin-bottom:10px}
+
+
+/* ── SEARCH ──────────────────────────────────────────────────────────────── */
+/* Override static .t-search from topbar block with input-capable version */
+.t-search{position:relative}
+.t-search-ico{opacity:.5;font-size:14px;flex-shrink:0;color:var(--txm)}
+.t-search-input{
+  flex:1;border:none;outline:none;background:transparent;
+  font-size:13px;color:var(--tx);font-family:var(--ff);
+  min-width:0;padding:0
+}
+.t-search-input::placeholder{color:var(--txm)}
+.t-search-clear{
+  font-size:11px;color:var(--txm);cursor:pointer;
+  width:17px;height:17px;border-radius:50%;
+  background:var(--bg2);display:none;
+  align-items:center;justify-content:center;flex-shrink:0;
+  transition:all .12s
+}
+.t-search-clear:hover{background:var(--er-bg);color:var(--er)}
+.t-search-clear.vis{display:flex}
+.t-search.focused{
+  border-color:var(--b5);
+  box-shadow:0 0 0 3px rgba(59,130,246,.12);
+  max-width:360px
+}
+/* Dropdown */
+.search-drop{
+  position:absolute;top:calc(100% + 7px);left:0;right:0;
+  background:var(--surf);border:1px solid var(--bd2);
+  border-radius:var(--r2);box-shadow:var(--sh3);
+  z-index:500;overflow:hidden;
+  animation:pIn .15s cubic-bezier(.34,1.4,.64,1)
+}
+.search-drop.hi{display:none}
+.search-result{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 14px;cursor:pointer;transition:background .1s
+}
+.search-result:hover{background:var(--b0)}
+.search-result+.search-result{border-top:1px solid var(--bd)}
+.sr-ico{font-size:16px;width:22px;text-align:center;flex-shrink:0}
+.sr-body{flex:1;min-width:0}
+.sr-title{font-size:13px;font-weight:600;color:var(--tx)}
+.sr-sub{font-size:11px;color:var(--txm)}
+.sr-action{font-size:11px;color:var(--b6);font-weight:500;flex-shrink:0}
+.search-empty{
+  padding:16px 14px;font-size:13px;color:var(--txm);text-align:center
+}
+@media(max-width:640px){
+  .t-search{padding:6px 10px}
+  .t-search.focused{max-width:none}
+  .t-search-input{font-size:12px}
+}
+
+</style>
+</head>
+<body>
+<div id="app">
+  <header id="topbar"></header>
+  <nav id="tabbar" role="tablist"></nav>
+  <main id="workspace" role="main" tabindex="-1" style="position:relative"></main>
+</div>
+
+<script>
+/* ══ i18n ══════════════════════════════════════════════════════════════════ */
+const TR={
+it:{
+  search:'Cerca...', demo:'Prototipo — nessun dato reale',
+  eyebrow:'Zenos on the Square · Weatherford TX',
+  morning:'Buongiorno, {n}.', afternoon:'Buon pomeriggio, {n}.', evening:'Buonasera, {n}.',
+  today:'Cosa lavoriamo oggi?',
+  role:'Ruolo', lbl_ex:'Executive Chef', lbl_ld:'Sous Chef',
+  lbl_co:'Coordinatore', lbl_ck:'Cuoco', lbl_dc:'Dish Crew', lbl_vi:'Ospite',
+  th:'Home', tb:'Bot Center', tj:'Diario', tr:'Ricetta: {n}', ti:'Dispensa: {n}',
+  tnew:'Nuova pagina',
+  ch_bo:'Bot Center', cd_bo:'Pipeline POS · deduction log · avvisi sistema', cs_bo:'Pipeline OK · 5 bot · 02:13 CDT',
+  ch_jo:'Diario operativo', cd_jo:'Log condiviso · manutenzione · eventi servizio', cs_jo:'4 voci oggi',
+  ch_re:'Ricetta: Tiramisu', cd_re:'BOM · procedura Pastry · 10 porzioni', cs_re:'Ultima modifica: 08/07',
+  ch_in:'Dispensa: Caesar', cd_in:'Stock · carichi · modifier depletion 60gg', cs_in:'Stock: 2.4 kg · 312 uses/60gg',
+  bt:'Bot Center', bsub:'Pipeline POS — esecuzione sequenziale nightly',
+  bpipe:'Pipeline nightly · 2026-07-08', blast:'Ultima esecuzione', bobs:'Osservazioni',
+  bok:'OK', bwn:'Attenzione', ber:'Errore', bpd:'In attesa',
+  rbom:'Ingredienti (BOM)', rsteps:'Procedura', rsta:'Stazione: {n}', rbatch:'Batch da {n} pezzi',
+  rnote:'Dati demo — nessuna query DB in questo prototipo',
+  istock:'Stock attuale', iloaded:'Caricato oggi', ideduct:'Scaricato POS (60gg)',
+  imovs:'Movimenti recenti', inote:'Dati demo — nessuna query DB',
+  jtit:'Diario operativo', jsub:'Log condiviso — servizio, manutenzione, eventi',
+  jnew:'+ Nuova voce', jall:'Tutto', jtoday:'Oggi', jyest:'Ieri', jolder:'Più vecchi',
+  jempty:'Nessuna voce per questi filtri.', jempty_sub:'Prova a cambiare categoria o visibilità.',
+  /* categories — full list */
+  cservice:'Servizio', ckitchen:'Cucina', cfoh:'Sala', cmaint:'Manutenzione',
+  cequip:'Attrezzatura', cpurch:'Acquisto', cevent:'Evento', cstaff:'Staff',
+  cadmin:'Admin', cinci:'Incidente', ccater:'Catering',
+  /* legacy short keys kept for backward compat */
+  cmaint_s:'Manutenzione', ckitch:'Cucina', cstaff:'Staff', cpurch:'Acquisto',
+  /* visibility */
+  vAll:'Tutti', vKit:'Cucina', vMgr:'Manager', vExec:'Executive',
+  vOwn:'Proprietari', vFoh:'Sala', vAdm:'Admin',
+  /* form */
+  ft:'Cosa è successo?', fb:'Dettagli', fc:'Categoria', fv:'Visibile a',
+  fsave:'Salva voce', fcancel:'Annulla',
+  fadderr:'Inserisci un titolo.',
+  um_lang:'Lingua', um_role:'Ruolo', um_logout:'Esci',
+  tj_short:'Diario',
+  /* Chef AI */
+  cai_duty:'in servizio', online_n:'online',
+  cai_ctx_prefix:'Contesto: ', cai_ctx_home:'Home workspace',
+  cai_ctx_bots:'Bot Center — pipeline', cai_ctx_journal:'Diario operativo',
+  cai_ctx_recipe:'Ricetta', cai_ctx_inv:'Dispensa',
+  cai_greeting:'Ciao! Sono Chef AI. Come posso aiutarti?',
+  cai_placeholder:'Chiedi qualcosa...',
+  cai_thinking:'Chef AI sta pensando...',
+  cai_suggestions:'Pipeline di stanotte|Dimmi le deduzioni|Come va il Diario?|Mostrami la ricetta',
+  cai_r_bots:'La pipeline di stanotte è andata bene — 5 bot eseguiti, 1 warning su Spring Mix (g vs buste). Non è critico, ma vale la pena sistemarlo.',
+  cai_r_journal:'Nel diario di oggi ci sono 4 voci: dishwasher leak (Tela sta gestendo), balsamic batch fatto da Colton, delivery Hardie\'s, Preston fuori per malattia.',
+  cai_r_recipe:'Tiramisu — batch da 10 pezzi. Mascarpone 500g, Savoiardi 400g, Tuorli 6 pz. Procedura in 7 step. Samantha l\'ha fatto stanotte.',
+  cai_r_inv:'Caesar Dressing — 2.4 kg in stock, acquistato pronto (no prep task). 23.1 kg scaricati in 60gg da modifier. Ultima consegna ieri da Hardie\'s.',
+  cai_r1:'Sto guardando i dati disponibili. In questo prototipo non ho accesso al DB reale — nella versione production leggo tutto da Supabase.',
+  cai_r2:'Nella workspace puoi spostarti tra le tab senza perdere contesto. Clicca una card dalla Home per aprire una nuova tab.',
+  cai_r3:'Il sistema è in modalità demo. Quando ti connetterai al DB reale, potrò rispondere con dati reali su ricette, stock, vendite e bot.',
+  cai_r4:'Puoi aprire più tab contemporaneamente — Bot Center, Diario, Ricetta — e passare dall\'una all\'altra. Lo scroll viene salvato per tab.',
+  /* User menu extra */
+  um_profile:'Profilo', um_notif:'Notifiche', um_quiet:'Quiet hours', um_pin:'Cambia PIN',
+  um_online:'Online adesso',
+  srch_placeholder:'Cerca...',  srch_open:'Apri',  srch_noResults:'Nessun risultato per "{q}"',
+  tp:'Vendite',
+  yct:'Sì Chef! ✅', ycclose:'Chiudi',
+},
+en:{
+  search:'Search...', demo:'Prototype — no real data',
+  eyebrow:'Zenos on the Square · Weatherford TX',
+  morning:'Good morning, {n}.', afternoon:'Good afternoon, {n}.', evening:'Good evening, {n}.',
+  today:'What are we working on today?',
+  role:'Role', lbl_ex:'Executive Chef', lbl_ld:'Sous Chef',
+  lbl_co:'Coordinator', lbl_ck:'Cook', lbl_dc:'Dish Crew', lbl_vi:'Viewer',
+  th:'Home', tb:'Bot Center', tj:'Journal', tr:'Recipe: {n}', ti:'Pantry: {n}',
+  tnew:'New page',
+  ch_bo:'Bot Center', cd_bo:'POS pipeline · deduction log · system alerts', cs_bo:'Pipeline OK · 5 bots · 02:13 CDT',
+  ch_jo:'Operations Journal', cd_jo:'Shared log · maintenance · service events', cs_jo:'4 entries today',
+  ch_re:'Recipe: Tiramisu', cd_re:'BOM · Pastry procedure · 10 servings', cs_re:'Last edited: 08/07',
+  ch_in:'Pantry: Caesar', cd_in:'Stock · loads · modifier depletion 60d', cs_in:'Stock: 2.4 kg · 312 uses/60d',
+  bt:'Bot Center', bsub:'POS Pipeline — sequential nightly execution',
+  bpipe:'Nightly pipeline · 2026-07-08', blast:'Last run', bobs:'Observations',
+  bok:'OK', bwn:'Warning', ber:'Error', bpd:'Pending',
+  rbom:'Ingredients (BOM)', rsteps:'Procedure', rsta:'Station: {n}', rbatch:'Batch of {n}',
+  rnote:'Demo data — no DB query in this prototype',
+  istock:'Current stock', iloaded:'Loaded today', ideduct:'POS deducted (60d)',
+  imovs:'Recent movements', inote:'Demo data — no DB query',
+  jtit:'Operations Journal', jsub:'Shared operational log — service, maintenance, events',
+  jnew:'+ New entry', jall:'All', jtoday:'Today', jyest:'Yesterday', jolder:'Earlier',
+  jempty:'No entries for these filters.', jempty_sub:'Try changing category or visibility.',
+  cservice:'Service', ckitchen:'Kitchen', cfoh:'FOH', cmaint:'Maintenance',
+  cequip:'Equipment', cpurch:'Purchase', cevent:'Event', cstaff:'Staff',
+  cadmin:'Admin', cinci:'Incident', ccater:'Catering',
+  cmaint_s:'Maintenance', ckitch:'Kitchen', cpurch:'Purchase',
+  vAll:'Everyone', vKit:'Kitchen', vMgr:'Managers', vExec:'Executive',
+  vOwn:'Owners', vFoh:'FOH', vAdm:'Admin',
+  ft:'What happened?', fb:'Details', fc:'Category', fv:'Visible to',
+  fsave:'Save entry', fcancel:'Cancel',
+  fadderr:'Please enter a title.',
+  um_lang:'Language', um_role:'Role', um_logout:'Log out',
+  tj_short:'Journal',
+  /* Chef AI */
+  cai_duty:'on duty', online_n:'online',
+  cai_ctx_prefix:'Context: ', cai_ctx_home:'Home workspace',
+  cai_ctx_bots:'Bot Center — pipeline', cai_ctx_journal:'Operations Journal',
+  cai_ctx_recipe:'Recipe', cai_ctx_inv:'Pantry',
+  cai_greeting:'Hey! I\'m Chef AI. How can I help?',
+  cai_placeholder:'Ask something...',
+  cai_thinking:'Chef AI is thinking...',
+  cai_suggestions:'Tonight\'s pipeline|Tell me deductions|How\'s the Journal?|Show me the recipe',
+  cai_r_bots:'Tonight\'s pipeline ran well — 5 bots, 1 warning on Spring Mix (g vs buste). Non-critical, worth fixing before next run.',
+  cai_r_journal:'Today\'s journal has 4 entries: dishwasher leak (Tela handling), Balsamic batch by Colton, Hardie\'s delivery, Preston called out sick.',
+  cai_r_recipe:'Tiramisu — batch of 10. Mascarpone 500g, Savoiardi 400g, Egg yolks 6 pz. 7-step procedure. Samantha made a batch last night.',
+  cai_r_inv:'Caesar Dressing — 2.4 kg in stock, purchased ready (no prep task). 23.1 kg deducted over 60d by modifier. Last delivery from Hardie\'s yesterday.',
+  cai_r1:'Looking at available data. In this prototype I don\'t have access to the real DB — in production I read from Supabase.',
+  cai_r2:'In the workspace you can switch between tabs without losing context. Click a Home card to open a new tab.',
+  cai_r3:'System is in demo mode. When connected to the real DB, I can answer with live data on recipes, stock, sales and bots.',
+  cai_r4:'You can keep multiple tabs open — Bot Center, Journal, Recipe — and switch between them. Scroll position is saved per tab.',
+  /* User menu extra */
+  um_profile:'Profile', um_notif:'Notifications', um_quiet:'Quiet hours', um_pin:'Change PIN',
+  um_online:'Online now',
+  srch_placeholder:'Search...',  srch_open:'Open',  srch_noResults:'No results for "{q}"',
+  tp:'Sales',
+  yct:'Yes Chef! ✅', ycclose:'Close',
+},
+es:{
+  search:'Buscar...', demo:'Prototipo — sin datos reales',
+  eyebrow:'Zenos on the Square · Weatherford TX',
+  morning:'Buenos días, {n}.', afternoon:'Buenas tardes, {n}.', evening:'Buenas noches, {n}.',
+  today:'¿En qué trabajamos hoy?',
+  role:'Rol', lbl_ex:'Chef Ejecutivo', lbl_ld:'Sous Chef',
+  lbl_co:'Coordinador', lbl_ck:'Cocinero', lbl_dc:'Equipo Platos', lbl_vi:'Visitante',
+  th:'Inicio', tb:'Centro Bot', tj:'Diario', tr:'Receta: {n}', ti:'Despensa: {n}',
+  tnew:'Nueva página',
+  ch_bo:'Centro Bot', cd_bo:'Pipeline POS · log deducciones · alertas sistema', cs_bo:'Pipeline OK · 5 bots · 02:13 CDT',
+  ch_jo:'Diario operativo', cd_jo:'Registro compartido · mantenimiento · eventos', cs_jo:'4 entradas hoy',
+  ch_re:'Receta: Tiramisu', cd_re:'BOM · procedimiento Pastelería · 10 porciones', cs_re:'Última edición: 08/07',
+  ch_in:'Despensa: Caesar', cd_in:'Stock · cargas · modifier depletion 60d', cs_in:'Stock: 2.4 kg · 312 usos/60d',
+  bt:'Centro Bot', bsub:'Pipeline POS — ejecución secuencial nocturna',
+  bpipe:'Pipeline nocturna · 2026-07-08', blast:'Última ejecución', bobs:'Observaciones',
+  bok:'OK', bwn:'Atención', ber:'Error', bpd:'Pendiente',
+  rbom:'Ingredientes (BOM)', rsteps:'Procedimiento', rsta:'Estación: {n}', rbatch:'Batch de {n} porciones',
+  rnote:'Datos demo — sin consulta DB en este prototipo',
+  istock:'Stock actual', iloaded:'Cargado hoy', ideduct:'Deducido POS (60d)',
+  imovs:'Movimientos recientes', inote:'Datos demo — sin consulta DB',
+  jtit:'Diario de Operaciones', jsub:'Registro operativo compartido — servicio, mantenimiento, eventos',
+  jnew:'+ Nueva entrada', jall:'Todo', jtoday:'Hoy', jyest:'Ayer', jolder:'Anteriores',
+  jempty:'Sin entradas para estos filtros.', jempty_sub:'Intenta cambiar categoría o visibilidad.',
+  cservice:'Servicio', ckitchen:'Cocina', cfoh:'Sala', cmaint:'Mantenimiento',
+  cequip:'Equipo', cpurch:'Compra', cevent:'Evento', cstaff:'Personal',
+  cadmin:'Admin', cinci:'Incidente', ccater:'Catering',
+  cmaint_s:'Mantenimiento', ckitch:'Cocina', cpurch:'Compra', cstaff:'Personal', cinci:'Incidente',
+  vAll:'Todos', vKit:'Cocina', vMgr:'Gerentes', vExec:'Ejecutivo',
+  vOwn:'Propietarios', vFoh:'Sala', vAdm:'Admin',
+  ft:'¿Qué pasó?', fb:'Detalles', fc:'Categoría', fv:'Visible para',
+  fsave:'Guardar entrada', fcancel:'Cancelar',
+  fadderr:'Por favor ingresa un título.',
+  um_lang:'Idioma', um_role:'Rol', um_logout:'Cerrar sesión',
+  tj_short:'Diario',
+  /* Chef AI */
+  cai_duty:'en servicio', online_n:'en línea',
+  cai_ctx_prefix:'Contexto: ', cai_ctx_home:'Inicio workspace',
+  cai_ctx_bots:'Centro Bot — pipeline', cai_ctx_journal:'Diario de operaciones',
+  cai_ctx_recipe:'Receta', cai_ctx_inv:'Despensa',
+  cai_greeting:'¡Hola! Soy Chef AI. ¿Cómo puedo ayudarte?',
+  cai_placeholder:'Pregunta algo...',
+  cai_thinking:'Chef AI está pensando...',
+  cai_suggestions:'Pipeline de esta noche|Dame las deducciones|¿Cómo va el Diario?|Muéstrame la receta',
+  cai_r_bots:'La pipeline de esta noche fue bien — 5 bots, 1 warning en Spring Mix (g vs buste). No crítico, pero vale la pena arreglarlo.',
+  cai_r_journal:'El diario de hoy tiene 4 entradas: fuga lavaplatos (Tela gestionando), batch Balsámico por Colton, entrega Hardie\'s, Preston enfermo.',
+  cai_r_recipe:'Tiramisu — batch de 10. Mascarpone 500g, Savoiardi 400g, Yemas 6 pz. Procedimiento en 7 pasos. Samantha hizo un batch anoche.',
+  cai_r_inv:'Caesar Dressing — 2.4 kg en stock, comprado listo (sin prep task). 23.1 kg deducidos en 60d por modifier. Última entrega ayer de Hardie\'s.',
+  cai_r1:'Revisando datos disponibles. En este prototipo no tengo acceso a la BD real — en producción leo de Supabase.',
+  cai_r2:'En el workspace puedes cambiar entre tabs sin perder contexto. Haz clic en una tarjeta del Inicio para abrir una nueva tab.',
+  cai_r3:'El sistema está en modo demo. Cuando se conecte a la BD real, podré responder con datos en vivo.',
+  cai_r4:'Puedes tener varias tabs abiertas — Centro Bot, Diario, Receta — y cambiar entre ellas. El scroll se guarda por tab.',
+  /* User menu extra */
+  um_profile:'Perfil', um_notif:'Notificaciones', um_quiet:'Horas silenciosas', um_pin:'Cambiar PIN',
+  um_online:'En línea ahora',
+  srch_placeholder:'Buscar...',  srch_open:'Abrir',  srch_noResults:'Sin resultados para "{q}"',
+  tp:'Ventas',
+  yct:'¡Sí Chef! ✅', ycclose:'Cerrar',
+}
+};
+
+/* lang stored in module-scope var + sessionStorage */
+let LANG = sessionStorage.getItem('ws_lang') || 'it';
+function setLang(l){ LANG=l; sessionStorage.setItem('ws_lang',l); renderAll(); }
+function t(k,p={}){
+  const s=(TR[LANG]||TR.it)[k]||(TR.it)[k]||k;
+  return s.replace(/\{(\w+)\}/g,(_,x)=>p[x]??'');
+}
+
+/* ══ PERMISSIONS ══════════════════════════════════════════════════════════ */
+const PERMS={
+  see_bots:['executive','lead'],
+  see_recipes:['executive','lead','coordinator','cook'],
+  see_inventory:['executive','lead','coordinator'],
+  see_journal:['executive','lead','coordinator','viewer'],
+  view_bom:['executive','lead'],
+  add_journal:['executive','lead','coordinator']
+};
+const ROLES=['executive','lead','coordinator','cook','dish_crew','viewer'];
+const RNAME={executive:'Max',lead:'David',coordinator:'Tela',cook:'Cole',dish_crew:'Austin',viewer:'Guest'};
+const RINIT={executive:'MZ',lead:'DV',coordinator:'TL',cook:'CL',dish_crew:'AU',viewer:'GU'};
+
+let ROLE = sessionStorage.getItem('ws_role') || 'executive';
+function setRole(r){ ROLE=r; sessionStorage.setItem('ws_role',r); renderAll(); }
+function can(p){ return (PERMS[p]||[]).includes(ROLE); }
+
+/* ══ TAB MANAGER ══════════════════════════════════════════════════════════ */
+/*
+  Singleton tabs (one per type): home, bot_center, daily_journal
+  Entity tabs (keyed by id):     recipe:X, inventory:X
+  Clicking a card that is already open → activates existing tab (no duplicate)
+*/
+let TABS=[], AID=null;
+
+function _tabKey(type, params){
+  if(type==='home')         return 'home';
+  if(type==='bot_center')   return 'bot_center';
+  if(type==='daily_journal') return 'daily_journal';
+  /* entity types: keyed by id or name */
+  return type + ':' + (params.id || params.name || '');
+}
+
+function openTab(type, params){
+  params = params || {};
+  const key = _tabKey(type, params);
+  const existing = TABS.find(function(x){ return _tabKey(x.type,x.params)===key; });
+  if(existing){
+    /* save current scroll before switching */
+    _saveScroll();
+    AID = existing.id;
+    _persist();
+    renderAll();
+    return existing.id;
+  }
+  /* evict oldest non-home if at limit */
+  if(TABS.length >= 10){
+    var old = TABS.find(function(x){ return x.type!=='home'; });
+    if(old) TABS.splice(TABS.indexOf(old),1);
+  }
+  _saveScroll();
+  var id = 't' + Date.now();
+  var title = _tabTitle(type, params);
+  TABS.push({id:id, type:type, title:title, params:params, scroll:0});
+  AID = id;
+  _persist();
+  renderAll();
+  return id;
+}
+
+function closeTab(id){
+  var i = TABS.findIndex(function(x){ return x.id===id; });
+  if(i<0) return;
+  if(AID===id){
+    var next = TABS[i+1] || TABS[i-1] || null;
+    AID = next ? next.id : null;
+  }
+  TABS.splice(i,1);
+  _persist();
+  renderAll();
+}
+
+function activateTab(id){
+  if(!TABS.find(function(x){ return x.id===id; })) return;
+  _saveScroll();
+  AID = id;
+  _persist();
+  renderAll();
+}
+
+function _saveScroll(){
+  var cur = TABS.find(function(x){ return x.id===AID; });
+  if(cur){
+    var ws = document.getElementById('workspace');
+    if(ws) cur.scroll = ws.scrollTop;
+  }
+}
+
+function _tabTitle(type, p){
+  if(type==='home')          return t('th');
+  if(type==='bot_center')    return t('tb');
+  if(type==='daily_journal') return t('tj_short');
+  if(type==='recipe')        return t('tr',{n:p.name||''});
+  if(type==='inventory')     return t('ti',{n:p.name||''});
+  return type;
+}
+
+function _persist(){
+  try{
+    sessionStorage.setItem('ws_tabs', JSON.stringify(TABS));
+    sessionStorage.setItem('ws_aid', AID||'');
+  }catch(e){}
+}
+
+function _restoreTabs(){
+  try{
+    var raw = sessionStorage.getItem('ws_tabs');
+    TABS = raw ? JSON.parse(raw) : [];
+    AID  = sessionStorage.getItem('ws_aid') || null;
+    if(AID && !TABS.find(function(x){ return x.id===AID; })){
+      AID = TABS.length ? TABS[0].id : null;
+    }
+  }catch(e){ TABS=[]; AID=null; }
+}
+
+/* ══ PAGE DATA ════════════════════════════════════════════════════════════ */
+var BOT_DATA=[
+  {name:'bot-pos-cleaner',        s:'ok',  time:'02:05 CDT', rows:247},
+  {name:'bot-direct-deduction',   s:'ok',  time:'02:07 CDT', rows:8},
+  {name:'bot-bom-chain-deduction',s:'ok',  time:'02:09 CDT', rows:3},
+  {name:'bot-modifier-depletion', s:'ok',  time:'02:11 CDT', rows:4},
+  {name:'bot-stock-consolidator', s:'warn',time:'02:13 CDT', rows:12}
+];
+var OBS_DATA=[
+  {tp:'wn', msg:'Spring Mix: unità g vs buste — consolidator skip (non critico).'},
+  {tp:'in', msg:'Parsley: prep_type=checklist → skip silenzioso da tutti i bot.'},
+  {tp:'in', msg:'Edible Flower: BOM inconsistency non-blocking — open.'}
+];
+var BOM=[
+  {i:'Savoiardi',q:'400g'},{i:'Mascarpone',q:'500g'},{i:'Tuorli',q:'6 pz'},
+  {i:'Heavy Cream',q:'300ml'},{i:'Zucchero',q:'120g'},{i:'Espresso',q:'300ml'},
+  {i:'Cacao in polvere',q:'30g'},{i:'Kahlúa',q:'60ml'}
+];
+var STEPS=[
+  'Monta i tuorli con lo zucchero fino a ottenere un composto chiaro e spumoso.',
+  'Incorpora il mascarpone ai tuorli montati — mescola delicatamente con la marisa.',
+  'Monta la panna semi-ferma e incorporala al composto in due riprese.',
+  "Inzuppa i savoiardi nell'espresso + Kahlúa per 2 secondi per lato.",
+  'Strati: crema / savoiardi / crema. Ripeti per 10 vaschette individuali.',
+  'Spolverizza cacao in polvere sulla superficie.',
+  'Riposa in frigo minimo 4 ore — ideale overnight.'
+];
+var MOVS=[
+  {d:'2026-07-08',q:'-74g', qc:'qn', src:'POS modifier drain', note:'4 Caesar salads'},
+  {d:'2026-07-07',q:'-296g',qc:'qn', src:'POS modifier drain', note:'16 uses'},
+  {d:'2026-07-06',q:'+2.4kg',qc:'qp',src:"Hardie's invoice",   note:'Lot #HI-44021'},
+  {d:'2026-07-05',q:'-370g',qc:'qn', src:'POS modifier drain', note:'20 uses'}
+];
+var CAT_ICO={service:'🍽️',maintenance:'🔧',kitchen:'👨‍🍳',staff:'👥',incident:'⚠️',purchase:'📦'};
+/* Journal entries — demo, no DB */
+/* date: 'today' | 'yesterday' | 'YYYY-MM-DD'; vis: visibility tag */
+/* sv: '' | 'ok' | 'wn' | 'er' */
+var J_TODAY    = '2026-07-09';
+var J_YESTERDAY= '2026-07-08';
+
+/* Role→ allowed categories map */
+var J_ROLE_CATS={
+  executive:   ['service','kitchen','foh','maintenance','equipment','purchase','event','staff','admin','incident','catering'],
+  lead:        ['service','kitchen','foh','maintenance','equipment','event','staff','incident'],
+  coordinator: ['service','kitchen','maintenance','equipment','purchase','event','staff'],
+  cook:        ['kitchen','equipment','incident'],
+  dish_crew:   ['kitchen','incident'],
+  viewer:      ['service','maintenance','equipment','event']
+};
+/* Role→ allowed visibility levels */
+var J_ROLE_VIS={
+  executive:   ['all','kitchen','managers','executive','owners','foh','admin'],
+  lead:        ['all','kitchen','managers','foh'],
+  coordinator: ['all','kitchen','managers'],
+  cook:        ['all','kitchen'],
+  dish_crew:   ['all','kitchen'],
+  viewer:      ['all','foh']
+};
+
+var JDATA=[
+  /* TODAY */
+  {id:10, date:'today',  time:'10:42 AM', cat:'maintenance', vis:'managers',
+   auth:'Tela',  sv:'wn',
+   title:'Dishwasher leaking again',
+   body:'Water pooling under unit. Called Zeno Appliance Service — tech arriving 2 PM. Invoice expected tomorrow.'},
+  {id:9,  date:'today',  time:'09:15 AM', cat:'kitchen',    vis:'kitchen',
+   auth:'Colton',sv:'ok',
+   title:'Balsamic batch made',
+   body:'2 LT produced. Moved to salad station cooler. Par until Friday.'},
+  {id:8,  date:'today',  time:'08:30 AM', cat:'purchase',   vis:'managers',
+   auth:'Tela',  sv:'',
+   title:"Hardie's delivery — invoice #HI-44023",
+   body:"Received: Caesar 4×2.4kg, Arugula 2 cs, Salmon 12 filets. All OK. Signed by Tela."},
+  {id:7,  date:'today',  time:'07:55 AM', cat:'staff',      vis:'managers',
+   auth:'David', sv:'',
+   title:'Preston called out — short tonight',
+   body:'Preston sick. Colton covering grill for dinner. Notified Max.'},
+  /* YESTERDAY */
+  {id:6,  date:'yesterday', time:'08:50 PM', cat:'incident',   vis:'managers',
+   auth:'David', sv:'er',
+   title:'Expo printer dropped tickets during rush',
+   body:'3 tickets lost around 7:40 PM. Server recovered manually. Printer restarted — OK after. Needs new ribbon.'},
+  {id:5,  date:'yesterday', time:'07:10 PM', cat:'service',    vis:'all',
+   auth:'David', sv:'ok',
+   title:'52 bills — July record',
+   body:'Full house from 6 PM. Brussels sold out at 9:15 PM. Tiramisu: 14 sold. Strong night.'},
+  {id:4,  date:'yesterday', time:'03:20 PM', cat:'equipment',  vis:'managers',
+   auth:'Tela',  sv:'wn',
+   title:'Reach-in cooler #2 running warm',
+   body:'Logged 42°F at 3 PM check (should be 36-38°F). Moved salmon to walk-in. Calling service tomorrow AM.'},
+  {id:3,  date:'yesterday', time:'09:00 AM', cat:'kitchen',    vis:'kitchen',
+   auth:'Samantha',sv:'ok',
+   title:'Tiramisu batch — 20 pz',
+   body:'Fresh batch for dinner service. 20 vaschette. Ready by 4 PM. Using Tuesday espresso.'},
+  /* 2 DAYS AGO */
+  {id:2,  date:'2026-07-07', time:'06:00 PM', cat:'event',     vis:'all',
+   auth:'Tela', sv:'ok',
+   title:'Private dining — Rossi party, 18 pax',
+   body:'Event confirmed for July 14. Menu: 4 course + wine pairing. Deposit received. Max to confirm specials by Monday.'},
+  {id:1,  date:'2026-07-07', time:'10:30 AM', cat:'maintenance',vis:'managers',
+   auth:'Tela', sv:'ok',
+   title:'Hood filter cleaned — Vendor CleanAir',
+   body:'Monthly service completed. Certificate filed. Next: August 7.'}
+];
+var J_FILTER_CAT = 'all';
+var J_FILTER_VIS = 'all';
+var J_SHOW_FORM  = false;
+
+/* ══ PAGE RENDERERS ═══════════════════════════════════════════════════════ */
+var ICO={home:'⌂',bot_center:'🤖',recipe:'📋',inventory:'📦',daily_journal:'📓'};
+
+function badge(s){
+  var m={ok:'b-ok',warn:'b-wn',error:'b-er',pending:'b-in'};
+  var lbl={ok:t('bok'),warn:t('bwn'),error:t('ber'),pending:t('bpd')};
+  return '<span class="bdg '+(m[s]||'b-in')+'">'+(lbl[s]||s)+'</span>';
+}
+
+/* HOME */
+function pageHome(){
+  var h=new Date().getHours();
+  var gk=h<12?'morning':h<18?'afternoon':'evening';
+  var n=RNAME[ROLE]||'Chef';
+  var cards=[
+    {key:'bo',type:'bot_center',   perm:'see_bots',      ico:'🤖', sd:'s-ok', p:{}},
+    {key:'jo',type:'daily_journal',perm:'see_journal',   ico:'📓', sd:'s-in', p:{}},
+    {key:'re',type:'recipe',       perm:'see_recipes',   ico:'📋', sd:'s-ok', p:{id:'tiramisu',name:'Tiramisu'}},
+    {key:'in',type:'inventory',    perm:'see_inventory', ico:'📦', sd:'s-in', p:{id:'caesar',name:'Caesar Dressing'}}
+  ].filter(function(c){ return can(c.perm); });
+
+  var cardHTML = cards.map(function(c){
+    /* Build onclick using data-tab + data-params on the element, wired in afterRender */
+    return '<button class="hcard" data-tabtype="'+c.type+'" data-params=\''+JSON.stringify(c.p)+'\'>'
+      +'<div class="hcard-top"><div class="hcard-ico">'+c.ico+'</div>'
+      +'<span class="hcard-arr">↗</span></div>'
+      +'<div class="hcard-body">'
+      +'<p class="hcard-title">'+t('ch_'+c.key)+'</p>'
+      +'<p class="hcard-desc">'+t('cd_'+c.key)+'</p>'
+      +'</div>'
+      +'<div class="hcard-foot"><span class="sdot '+c.sd+'"></span>'+t('cs_'+c.key)+'</div>'
+      +'</button>';
+  }).join('');
+
+  return '<div class="pi"><div class="greet">'
+    +'<p class="greet-ey">'+t('eyebrow')+'</p>'
+    +'<h1 class="greet-h">'+t(gk,{n:n})+'</h1>'
+    +'<p class="greet-s">'+t('today')+'</p>'
+    +'</div>'
+    +'<div class="hgrid">'+cardHTML+'</div>'
+    +'<p class="note"><span class="nd"></span>'+t('demo')+'</p>'
+    +'</div>';
+}
+
+function homeAfterRender(){
+  var ws=document.getElementById('workspace');
+  ws.querySelectorAll('.hcard').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var type  = btn.dataset.tabtype;
+      var p     = JSON.parse(btn.dataset.params||'{}');
+      openTab(type, p);
+    });
+  });
+}
+
+/* BOTS */
+function pageBots(){
+  var rows=BOT_DATA.map(function(b,i){
+    return '<div class="pitem">'
+      +'<div class="pstep">'+(i+1)+'</div>'
+      +'<div class="pbody">'
+      +'<span class="pname">'+b.name+'</span>'
+      +'<span class="pmeta">'+t('blast')+': '+b.time+' · '+b.rows+' rows</span>'
+      +'</div>'+badge(b.s)+'</div>';
+  }).join('');
+  var obs=OBS_DATA.map(function(o){
+    return '<div class="obs obs-'+o.tp+'">'
+      +(o.tp==='wn'?'⚠️':'ℹ️')
+      +' '+o.msg+'</div>';
+  }).join('');
+  return '<div class="pi"><div class="ph">'
+    +'<h2 class="ptitle">'+t('bt')+'</h2>'
+    +'<p class="psub">'+t('bsub')+'</p></div>'
+    +'<div class="sec"><p class="sec-h">'+t('bpipe')+'</p>'
+    +'<div class="pipelist">'+rows+'</div></div>'
+    +'<div class="sec"><p class="sec-h">'+t('bobs')+'</p>'
+    +'<div class="obslist">'+obs+'</div></div>'
+    +'<p class="note"><span class="nd"></span>'+t('demo')+'</p></div>';
+}
+
+/* RECIPE */
+function pageRecipe(){
+  var showBom=can('view_bom');
+  var bomHTML= showBom
+    ? '<div class="sec"><p class="sec-h">'+t('rbom')+'</p>'
+      +'<div class="bom-hd"><span>Ingrediente</span><span>Qtà</span></div>'
+      +BOM.map(function(r){ return '<div class="brow"><span class="bitem">'+r.i+'</span><span class="bqty">'+r.q+'</span></div>'; }).join('')
+      +'</div>'
+    : '<div class="sec"><p class="sec-h">'+t('rbom')+'</p>'
+      +'<p style="font-size:13px;color:var(--txm)">Non disponibile per questo ruolo.</p></div>';
+  var stepsHTML='<div class="sec"><p class="sec-h">'+t('rsteps')+'</p>'
+    +'<ol class="slist">'
+    +STEPS.map(function(s,i){ return '<li class="sitem"><span class="snum">'+(i+1)+'</span><span>'+s+'</span></li>'; }).join('')
+    +'</ol></div>';
+  return '<div class="pi"><div class="ph">'
+    +'<div class="ph-row">'
+    +'<h2 class="ptitle">Tiramisu</h2>'
+    +'<span class="bdg b-in">'+t('rsta',{n:'Pastry'})+'</span>'
+    +'</div><p class="psub">'+t('rbatch',{n:10})+'</p></div>'
+    +'<div class="rlayout">'+bomHTML+stepsHTML+'</div>'
+    +'<p class="note"><span class="nd"></span>'+t('rnote')+'</p></div>';
+}
+
+/* INVENTORY */
+function pageInventory(){
+  var rows=MOVS.map(function(m){
+    return '<div class="mrow">'
+      +'<span class="md">'+m.d+'</span>'
+      +'<span class="mq '+m.qc+'">'+m.q+'</span>'
+      +'<div class="mm"><span class="ms">'+m.src+'</span><span class="mn">'+m.note+'</span></div>'
+      +'</div>';
+  }).join('');
+  return '<div class="pi"><div class="ph">'
+    +'<h2 class="ptitle">Caesar Dressing</h2>'
+    +'<p class="psub">'+t('istock')+' · acquistato pronto</p></div>'
+    +'<div class="istats">'
+    +'<div class="istat"><span class="ilbl">'+t('istock')+'</span><span class="ival">2.4 kg</span></div>'
+    +'<div class="istat"><span class="ilbl">'+t('iloaded')+'</span><span class="ival v-ok" style="font-size:12px">— (no prep task)</span></div>'
+    +'<div class="istat"><span class="ilbl">'+t('ideduct')+'</span><span class="ival v-er">23.1 kg · 312 uses</span></div>'
+    +'</div>'
+    +'<div class="sec"><p class="sec-h">'+t('imovs')+'</p>'
+    +'<div class="mlist">'+rows+'</div></div>'
+    +'<p class="note"><span class="nd"></span>'+t('inote')+'</p></div>';
+}
+
+/* JOURNAL */
+/* Category metadata */
+var J_CAT_META={
+  service:   {ico:'🍽️',key:'cservice'},
+  kitchen:   {ico:'👨‍🍳',key:'ckitchen'},
+  foh:       {ico:'🍷',key:'cfoh'},
+  maintenance:{ico:'🔧',key:'cmaint'},
+  equipment: {ico:'⚙️',key:'cequip'},
+  purchase:  {ico:'📦',key:'cpurch'},
+  event:     {ico:'🎉',key:'cevent'},
+  staff:     {ico:'👥',key:'cstaff'},
+  admin:     {ico:'🗂️',key:'cadmin'},
+  incident:  {ico:'⚠️',key:'cinci'},
+  catering:  {ico:'🥂',key:'ccater'}
+};
+var J_VIS_META={
+  all:'vAll', kitchen:'vKit', managers:'vMgr',
+  executive:'vExec', owners:'vOwn', foh:'vFoh', admin:'vAdm'
+};
+
+function jAllCats(){
+  return Object.keys(J_CAT_META);
+}
+function jAllVis(){
+  return Object.keys(J_VIS_META);
+}
+function jRoleCats(){
+  return J_ROLE_CATS[ROLE]||jAllCats();
+}
+function jRoleVis(){
+  return J_ROLE_VIS[ROLE]||jAllVis();
+}
+
+function jFilteredEntries(){
+  var allowedCats = jRoleCats();
+  var allowedVis  = jRoleVis();
+  return JDATA.filter(function(e){
+    /* role permission */
+    if(allowedCats.indexOf(e.cat)<0) return false;
+    if(allowedVis.indexOf(e.vis)<0)  return false;
+    /* active filters */
+    if(J_FILTER_CAT!=='all' && e.cat!==J_FILTER_CAT) return false;
+    if(J_FILTER_VIS!=='all' && e.vis!==J_FILTER_VIS) return false;
+    return true;
+  });
+}
+
+function jEntryHTML(e){
+  var meta=J_CAT_META[e.cat]||{ico:'📝',key:'cservice'};
+  var vis=J_VIS_META[e.vis]||'vAll';
+  return '<div class="jent sv-'+e.sv+'" data-cat="'+e.cat+'" data-vis="'+e.vis+'">'
+    +'<div class="jmeta">'
+    +'<span class="jtime">'+e.time+'</span>'
+    +'<span class="jdot">·</span>'
+    +'<span class="jcat-pill">'+meta.ico+' '+t(meta.key)+'</span>'
+    +'<span class="jdot">·</span>'
+    +'<span class="jvis">'+t(vis)+'</span>'
+    +'<span class="jauth">'+e.auth+'</span>'
+    +'</div>'
+    +'<h4 class="jtit">'+e.title+'</h4>'
+    +(e.body?'<p class="jbod">'+e.body+'</p>':'')
+    +'</div>';
+}
+
+function jGroupedHTML(entries){
+  if(entries.length===0){
+    return '<div class="j-empty">'
+      +'<div class="j-empty-ico">📓</div>'
+      +'<p>'+t('jempty')+'</p>'
+      +'<p style="font-size:12px;margin-top:4px">'+t('jempty_sub')+'</p>'
+      +'</div>';
+  }
+  var today=[], yest=[], older=[];
+  entries.forEach(function(e){
+    if(e.date==='today')      today.push(e);
+    else if(e.date==='yesterday') yest.push(e);
+    else                      older.push(e);
+  });
+  function section(lbl, list){
+    if(!list.length) return '';
+    return '<div class="j-day-hd">'
+      +'<span class="j-day-lbl">'+lbl+'</span>'
+      +'<div class="j-day-line"></div>'
+      +'</div>'
+      +list.map(jEntryHTML).join('');
+  }
+  return section(t('jtoday'),today)
+       + section(t('jyest'),yest)
+       + section(t('jolder'),older);
+}
+
+function jFormHTML(){
+  if(!J_SHOW_FORM) return '';
+  var cats=jRoleCats();
+  var vis =jRoleVis();
+  var catOpts=cats.map(function(c){
+    var m=J_CAT_META[c]||{ico:'',key:'c'+c};
+    return '<option value="'+c+'"'+(c===J_FILTER_CAT&&J_FILTER_CAT!=='all'?' selected':'')+'>'
+      +m.ico+' '+t(m.key)+'</option>';
+  }).join('');
+  var visOpts=vis.map(function(v){
+    var vk=J_VIS_META[v]||'vAll';
+    return '<option value="'+v+'">'+t(vk)+'</option>';
+  }).join('');
+  return '<div class="j-form-panel" id="j-form-panel">'
+    +'<p class="j-form-title">'+t('jnew').replace('+ ','')+'</p>'
+    +'<div class="j-form-row full">'
+    +'<label class="flbl2">'+t('ft')+'</label>'
+    +'<input class="fin2" id="jt" type="text" placeholder="Es. Dishwasher leaking, 52 bills, Balsamic batch..." autofocus>'
+    +'</div>'
+    +'<div class="j-form-row full" style="margin-top:10px">'
+    +'<label class="flbl2">'+t('fb')+'</label>'
+    +'<textarea class="fin2 fta2" id="jb" rows="3" placeholder="Dettagli opzionali..."></textarea>'
+    +'</div>'
+    +'<div class="j-form-grid" style="margin-top:10px">'
+    +'<div class="j-form-row">'
+    +'<label class="flbl2">'+t('fc')+'</label>'
+    +'<select class="fin2" id="jcat">'+catOpts+'</select>'
+    +'</div>'
+    +'<div class="j-form-row">'
+    +'<label class="flbl2">'+t('fv')+'</label>'
+    +'<select class="fin2" id="jvis">'+visOpts+'</select>'
+    +'</div>'
+    +'</div>'
+    +'<div class="j-form-foot">'
+    +'<button class="btns" id="j-cancel-btn">'+t('fcancel')+'</button>'
+    +'<button class="btnp" id="j-save-btn">'+t('fsave')+'</button>'
+    +'</div>'
+    +'</div>';
+}
+
+function pageJournal(){
+  var cats=jAllCats(); /* all for filter bar, role applied in display */
+  var entries=jFilteredEntries();
+
+  /* today date string */
+  var now=new Date();
+  var dayNames=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  var monNames=['January','February','March','April','May','June',
+                'July','August','September','October','November','December'];
+  var dateStr=dayNames[now.getDay()]+', '+monNames[now.getMonth()]+' '+now.getDate();
+
+  /* category filter chips */
+  var catChips='<button class="chip'+(J_FILTER_CAT==='all'?' on':'')+'" data-jf-cat="all">'+t('jall')+'</button>'
+    +cats.map(function(c){
+      var m=J_CAT_META[c]||{ico:'',key:'c'+c};
+      return '<button class="chip'+(J_FILTER_CAT===c?' on':'')+'" data-jf-cat="'+c+'">'
+        +m.ico+' '+t(m.key)+'</button>';
+    }).join('');
+
+  /* visibility filter */
+  var visOpts='<option value="all">'+t('jall')+'</option>'
+    +jAllVis().map(function(v){
+      return '<option value="'+v+'"'+(J_FILTER_VIS===v?' selected':'')+'>'+t(J_VIS_META[v]||'vAll')+'</option>';
+    }).join('');
+
+  var canAdd=['executive','lead','coordinator','cook'].indexOf(ROLE)>=0;
+
+  return '<div class="pi j-page">'
+    /* Header */
+    +'<div class="ph">'
+    +'<div class="j-hrow">'
+    +'<div>'
+    +'<h2 class="ptitle">'+t('jtit')+'</h2>'
+    +'<p class="j-date-str psub">'+dateStr+'</p>'
+    +'</div>'
+    +(canAdd?'<button class="btnp" id="j-add-btn">'+t('jnew')+'</button>':'')
+    +'</div>'
+    +'</div>'
+    /* Inline form (shown/hidden) */
+    +'<div id="j-form-wrap">'+jFormHTML()+'</div>'
+    /* Filter bar */
+    +'<div class="j-filter-bar">'
+    +'<span class="j-filter-lbl" style="display:none">'+t('fc')+':</span>'
+    +catChips
+    +'<span style="flex:1"></span>'
+    +'<select class="fin2" id="j-vis-filter" style="width:auto;padding:4px 8px;font-size:11px">'+visOpts+'</select>'
+    +'</div>'
+    /* Entries */
+    +'<div id="j-entries">'+jGroupedHTML(entries)+'</div>'
+    +'<p class="note" style="margin-top:8px"><span class="nd"></span>'+t('demo')+'</p>'
+    +'</div>';
+}
+
+function journalAfterRender(){
+  var ws=document.getElementById('workspace');
+
+  /* category filter chips — event delegation */
+  ws.addEventListener('click', function jcat_handler(ev){
+    var chip=ev.target.closest('[data-jf-cat]');
+    if(!chip) return;
+    J_FILTER_CAT=chip.dataset.jfCat;
+    /* update chip active state */
+    ws.querySelectorAll('[data-jf-cat]').forEach(function(c){
+      c.classList.toggle('on', c.dataset.jfCat===J_FILTER_CAT);
+    });
+    /* re-render entries only */
+    var el=document.getElementById('j-entries');
+    if(el) el.innerHTML=jGroupedHTML(jFilteredEntries());
+    ws._j_chip_handler=jcat_handler; /* store ref for cleanup */
+  },false);
+
+  /* vis filter */
+  var vsel=ws.querySelector('#j-vis-filter');
+  if(vsel) vsel.addEventListener('change',function(){
+    J_FILTER_VIS=vsel.value;
+    var el=document.getElementById('j-entries');
+    if(el) el.innerHTML=jGroupedHTML(jFilteredEntries());
+  });
+
+  /* add button */
+  var addBtn=ws.querySelector('#j-add-btn');
+  if(addBtn) addBtn.addEventListener('click', function(){
+    J_SHOW_FORM=!J_SHOW_FORM;
+    var fw=document.getElementById('j-form-wrap');
+    if(fw){ fw.innerHTML=jFormHTML(); journalWireForm(); }
+    if(J_SHOW_FORM){
+      var inp=document.getElementById('jt'); if(inp) inp.focus();
+    }
+  });
+
+  journalWireForm();
+}
+
+function journalWireForm(){
+  var ws=document.getElementById('workspace');
+  var cancelBtn=ws.querySelector('#j-cancel-btn');
+  var saveBtn  =ws.querySelector('#j-save-btn');
+  if(cancelBtn) cancelBtn.addEventListener('click',function(){
+    J_SHOW_FORM=false;
+    var fw=document.getElementById('j-form-wrap'); if(fw) fw.innerHTML='';
+  });
+  if(saveBtn) saveBtn.addEventListener('click', saveJEntry);
+}
+
+function saveJEntry(){
+  var title=(document.getElementById('jt')?.value||'').trim();
+  if(!title){ alert(t('fadderr')); return; }
+  var cat = document.getElementById('jcat')?.value || jRoleCats()[0] || 'service';
+  var vis = document.getElementById('jvis')?.value || 'kitchen';
+  var body= (document.getElementById('jb')?.value||'').trim();
+  var now=new Date();
+  var h=now.getHours(), m=now.getMinutes();
+  var ampm=h>=12?'PM':'AM'; h=h%12||12;
+  var time=h+':'+(m<10?'0'+m:m)+' '+ampm;
+  JDATA.unshift({id:Date.now(),date:'today',time:time,cat:cat,vis:vis,
+    auth:RNAME[ROLE]||'Chef',sv:'',title:title,body:body});
+  J_SHOW_FORM=false;
+  /* re-render form + entries */
+  var fw=document.getElementById('j-form-wrap'); if(fw) fw.innerHTML='';
+  var el=document.getElementById('j-entries');
+  if(el) el.innerHTML=jGroupedHTML(jFilteredEntries());
+  showYCS('"'+title+'" '+t('fsave').toLowerCase()+'.');
+}
+
+/* YES CHEF */
+function showYCS(msg){
+  var ws=document.getElementById('workspace');
+  var el=document.getElementById('ycs');
+  if(!el){
+    el=document.createElement('div'); el.id='ycs';
+    el.innerHTML='<div class="yb" onclick="hideYCS()"></div>'
+      +'<div class="yc">'
+      +'<div class="yi">✅</div>'
+      +'<h2 class="yh" id="yh"></h2>'
+      +'<p class="ym" id="ym"></p>'
+      +'<button class="btnp" style="margin:0 auto;display:block;min-width:180px;padding:13px" onclick="hideYCS()" id="yb"></button>'
+      +'</div>';
+    ws.appendChild(el);
+  }
+  document.getElementById('yh').textContent=t('yct');
+  document.getElementById('ym').textContent=msg;
+  document.getElementById('yb').textContent=t('ycclose');
+  requestAnimationFrame(function(){ el.classList.add('on'); });
+}
+function hideYCS(){ var el=document.getElementById('ycs'); if(el) el.classList.remove('on'); }
+
+/* ══ PAGE MAP ═════════════════════════════════════════════════════════════ */
+var PAGES={
+  home:         {render:pageHome,      after:homeAfterRender},
+  bot_center:   {render:pageBots,      after:null},
+  recipe:       {render:pageRecipe,    after:null},
+  inventory:    {render:pageInventory, after:null},
+  daily_journal:{render:pageJournal,   after:journalAfterRender, rerender:true}
+};
+
+/* ══ SHELL RENDERERS ══════════════════════════════════════════════════════ */
+function renderTopBar(){
+  var rn=RNAME[ROLE]||'Chef', ri=RINIT[ROLE]||'?';
+
+  /* Online users demo — Chef AI first, then real brigade members, exclude self */
+  var ONLINE_ALL=[
+    {init:'🤖',name:'Chef AI',   col:'#2563eb', role:t('cai_duty'), ai:true},
+    {init:'MZ',name:'Max',       col:'#1d4ed8', role:'Executive Chef', ai:false},
+    {init:'TL',name:'Tela',      col:'#0891b2', role:'Coordinator',    ai:false},
+    {init:'DV',name:'David',     col:'#059669', role:'Sous Chef',      ai:false},
+    {init:'CL',name:'Cole',      col:'#7c3aed', role:'Saucier',        ai:false}
+  ];
+  var others=ONLINE_ALL.filter(function(u){ return !u.ai && u.init!==ri; });
+  var pillsHTML=others.map(function(u){
+    return '<div class="op-av" style="background:'+u.col+'">'
+      +u.init
+      +'<span class="op-tooltip">'+u.name+' · '+u.role+'</span>'
+      +'</div>';
+  }).join('');
+
+  /* Language buttons */
+  var langBtns=['it','en','es'].map(function(l){
+    return '<button class="um-lbtn'+(l===LANG?' on':'')+'" data-uml="'+l+'">'+l.toUpperCase()+'</button>';
+  }).join('');
+  /* Role options */
+  var roleOpts=ROLES.map(function(r){
+    return '<option value="'+r+'"'+(r===ROLE?' selected':'')+'>'+t('lbl_'+r.substring(0,2))+'</option>';
+  }).join('');
+
+  document.getElementById('topbar').innerHTML=
+    /* Brand */
+    '<div class="t-brand">'
+    +'<div class="t-mark">B</div>'
+    +'<div class="t-words"><span class="t-name">Brigade</span><span class="t-sub">by BOH OS</span></div>'
+    +'</div>'
+    /* Search */
+    +'<div class="t-search" id="t-search-wrap">'    +'<span class="t-search-ico">⌕</span>'    +'<input class="t-search-input" id="t-search-input"'    +' placeholder="'+t('srch_placeholder')+'" autocomplete="off" spellcheck="false">'    +'<button class="t-search-clear" id="t-search-clear" tabindex="-1">✕</button>'    +'<div class="search-drop hi" id="search-drop"></div>'    +'</div>'
+    /* Right */
+    +'<div class="t-right">'
+    /* Chef AI button */
+    +'<button class="chef-ai-btn" id="cai-topbar-btn">'
+    +'<div class="cai-av">🤖</div>'
+    +'<div class="cai-text"><span class="cai-label">Chef AI</span>'
+    +'<span class="cai-status" id="cai-status-txt">'+t('cai_duty')+'</span>'
+    +'</div>'
+    +'</button>'
+    /* Online pills */
+    +'<div class="online-pills">'+pillsHTML+'</div>'
+    +'<span class="online-n">'+others.length+' '+t('online_n')+'</span>'
+    /* Demo badge */
+    +'<span class="demo-tag">DEMO</span>'
+    /* User menu */
+    +'<div class="usr-wrap" id="usr-wrap">'
+    +'<button class="usr-btn" id="usr-btn">'
+    +'<div class="usr-av">'+ri+'</div>'
+    +'<span class="usr-name">'+rn+'</span>'
+    +'<span class="usr-arr">▾</span>'
+    +'</button>'
+    +'<div class="usr-menu hi" id="usr-menu">'
+    /* User info */
+    +'<div class="um-section">'
+    +'<p class="um-lbl">'+rn+'</p>'
+    +'<p style="font-size:11px;color:var(--txm);padding:2px 14px 6px">'+t('lbl_'+ROLE.substring(0,2))+'</p>'
+    +'</div>'
+    /* Profile items */
+    +'<div class="um-section">'
+    +'<button class="um-item"><span class="um-item-ico">👤</span>'+t('um_profile')+'</button>'
+    +'<button class="um-item"><span class="um-item-ico">🔕</span>'+t('um_notif')+'</button>'
+    +'<button class="um-item"><span class="um-item-ico">🕙</span>'+t('um_quiet')+'</button>'
+    +'<button class="um-item"><span class="um-item-ico">🔑</span>'+t('um_pin')+'</button>'
+    +'</div>'
+    /* Language */
+    +'<div class="um-section">'
+    +'<p class="um-lbl">'+t('um_lang')+'</p>'
+    +'<div class="um-lang" id="um-lang-btns">'+langBtns+'</div>'
+    +'</div>'
+    /* Role demo */
+    +'<div class="um-section">'
+    +'<p class="um-lbl">'+t('um_role')+' (demo)</p>'
+    +'<select class="um-role-sel" id="um-role-sel">'+roleOpts+'</select>'
+    +'</div>'
+    /* Logout */
+    +'<div class="um-section">'
+    +'<p class="um-lbl">'+t('um_online')+'</p>'
+    +'<div style="padding:4px 14px 8px">'
+    +'<div style="display:flex;align-items:center;gap:7px;padding:5px 0">'
+    +'<div style="width:20px;height:20px;border-radius:50%;background:var(--b6);display:flex;align-items:center;justify-content:center;font-size:10px">🤖</div>'
+    +'<span style="font-size:12px;color:var(--tx)">Chef AI</span>'
+    +'<span style="font-size:10px;color:var(--ok);margin-left:auto">● '+t('cai_duty')+'</span>'
+    +'</div>'
+    +others.map(function(u){
+      return '<div style="display:flex;align-items:center;gap:7px;padding:5px 0">'
+        +'<div style="width:20px;height:20px;border-radius:50%;background:'+u.col+';display:flex;align-items:center;justify-content:center;color:#fff;font-size:9px;font-weight:700">'+u.init+'</div>'
+        +'<span style="font-size:12px;color:var(--tx)">'+u.name+'</span>'
+        +'<span style="font-size:10px;color:var(--txm);margin-left:auto">'+u.role+'</span>'
+        +'</div>';
+    }).join('')
+    +'</div>'
+    +'</div>'
+    +'<div class="um-section">'
+    +'<button class="um-item"><span class="um-item-ico">↩</span>'+t('um_logout')+'</button>'
+    +'</div>'
+    +'</div>' /* /usr-menu */
+    +'</div>'; /* /usr-wrap */
+
+  /* ── Wire user menu ── */
+  var btn=document.getElementById('usr-btn');
+  var wrap=document.getElementById('usr-wrap');
+  var menu=document.getElementById('usr-menu');
+
+  btn.addEventListener('click',function(e){
+    e.stopPropagation();
+    var isOpen=!menu.classList.contains('hi');
+    if(isOpen){ menu.classList.add('hi'); wrap.classList.remove('open'); }
+    else       { menu.classList.remove('hi'); wrap.classList.add('open'); }
+  });
+  /* close on outside click — use one-time-ish named handler to avoid stacking */
+  document._usrMenuClose && document.removeEventListener('click',document._usrMenuClose);
+  document._usrMenuClose=function(){ menu.classList.add('hi'); wrap.classList.remove('open'); };
+  document.addEventListener('click', document._usrMenuClose);
+  menu.addEventListener('click',function(e){ e.stopPropagation(); });
+
+  /* ── Wire language ── */
+  document.getElementById('um-lang-btns').addEventListener('click',function(e){
+    var b=e.target.closest('[data-uml]'); if(b) setLang(b.dataset.uml);
+  });
+  /* ── Wire role ── */
+  document.getElementById('um-role-sel').addEventListener('change',function(e){ setRole(e.target.value); });
+
+  /* ── Wire Chef AI button ── */
+  document.getElementById('cai-topbar-btn').addEventListener('click',function(e){
+    e.stopPropagation(); toggleChefAI();
+  });
+  wireSearch();
+}
+
+function renderTabBar(){
+  var inner = TABS.map(function(tab){
+    var on = tab.id===AID;
+    return '<div class="tab'+(on?' on':'')+'" data-tid="'+tab.id+'" role="tab" aria-selected="'+(on?'true':'false')+'">'
+      +'<span class="tab-ico">'+(ICO[tab.type]||'📄')+'</span>'
+      +'<span class="tab-lbl">'+tab.title+'</span>'
+      +(tab.type!=='home'
+        ? '<button class="tab-x" data-close="'+tab.id+'" title="Chiudi">✕</button>'
+        : '')
+      +'</div>';
+  }).join('');
+  inner += '<button class="tab-plus" id="tab-plus" title="'+t('tnew')+'">+</button>';
+
+  var tbEl=document.getElementById('tabbar');
+  tbEl.innerHTML='<div class="tb-inner" id="tb-inner">'+inner+'</div>';
+
+  /* Wire via event delegation — avoids onclick= attribute encoding issues */
+  document.getElementById('tb-inner').addEventListener('click', function(e){
+    /* close button */
+    var closeBtn=e.target.closest('[data-close]');
+    if(closeBtn){ e.stopPropagation(); closeTab(closeBtn.dataset.close); return; }
+    /* new tab */
+    if(e.target.closest('#tab-plus')){ openTab('home',{}); return; }
+    /* activate tab */
+    var tabEl=e.target.closest('[data-tid]');
+    if(tabEl) activateTab(tabEl.dataset.tid);
+  });
+
+  /* scroll active into view */
+  requestAnimationFrame(function(){
+    var el=document.querySelector('.tab.on');
+    if(el) el.scrollIntoView({inline:'nearest',block:'nearest',behavior:'smooth'});
+  });
+}
+
+function renderWorkspace(){
+  var tab=TABS.find(function(x){ return x.id===AID; });
+  var ws=document.getElementById('workspace');
+  if(!tab){ ws.innerHTML=''; return; }
+  var page=PAGES[tab.type];
+  ws.innerHTML = page ? page.render(tab.params||{}) : '<p style="padding:40px;color:var(--txm)">Pagina non trovata.</p>';
+  /* restore scroll */
+  ws.scrollTop = tab.scroll || 0;
+  /* save scroll on scroll */
+  ws.onscroll = function(){
+    var cur=TABS.find(function(x){ return x.id===AID; });
+    if(cur) cur.scroll=ws.scrollTop;
+  };
+  /* after-render hooks */
+  if(page && page.after) page.after();
+  /* dev validator */
+  setTimeout(function(){ validatePage(tab.type); }, 200);
+}
+
+function renderAll(){
+  renderTopBar();
+  renderTabBar();
+  renderWorkspace();
+}
+
+/* ══ INIT ═════════════════════════════════════════════════════════════════ */
+
+/* ══ CHEF AI DRAWER ════════════════════════════════════════════════════════ */
+var CAI_OPEN = false;
+var CAI_HISTORY = [];
+
+/* Context per tab type — in futuro leggerà la tab attiva */
+function caiContext(){
+  var tab = TABS.find(function(x){ return x.id===AID; });
+  if(!tab) return t('cai_ctx_home');
+  var ctx = {
+    home:          t('cai_ctx_home'),
+    bot_center:    t('cai_ctx_bots'),
+    recipe:        t('cai_ctx_recipe') + (tab.params&&tab.params.name?' — '+tab.params.name:''),
+    inventory:     t('cai_ctx_inv')    + (tab.params&&tab.params.name?' — '+tab.params.name:''),
+    daily_journal: t('cai_ctx_journal')
+  };
+  return ctx[tab.type] || tab.title;
+}
+
+function toggleChefAI(){
+  if(CAI_OPEN) closeChefAI(); else openChefAI();
+}
+
+function openChefAI(){
+  CAI_OPEN=true;
+  var ov=document.getElementById('cai-overlay');
+  ov.classList.add('open');
+  /* update context */
+  var ctx=caiContext();
+  var ctxEl=document.getElementById('cai-ctx');
+  if(ctxEl) ctxEl.textContent=t('cai_ctx_prefix')+ctx;
+  /* update topbar button */
+  var btn=document.getElementById('cai-topbar-btn');
+  if(btn) btn.classList.add('active');
+  /* init body if empty */
+  var body=document.getElementById('cai-body');
+  if(body && CAI_HISTORY.length===0){
+    caiAddMsg('ai', t('cai_greeting'));
+    /* suggestions */
+    var sugs=t('cai_suggestions').split('|');
+    var sugHTML='<div class="cai-suggestions">'
+      +sugs.map(function(s){return '<button class="sug">'+s.trim()+'</button>';}).join('')
+      +'</div>';
+    body.insertAdjacentHTML('beforeend', sugHTML);
+    body.querySelectorAll('.sug').forEach(function(b){
+      b.addEventListener('click',function(){
+        caiSend(b.textContent.trim());
+        b.closest('.cai-suggestions')?.remove();
+      });
+    });
+  }
+  /* wire close */
+  document.getElementById('cai-close-btn').onclick=closeChefAI;
+  document.getElementById('cai-backdrop').onclick=closeChefAI;
+  /* wire send */
+  var inp=document.getElementById('cai-input');
+  var snd=document.getElementById('cai-send-btn');
+  if(inp){
+    inp.placeholder=t('cai_placeholder');
+    inp.onkeydown=function(e){
+      if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();caiSendFromInput();}
+    };
+  }
+  if(snd) snd.onclick=caiSendFromInput;
+  /* focus input */
+  setTimeout(function(){ document.getElementById('cai-input')?.focus(); }, 300);
+}
+
+function closeChefAI(){
+  CAI_OPEN=false;
+  document.getElementById('cai-overlay').classList.remove('open');
+  var btn=document.getElementById('cai-topbar-btn');
+  if(btn) btn.classList.remove('active');
+}
+
+function caiAddMsg(role, text){
+  var body=document.getElementById('cai-body');
+  if(!body) return;
+  CAI_HISTORY.push({role:role,text:text});
+  var isAI=(role==='ai');
+  var html='<div class="cai-msg'+(isAI?'':' usr')+'">'
+    +(isAI?'<div class="cai-msg-av">🤖</div>':'')
+    +'<div class="cai-bubble">'+text.replace(/\n/g,'<br>')+'</div>'
+    +(isAI?'':'<div class="cai-msg-av" style="background:var(--b6)">'+RINIT[ROLE]+'</div>')
+    +'</div>';
+  body.insertAdjacentHTML('beforeend', html);
+  body.scrollTop=body.scrollHeight;
+}
+
+function caiSendFromInput(){
+  var inp=document.getElementById('cai-input');
+  if(!inp) return;
+  var msg=(inp.value||'').trim();
+  if(!msg) return;
+  inp.value='';
+  caiSend(msg);
+}
+
+/* Demo responses — no real AI in prototype */
+var CAI_DEMO_REPLIES = null;
+function caiGetDemoReply(q){
+  if(!CAI_DEMO_REPLIES){
+    CAI_DEMO_REPLIES = [
+      t('cai_r1'), t('cai_r2'), t('cai_r3'), t('cai_r4')
+    ];
+  }
+  /* simple keyword matching */
+  q=q.toLowerCase();
+  if(q.indexOf('bot')>=0||q.indexOf('pipeline')>=0) return t('cai_r_bots');
+  if(q.indexOf('journal')>=0||q.indexOf('diario')>=0) return t('cai_r_journal');
+  if(q.indexOf('tiramisu')>=0||q.indexOf('ricett')>=0||q.indexOf('recipe')>=0) return t('cai_r_recipe');
+  if(q.indexOf('caesar')>=0||q.indexOf('dispensa')>=0||q.indexOf('pantry')>=0) return t('cai_r_inv');
+  /* default cycle */
+  var i=CAI_HISTORY.filter(function(m){return m.role==='user';}).length;
+  return CAI_DEMO_REPLIES[i % CAI_DEMO_REPLIES.length];
+}
+
+function caiSend(msg){
+  caiAddMsg('user', msg);
+  /* typing indicator */
+  var body=document.getElementById('cai-body');
+  var typing=document.createElement('div');
+  typing.className='cai-msg'; typing.id='cai-typing';
+  typing.innerHTML='<div class="cai-msg-av">🤖</div>'
+    +'<div class="cai-bubble" style="opacity:.6">'+t('cai_thinking')+'</div>';
+  body.appendChild(typing); body.scrollTop=body.scrollHeight;
+  /* simulate response */
+  setTimeout(function(){
+    typing.remove();
+    caiAddMsg('ai', caiGetDemoReply(msg));
+  }, 900 + Math.random()*600);
+}
+
+
+/* ══ PAGE STANDARD VALIDATOR (dev only — harmless in prod) ══════════════════
+   Runs in console after each renderWorkspace().
+   Reports: missing i18n keys, hardcoded labels, missing context.
+   ════════════════════════════════════════════════════════════════════════ */
+function validatePage(type){
+  var issues=[];
+  var ws=document.getElementById('workspace');
+  if(!ws) return;
+
+  /* 1. Check for hardcoded text in visible elements (heuristic) */
+  var textEls=ws.querySelectorAll('h1,h2,h3,h4,p,button,label,span,option');
+  var suspectPatterns=[
+    /^[A-Z][a-z]+ [a-z]+ [a-z]+$/, /* English sentence fragments */
+    /Tiramisu|Caesar|Hardie/,        /* data is OK, UI labels should be t() */
+  ];
+  /* We skip data-derived text by only checking elements with no data-cat, data-tid etc */
+  /* This is a lightweight heuristic, not exhaustive */
+
+  /* 2. Check caiContext covers this page type */
+  var knownCtx=['home','bot_center','recipe','inventory','daily_journal'];
+  if(type && knownCtx.indexOf(type)<0){
+    issues.push('⚠️  Page type "'+type+'" not registered in caiContext() — add it');
+  }
+
+  /* 3. Check TR keys exist in all 3 langs for this page's namespace */
+  var ns=type?type.replace('_',''):null;
+  if(ns && ns!=='home'){
+    var langs=['it','en','es'];
+    var missing=[];
+    langs.forEach(function(l){
+      if(!TR[l]) missing.push(l);
+    });
+    if(missing.length) issues.push('⚠️  TR missing language blocks: '+missing.join(', '));
+  }
+
+  /* 4. Check no inline styles with hardcoded colors in the rendered HTML */
+  var html=ws.innerHTML;
+  var hexInStyle=html.match(/style="[^"]*#[0-9a-f]{3,6}/gi);
+  if(hexInStyle && hexInStyle.length>3){ /* allow a few for dynamic avatar colors */
+    issues.push('⚠️  Possible hardcoded hex colors in rendered HTML ('+hexInStyle.length+' found) — use var(--token)');
+  }
+
+  /* 5. Check no onclick= attributes on newly rendered elements */
+  var onclickEls=ws.querySelectorAll('[onclick]');
+  if(onclickEls.length>0){
+    issues.push('❌ VIOLATION: '+onclickEls.length+' element(s) with onclick= attribute — use addEventListener');
+  }
+
+  /* 6. Check responsive: at least one element with responsive class or section */
+  /* (heuristic — just check pi wrapper exists) */
+  if(!ws.querySelector('.pi')){
+    issues.push('⚠️  Page does not use .pi wrapper — may not be responsive');
+  }
+
+  if(issues.length===0){
+    console.log('%c✅ Brigade Page Standard — '+type+' — all checks passed','color:#16a34a;font-weight:700');
+  } else {
+    console.group('%c🔍 Brigade Page Standard — '+type+' — '+issues.length+' issue(s)','color:#d97706;font-weight:700');
+    issues.forEach(function(i){ console.warn(i); });
+    console.log('Reference: workspace/WORKSPACE_PAGE_STANDARD.md');
+    console.groupEnd();
+  }
+}
+
+
+/* ══ GLOBAL SEARCH ════════════════════════════════════════════════════════ */
+var _searchIdx = null;
+
+function buildSearchIndex(){
+  return [
+    {tabType:'bot_center',    params:{},
+     ico:'🤖', title:t('tb'),   sub:t('bsub'),
+     kw:['bot','pipeline','deduction','bots','centro bot','bot center','modifier','consolidator']},
+    {tabType:'daily_journal', params:{},
+     ico:'📓', title:t('jtit'), sub:t('jsub'),
+     kw:['journal','diario','log','diario operativo','operations journal','maintenance','servizio','service']},
+    {tabType:'recipe',        params:{id:'tiramisu',name:'Tiramisu'},
+     ico:'📋', title:t('tr',{n:'Tiramisu'}), sub:'Pastry · 10 pz',
+     kw:['tiramisu','dessert','pastry','mascarpone','ricetta','recipe','receta','savoiardi']},
+    {tabType:'inventory',     params:{id:'caesar',name:'Caesar Dressing'},
+     ico:'📦', title:t('ti',{n:'Caesar Dressing'}), sub:'Stock: 2.4 kg · 312 uses/60gg',
+     kw:['caesar','dressing','dispensa','pantry','despensa','salad','insalata']},
+    {tabType:'pos',           params:{},
+     ico:'📊', title:t('tp')||'Vendite', sub:t('bsub')||'Sales dashboard · modifier depletion',
+     kw:['vendite','sales','pos','revenue','dashboard','modifier','depletion','modifiers','modifer','cassa','incasso']},
+  ];
+}
+
+function scoreResult(entry, q){
+  q = q.toLowerCase().trim();
+  var score = 0;
+  entry.kw.forEach(function(k){
+    k = k.toLowerCase();
+    if(k === q)          score += 100;
+    else if(k.startsWith(q)) score += 60;
+    else if(k.indexOf(q) >= 0) score += 30;
+  });
+  var title = entry.title.toLowerCase();
+  if(title === q)          score += 80;
+  else if(title.startsWith(q)) score += 50;
+  else if(title.indexOf(q) >= 0) score += 20;
+  return score;
+}
+
+function wireSearch(){
+  var wrap  = document.getElementById('t-search-wrap');
+  var input = document.getElementById('t-search-input');
+  var clear = document.getElementById('t-search-clear');
+  var drop  = document.getElementById('search-drop');
+  if(!wrap || !input || !drop) return;
+
+  _searchIdx = null; /* rebuild on lang change */
+
+  input.addEventListener('focus', function(){ wrap.classList.add('focused'); });
+
+  input.addEventListener('blur', function(){
+    setTimeout(function(){ wrap.classList.remove('focused'); hideDrop(); }, 200);
+  });
+
+  input.addEventListener('input', function(){
+    var q = input.value.trim();
+    clear.classList.toggle('vis', q.length > 0);
+    if(!q){ hideDrop(); return; }
+    showDrop(q);
+  });
+
+  input.addEventListener('keydown', function(e){
+    if(e.key === 'Escape'){
+      input.value = ''; clear.classList.remove('vis');
+      hideDrop(); input.blur();
+    }
+    if(e.key === 'Enter'){
+      var first = drop.querySelector('.search-result');
+      if(first) first.click();
+    }
+  });
+
+  clear.addEventListener('mousedown', function(e){ e.preventDefault(); });
+  clear.addEventListener('click', function(){
+    input.value = ''; clear.classList.remove('vis'); hideDrop(); input.focus();
+  });
+}
+
+function showDrop(q){
+  if(!_searchIdx) _searchIdx = buildSearchIndex();
+  var drop = document.getElementById('search-drop');
+  if(!drop) return;
+
+  var seen = {};
+  var results = _searchIdx
+    .map(function(e){ return {e:e, s:scoreResult(e,q)}; })
+    .filter(function(r){ return r.s > 0; })
+    .sort(function(a,b){ return b.s - a.s; })
+    .filter(function(r){
+      var key = r.e.tabType + ':' + (r.e.params.id || '');
+      if(seen[key]) return false; seen[key] = true; return true;
+    })
+    .slice(0, 5);
+
+  if(!results.length){
+    drop.innerHTML = '<div class="search-empty">'+t('srch_noResults',{q:q})+'</div>';
+    drop.classList.remove('hi'); return;
+  }
+
+  drop.innerHTML = results.map(function(r){
+    var e = r.e;
+    var ps = encodeURIComponent(JSON.stringify(e.params));
+    return '<div class="search-result" data-tt="'+e.tabType+'" data-ps="'+ps+'">'
+      +'<span class="sr-ico">'+e.ico+'</span>'
+      +'<div class="sr-body">'
+      +'<div class="sr-title">'+e.title+'</div>'
+      +'<div class="sr-sub">'+e.sub+'</div>'
+      +'</div>'
+      +'<span class="sr-action">'+t('srch_open')+' →</span>'
+      +'</div>';
+  }).join('');
+
+  drop.querySelectorAll('.search-result').forEach(function(el){
+    el.addEventListener('mousedown', function(e){ e.preventDefault(); });
+    el.addEventListener('click', function(){
+      var tt = el.dataset.tt;
+      var ps = JSON.parse(decodeURIComponent(el.dataset.ps||'{}'));
+      var inp = document.getElementById('t-search-input');
+      if(inp){ inp.value=''; document.getElementById('t-search-clear')?.classList.remove('vis'); }
+      hideDrop();
+      openTab(tt, ps);
+    });
+  });
+
+  drop.classList.remove('hi');
+}
+
+function hideDrop(){
+  var drop = document.getElementById('search-drop');
+  if(drop) drop.classList.add('hi');
+}
+
+document.addEventListener('DOMContentLoaded', function(){
+  LANG = sessionStorage.getItem('ws_lang') || 'it';
+  ROLE = sessionStorage.getItem('ws_role') || 'executive';
+  _restoreTabs();
+  if(TABS.length===0) openTab('home', {});
+  else renderAll();
+});
+</script>
+
+<!-- ── CHEF AI DRAWER ──────────────────────────────────────── -->
+<div id="cai-overlay">
+  <div class="cai-backdrop" id="cai-backdrop"></div>
+  <div class="cai-drawer" id="cai-drawer">
+    <div class="cai-head">
+      <div class="cai-head-av">🤖</div>
+      <div class="cai-head-info">
+        <div class="cai-head-name">Chef AI</div>
+        <div class="cai-head-ctx" id="cai-ctx">...</div>
+      </div>
+      <button class="cai-close" id="cai-close-btn">✕</button>
+    </div>
+    <div class="cai-body" id="cai-body"></div>
+    <div class="cai-foot">
+      <textarea class="cai-input" id="cai-input" rows="1" placeholder=""></textarea>
+      <button class="cai-send" id="cai-send-btn">↑</button>
+    </div>
+  </div>
+</div>
+</body>
+</html>
