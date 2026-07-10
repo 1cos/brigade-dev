@@ -1143,11 +1143,10 @@ function closeTab(id){
   if(tab._closing) return;
   tab._closing = true;
   if(AID===id){
-    /* prefer next, then prev; skip home if others exist */
-    var candidates = TABS.filter(function(x,idx){ return idx!==i; });
-    var next = TABS[i+1] && TABS[i+1].id!==AID ? TABS[i+1] : null;
+    /* prefer tab to the right, then left */
+    var next = TABS[i+1] || null;
     var prev = i>0 ? TABS[i-1] : null;
-    var fallback = next || prev || candidates[0] || null;
+    var fallback = next || prev || null;
     AID = fallback ? fallback.id : null;
   }
   TABS.splice(i,1);
@@ -1327,7 +1326,7 @@ var J_FILTER_VIS = 'all';
 var J_SHOW_FORM  = false;
 
 /* ══ PAGE RENDERERS ═══════════════════════════════════════════════════════ */
-var ICO={home:'⌂',bot_center:'🤖',recipe:'📋',inventory:'📦',daily_journal:'📓'};
+var ICO={home:'⌂',bot_center:'🤖',recipe:'📋',inventory:'📦',daily_journal:'📓',pos:'📊'};
 
 function badge(s){
   var m={ok:'b-ok',warn:'b-wn',error:'b-er',pending:'b-in'};
@@ -1899,13 +1898,17 @@ function renderTopBar(){
 function _showNewTabMenu(){
   /* remove any existing menu */
   var old = document.getElementById('ntm-menu');
-  if(old){ old.remove(); return; }
+  if(old){
+    var oldBd = document.getElementById('ntm-backdrop');
+    if(oldBd) oldBd.remove();
+    old.remove();
+    return;
+  }
 
   var candidates = [
-    {type:'home',         label:t('th'),          ico:'🏠', p:{}},
-    {type:'bot_center',   label:t('tb'),           ico:'🤖', p:{}},
-    {type:'daily_journal',label:t('tj_short'),     ico:'📓', p:{}},
-    {type:'pos',          label:t('tp'),            ico:'📊', p:{}},
+    {type:'bot_center',   label:t('tb'),       ico:'🤖', p:{}},
+    {type:'daily_journal',label:t('tj_short'), ico:'📓', p:{}},
+    {type:'pos',          label:t('tp'),        ico:'📊', p:{}},
   ].filter(function(c){
     /* only if NOT already open as a singleton */
     return !TABS.find(function(x){ return x.type===c.type; });
@@ -1953,23 +1956,26 @@ function _showNewTabMenu(){
     item.addEventListener('mouseleave',function(){ item.style.background='none'; });
     item.addEventListener('click', function(e){
       e.stopPropagation();
+      var bd = document.getElementById('ntm-backdrop');
+      if(bd) bd.remove();
       menu.remove();
       openTab(c.type, c.p);
     });
     menu.appendChild(item);
   });
 
+  /* invisible backdrop — cattura tap su tutto il resto della pagina, iOS incluso */
+  var backdrop = document.createElement('div');
+  backdrop.id = 'ntm-backdrop';
+  backdrop.style.cssText = 'position:fixed;inset:0;z-index:8999;-webkit-tap-highlight-color:transparent';
+  backdrop.addEventListener('pointerdown', function(e){
+    e.preventDefault();
+    backdrop.remove();
+    menu.remove();
+  });
+  /* inserisci backdrop PRIMA del menu, così il menu sta sopra */
+  document.body.insertBefore(backdrop, document.body.firstChild);
   document.body.appendChild(menu);
-
-  /* close on any outside click */
-  function dismiss(e){
-    if(!menu.contains(e.target) && e.target.id!=='tab-plus'){
-      menu.remove();
-      document.removeEventListener('click', dismiss, true);
-    }
-  }
-  /* slight delay so this click doesn't immediately close it */
-  setTimeout(function(){ document.addEventListener('click', dismiss, true); }, 50);
 }
 
 function renderTabBar(){
