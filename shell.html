@@ -1,6 +1,6 @@
 <!-- ── NEW SHELL LAB BANNER ── -->
 <div id="shell-lab-banner" style="position:fixed;top:0;left:0;right:0;z-index:99999;background:linear-gradient(90deg,#0f766e,#0891b2);color:white;font-size:11px;font-weight:800;letter-spacing:0.09em;text-transform:uppercase;text-align:center;padding:5px 16px;font-family:-apple-system,BlinkMacSystemFont,sans-serif;user-select:none;box-shadow:0 1px 6px rgba(8,145,178,0.4);">
-  🎨 NEW SHELL LAB &nbsp;·&nbsp; brigade-dev/shell.html &nbsp;·&nbsp; v009 &nbsp;·&nbsp; Not for kitchen use
+  🎨 NEW SHELL LAB &nbsp;·&nbsp; brigade-dev/shell.html &nbsp;·&nbsp; v009a &nbsp;·&nbsp; Not for kitchen use
 </div>
 <style>
 /* push shell content below banner */
@@ -686,62 +686,132 @@ input,select,textarea{font-family:inherit}
 .obs-wn{border-color:var(--wn-bd);background:var(--wn-bg)}
 .obs-in{border-color:var(--in-bd);background:var(--in-bg)}
 
-/* ════ RECIPE v009 ═══════════════════════════════════════════════════════ */
+/* ════ RECIPE v009a ══════════════════════════════════════════════════════ */
 
 /* ── Page-level inner tab bar (Procedura / BOM / Storico) ── */
-.r-tabs{display:flex;gap:0;border-bottom:1px solid var(--bd);margin-bottom:18px}
-.r-tab{padding:9px 16px;font-size:13px;font-weight:600;color:var(--tx2);
+.r-tabs{display:flex;gap:0;border-bottom:1px solid var(--bd);margin-bottom:20px}
+.r-tab{padding:10px 18px;font-size:14px;font-weight:600;color:var(--tx2);
   border-bottom:2px solid transparent;cursor:pointer;
   transition:color .15s,border-color .15s;white-space:nowrap;
-  -webkit-tap-highlight-color:transparent}
+  -webkit-tap-highlight-color:transparent;min-height:44px;
+  display:flex;align-items:center}
 .r-tab.active{color:var(--b6);border-bottom-color:var(--b6)}
 .r-tab:hover:not(.active){color:var(--tx)}
-@media(max-width:480px){.r-tab{padding:9px 12px;font-size:12px}}
+@media(max-width:480px){.r-tab{padding:10px 13px;font-size:13px}}
 
-/* ── Batch selector ── */
-.r-batch-bar{display:flex;align-items:center;gap:8px;margin-bottom:18px}
-.r-batch-lbl{font-size:11px;font-weight:700;color:var(--txm);
-  text-transform:uppercase;letter-spacing:.06em}
-.r-batch-btns{display:flex;gap:4px}
-.r-bx{padding:5px 13px;border-radius:20px;font-size:12px;font-weight:700;
+/* ── Batch bar (quick ×1/×2/×3 + Personalizza) ── */
+.r-batch-bar{display:flex;align-items:center;gap:10px;
+  flex-wrap:wrap;margin-bottom:16px}
+.r-batch-lbl{font-size:12px;font-weight:700;color:var(--txm);
+  text-transform:uppercase;letter-spacing:.04em}
+.r-batch-btns{display:flex;gap:5px}
+.r-bx{padding:6px 15px;border-radius:20px;font-size:13px;font-weight:700;
   border:1.5px solid var(--bd2);color:var(--tx2);background:var(--surf);
   cursor:pointer;transition:all .15s;font-family:var(--fm);
-  -webkit-tap-highlight-color:transparent}
+  -webkit-tap-highlight-color:transparent;min-height:36px}
 .r-bx.r-bx-on{background:var(--b6);border-color:var(--b6);color:#fff}
 .r-bx:hover:not(.r-bx-on){border-color:var(--b6);color:var(--b6)}
+.r-bx-custom{padding:6px 13px;border-radius:20px;font-size:13px;font-weight:600;
+  border:1.5px dashed var(--bd2);color:var(--tx2);background:transparent;
+  cursor:pointer;transition:all .15s;font-family:var(--fm);
+  -webkit-tap-highlight-color:transparent;min-height:36px}
+.r-bx-custom.r-bx-on{border-color:var(--b6);color:var(--b6);border-style:solid;background:rgba(37,99,235,.07)}
+.r-bx-custom:hover{border-color:var(--b6);color:var(--b6)}
+
+/* ── Batch summary strip ── */
+.r-batch-summary{display:flex;gap:16px;flex-wrap:wrap;
+  padding:10px 14px;background:var(--surf-g);border:1px solid var(--bd);
+  border-radius:var(--r2);margin-bottom:18px;align-items:center}
+.r-bsum-item{display:flex;flex-direction:column;gap:1px}
+.r-bsum-lbl{font-size:10px;font-weight:700;color:var(--txm);
+  text-transform:uppercase;letter-spacing:.04em}
+.r-bsum-val{font-size:14px;font-weight:700;color:var(--tx);font-family:var(--fm)}
+.r-bsum-val.r-bsum-hi{color:var(--b6)}  /* highlight current batch */
+.r-bsum-sep{width:1px;background:var(--bd);align-self:stretch;margin:0 2px}
+
+/* ── Customize panel (inline, not modal) ── */
+.r-custom-panel{background:var(--surf-g);backdrop-filter:blur(10px);
+  border:1px solid var(--bd2);border-radius:var(--r3);
+  padding:18px 18px 14px;margin-bottom:18px;display:none}
+.r-custom-panel.open{display:block}
+.r-custom-hd{display:flex;justify-content:space-between;align-items:center;
+  margin-bottom:14px}
+.r-custom-title{font-size:13px;font-weight:700;color:var(--tx)}
+.r-custom-close{font-size:18px;color:var(--txm);cursor:pointer;
+  padding:4px 6px;border-radius:8px;line-height:1;
+  -webkit-tap-highlight-color:transparent}
+.r-custom-close:hover{color:var(--tx);background:var(--bd)}
+
+/* Mode selector pills */
+.r-mode-pills{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+.r-mpill{padding:7px 14px;border-radius:20px;font-size:12px;font-weight:600;
+  border:1.5px solid var(--bd2);color:var(--tx2);background:var(--surf);
+  cursor:pointer;transition:all .15s;-webkit-tap-highlight-color:transparent}
+.r-mpill.active{background:var(--b6);border-color:var(--b6);color:#fff}
+.r-mpill.disabled{opacity:.45;cursor:default;pointer-events:none}
+
+/* Mode body */
+.r-mode-body{display:none}
+.r-mode-body.active{display:block}
+
+/* Qty input row */
+.r-qty-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.r-qty-lbl{font-size:13px;color:var(--tx);font-weight:500}
+.r-qty-input{width:80px;padding:8px 12px;border-radius:10px;
+  border:1.5px solid var(--bd2);font-size:16px;font-weight:700;
+  font-family:var(--fm);color:var(--tx);background:var(--surf);
+  text-align:center;-webkit-appearance:none;appearance:none}
+.r-qty-input:focus{outline:none;border-color:var(--b6)}
+.r-qty-unit{font-size:13px;color:var(--txm);font-weight:500}
+
+/* Calculated result row */
+.r-calc-result{margin-top:12px;padding:10px 14px;
+  background:rgba(37,99,235,.07);border-radius:12px;
+  display:flex;gap:18px;flex-wrap:wrap}
+.r-calc-item{display:flex;flex-direction:column;gap:2px}
+.r-calc-lbl{font-size:10px;font-weight:700;color:var(--txm);
+  text-transform:uppercase;letter-spacing:.04em}
+.r-calc-val{font-size:14px;font-weight:700;color:var(--b6);font-family:var(--fm)}
+
+/* Coming soon placeholder in panel */
+.r-coming-soon{padding:14px 0 2px;font-size:13px;color:var(--txm);
+  display:flex;align-items:center;gap:8px}
+.r-coming-soon::before{content:'⏳';font-size:14px}
 
 /* ── Meta info strip (shelf life, last production) ── */
-.r-meta{display:flex;gap:20px;flex-wrap:wrap;margin-bottom:18px}
-.r-meta-item{display:flex;flex-direction:column;gap:2px}
-.r-meta-lbl{font-size:10px;font-weight:700;color:var(--txm);
-  text-transform:uppercase;letter-spacing:.06em}
-.r-meta-val{font-size:13px;font-weight:600;color:var(--tx)}
+.r-meta{display:flex;gap:24px;flex-wrap:wrap;margin-bottom:20px;
+  padding:12px 14px;background:var(--surf-g);border:1px solid var(--bd);
+  border-radius:var(--r2)}
+.r-meta-item{display:flex;flex-direction:column;gap:3px}
+.r-meta-lbl{font-size:11px;font-weight:700;color:var(--txm);
+  text-transform:uppercase;letter-spacing:.04em}
+.r-meta-val{font-size:14px;font-weight:600;color:var(--tx)}
 
 /* ── Steps list (Procedura tab) ── */
 .slist{display:flex;flex-direction:column;gap:10px}
-.sitem{display:flex;align-items:flex-start;gap:12px;
-  font-size:13px;line-height:1.58;color:var(--tx);
-  padding:12px 14px;background:var(--surf-g);
+.sitem{display:flex;align-items:flex-start;gap:14px;
+  font-size:14px;line-height:1.6;color:var(--tx);
+  padding:14px 16px;background:var(--surf-g);
   border:1px solid var(--bd);border-radius:var(--r2)}
-.snum{width:24px;height:24px;border-radius:50%;
+.snum{width:26px;height:26px;border-radius:50%;
   background:var(--b6);color:#fff;font-size:11px;font-weight:700;
-  display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
 
 /* ── BOM table ── */
 .bom-hd{display:grid;grid-template-columns:1fr auto;gap:14px;
-  padding:0 2px 9px;border-bottom:1px solid var(--bd);margin-bottom:2px;
-  font-size:10px;font-weight:700;color:var(--txm);
-  text-transform:uppercase;letter-spacing:.06em}
+  padding:0 4px 10px;border-bottom:1px solid var(--bd);margin-bottom:4px;
+  font-size:11px;font-weight:700;color:var(--txm);
+  text-transform:uppercase;letter-spacing:.04em}
 .brow{display:grid;grid-template-columns:1fr auto;gap:14px;
-  padding:8px 2px;border-bottom:1px solid var(--bd);align-items:center}
+  padding:10px 4px;border-bottom:1px solid var(--bd);align-items:center}
 .brow:last-child{border-bottom:none}
-.bitem{font-size:13px;color:var(--tx)}
-.bqty{font-size:12px;font-weight:600;font-family:var(--fm);color:var(--b6);white-space:nowrap}
+.bitem{font-size:14px;color:var(--tx)}
+.bqty{font-size:14px;font-weight:700;font-family:var(--fm);color:var(--b6);white-space:nowrap}
 
 /* ── Sub-recipe collapsible ── */
 .r-sub-toggle{display:flex;align-items:center;gap:6px;
-  font-size:12px;font-weight:600;color:var(--tx2);
-  cursor:pointer;margin-top:14px;padding-top:14px;
+  font-size:13px;font-weight:600;color:var(--tx2);
+  cursor:pointer;margin-top:16px;padding-top:16px;
   border-top:1px solid var(--bd);
   -webkit-tap-highlight-color:transparent}
 .r-sub-toggle svg{transition:transform .2s;flex-shrink:0}
@@ -750,9 +820,9 @@ input,select,textarea{font-family:inherit}
 .r-sub-list.open{display:block}
 
 /* ── History placeholder ── */
-.r-hist-empty{padding:32px 16px;text-align:center;
-  color:var(--txm);font-size:13px;line-height:1.6}
-.r-hist-empty-ico{font-size:28px;margin-bottom:10px}
+.r-hist-empty{padding:40px 16px;text-align:center;
+  color:var(--txm);font-size:14px;line-height:1.6}
+.r-hist-empty-ico{font-size:30px;margin-bottom:12px}
 
 /* ── Panel visibility ── */
 .r-panel-hide{display:none}
@@ -1071,6 +1141,20 @@ it:{
   r_shelf:'Shelf life', r_last_prod:'Ultima produzione',
   r_last_prod_val:'Ieri · Samantha · 10 pz',
   r_batch_sel:'Batch',
+  r_batch_base:'Batch base',
+  r_batch_curr:'Batch attuale',
+  r_batch_scale:'Scala',
+  r_batch_custom:'Personalizza',
+  r_batch_close:'Chiudi',
+  r_batch_mode_qty:'Quantità finale',
+  r_batch_mode_ing:'Ingrediente vincolante',
+  r_batch_mode_cnt:'Contenitori disponibili',
+  r_batch_qty_lbl:'Produci',
+  r_batch_qty_unit:'pezzi',
+  r_batch_calc:'Batch calcolato',
+  r_batch_factor:'Fattore ricetta',
+  r_batch_ing_soon:'Ingrediente guida — prossimo step',
+  r_batch_cnt_soon:'Contenitori disponibili — prossimo step',
   r_bom_na:'Non disponibile per questo ruolo.',
   r_hist_placeholder:'Storico disponibile nella versione connessa al DB.',
   r_sub_title:'Ingredienti derivati',
@@ -1153,6 +1237,20 @@ en:{
   r_shelf:'Shelf life', r_last_prod:'Last produced',
   r_last_prod_val:'Yesterday · Samantha · 10 pcs',
   r_batch_sel:'Batch',
+  r_batch_base:'Base batch',
+  r_batch_curr:'Current batch',
+  r_batch_scale:'Scale',
+  r_batch_custom:'Customize',
+  r_batch_close:'Close',
+  r_batch_mode_qty:'Target quantity',
+  r_batch_mode_ing:'Binding ingredient',
+  r_batch_mode_cnt:'Available containers',
+  r_batch_qty_lbl:'Produce',
+  r_batch_qty_unit:'pcs',
+  r_batch_calc:'Calculated batch',
+  r_batch_factor:'Recipe factor',
+  r_batch_ing_soon:'Binding ingredient — next step',
+  r_batch_cnt_soon:'Available containers — next step',
   r_bom_na:'Not available for this role.',
   r_hist_placeholder:'History available in the DB-connected version.',
   r_sub_title:'Derived ingredients',
@@ -1230,6 +1328,20 @@ es:{
   r_shelf:'Vida útil', r_last_prod:'Última producción',
   r_last_prod_val:'Ayer · Samantha · 10 pz',
   r_batch_sel:'Batch',
+  r_batch_base:'Batch base',
+  r_batch_curr:'Batch actual',
+  r_batch_scale:'Escala',
+  r_batch_custom:'Personalizar',
+  r_batch_close:'Cerrar',
+  r_batch_mode_qty:'Cantidad objetivo',
+  r_batch_mode_ing:'Ingrediente limitante',
+  r_batch_mode_cnt:'Contenedores disponibles',
+  r_batch_qty_lbl:'Producir',
+  r_batch_qty_unit:'pz',
+  r_batch_calc:'Batch calculado',
+  r_batch_factor:'Factor receta',
+  r_batch_ing_soon:'Ingrediente limitante — próximo paso',
+  r_batch_cnt_soon:'Contenedores disponibles — próximo paso',
   r_bom_na:'No disponible para este rol.',
   r_hist_placeholder:'Historial disponible en la versión conectada a DB.',
   r_sub_title:'Ingredientes derivados',
@@ -1281,8 +1393,12 @@ es:{
 };
 
 /* lang stored in module-scope var + sessionStorage */
-const SHELL_VERSION = 'v009';
-var _recipeTab = 'proc';  /* active inner tab: proc | bom | hist */
+const SHELL_VERSION = 'v009a';
+var _recipeTab    = 'proc';   /* active inner tab: proc | bom | hist */
+var _recipeBatch  = 1;        /* quick batch multiplier: 1 | 2 | 3 */
+var _recipeCustom = false;    /* custom panel open */
+var _recipeMode   = 'qty';    /* active mode: qty | ing | cnt */
+var _recipeQtyVal = 10;       /* target quantity in custom mode */
 let LANG = sessionStorage.getItem('ws_lang') || 'it';
 function setLang(l){ LANG=l; sessionStorage.setItem('ws_lang',l); renderAll(); }
 function t(k,p={}){
@@ -1550,7 +1666,6 @@ var BOM=[
   {i:'Kahlúa',         v:60,   u:'ml'}
 ];
 /* State: current batch multiplier (1/2/3) */
-var _recipeBatch = 1;
 var STEPS=[
   'Monta i tuorli con lo zucchero fino a ottenere un composto chiaro e spumoso.',
   'Incorpora il mascarpone ai tuorli montati — mescola delicatamente con la marisa.',
@@ -2008,144 +2123,282 @@ function _patchObservations(ws, latest){
   }).join('');
 }
 
-/* ════ RECIPE v009 ═══════════════════════════════════════════════════════════
+/* ════ RECIPE v009a — batch controls ════════════════════════════════════════
    Tabs: Procedura | BOM | Storico
-   Batch selector: ×1 / ×2 / ×3 (in-memory only, no DB)
-   Mock data: Tiramisu / Pastry / Samantha
+   Batch: ×1/×2/×3 quick + Personalizza (qty finale; ing/contenitori = placeholder)
+   All in-memory, zero DB writes
    ════════════════════════════════════════════════════════════════════════════ */
+
+/* Batch base for Tiramisu mock */
+var RECIPE_BASE = {qty: 10, unit: 'pz'};
 
 /* Format BOM quantity string based on multiplier */
 function _bomQty(item, mult){
   var v = item.v * mult;
   var u = item.u;
-  if(u === 'g' && v >= 1000)  return (v/1000).toFixed(v%1000===0?0:1)+' kg';
-  if(u === 'ml' && v >= 1000) return (v/1000).toFixed(v%1000===0?0:1)+' L';
-  if(item.p) return v+' pz';   /* piece unit */
-  return v+u;
+  if(u === 'g'  && v >= 1000) return (v/1000 % 1 === 0 ? v/1000 : (v/1000).toFixed(1)) + ' kg';
+  if(u === 'ml' && v >= 1000) return (v/1000 % 1 === 0 ? v/1000 : (v/1000).toFixed(1)) + ' L';
+  if(item.p) return v + ' pz';
+  return v + u;
+}
+
+/* Round factor to 2 decimal places, display as ×N.NN */
+function _fmtFactor(f){
+  return '×' + (Math.round(f * 100) / 100).toFixed(2).replace(/\.00$/, '');
 }
 
 function pageRecipe(){
-  /* ── Inner tab state: _recipeTab global (proc | bom | hist) ── */
+  /* ── State: all globals declared at module level (_recipeTab, _recipeBatch, etc.) ── */
 
-  /* ── Batch selector HTML ── */
+  /* derived factor */
+  var factor   = _recipeCustom ? (_recipeQtyVal / RECIPE_BASE.qty) : _recipeBatch;
+  var currQty  = Math.round(factor * RECIPE_BASE.qty * 100) / 100;
+
+  /* ── Tab bar ── */
+  var tabs = ['proc','bom','hist'];
+  var tabLabel = {proc: t('r_tab_proc'), bom: t('r_tab_bom'), hist: t('r_tab_hist')};
+  var tabBar = '<div class="r-tabs">'
+    + tabs.map(function(k){
+        return '<div class="r-tab' + (k === _recipeTab ? ' active' : '') + '" data-rtab="' + k + '">' + tabLabel[k] + '</div>';
+      }).join('') + '</div>';
+
+  /* ── Quick batch buttons ── */
+  var batchBtns = [1,2,3].map(function(n){
+    var on = !_recipeCustom && n === _recipeBatch;
+    return '<button class="r-bx' + (on ? ' r-bx-on' : '') + '" data-batch="' + n + '">×' + n + '</button>';
+  }).join('');
+
+  var customOn = _recipeCustom;
+  var customBtn = '<button class="r-bx-custom' + (customOn ? ' r-bx-on' : '') + '" id="r-custom-toggle">' + t('r_batch_custom') + '</button>';
+
   var batchBar = '<div class="r-batch-bar">'
-    +'<span class="r-batch-lbl">'+t('r_batch_sel')+'</span>'
-    +'<div class="r-batch-btns">'
-    +[1,2,3].map(function(n){
-      return '<button class="r-bx'+(n===_recipeBatch?' r-bx-on':'')+
-        '" data-batch="'+n+'">×'+n+'</button>';
-    }).join('')
-    +'</div></div>';
+    + '<span class="r-batch-lbl">' + t('r_batch_sel') + '</span>'
+    + '<div class="r-batch-btns">' + batchBtns + '</div>'
+    + customBtn
+    + '</div>';
 
-  /* ── Tab bar HTML ── */
-  var tabs=['proc','bom','hist'];
-  var tabLabels={proc:t('r_tab_proc'),bom:t('r_tab_bom'),hist:t('r_tab_hist')};
-  var tabBar='<div class="r-tabs">'
-    +tabs.map(function(k){
-      return '<div class="r-tab'+(k===_recipeTab?' active':'')+
-        '" data-rtab="'+k+'">'+tabLabels[k]+'</div>';
-    }).join('')
-    +'</div>';
+  /* ── Batch summary strip ── */
+  var batchSummary = '<div class="r-batch-summary">'
+    + '<div class="r-bsum-item"><span class="r-bsum-lbl">' + t('r_batch_base') + '</span>'
+      + '<span class="r-bsum-val">' + RECIPE_BASE.qty + ' ' + RECIPE_BASE.unit + '</span></div>'
+    + '<div class="r-bsum-sep"></div>'
+    + '<div class="r-bsum-item"><span class="r-bsum-lbl">' + t('r_batch_curr') + '</span>'
+      + '<span class="r-bsum-val r-bsum-hi" id="r-curr-val">' + currQty + ' ' + RECIPE_BASE.unit + '</span></div>'
+    + '<div class="r-bsum-sep"></div>'
+    + '<div class="r-bsum-item"><span class="r-bsum-lbl">' + t('r_batch_scale') + '</span>'
+      + '<span class="r-bsum-val" id="r-factor-val">' + _fmtFactor(factor) + '</span></div>'
+    + '</div>';
 
-  /* ── Meta strip (shelf life + last production) ── */
-  var metaStrip='<div class="r-meta">'
-    +'<div class="r-meta-item"><span class="r-meta-lbl">'+t('r_shelf')+'</span>'
-      +'<span class="r-meta-val">24h</span></div>'
-    +'<div class="r-meta-item"><span class="r-meta-lbl">'+t('r_last_prod')+'</span>'
-      +'<span class="r-meta-val">'+t('r_last_prod_val')+'</span></div>'
-    +'</div>';
+  /* ── Customize panel ── */
+  var modeQtyBody = '<div class="r-mode-body' + (_recipeMode === 'qty' ? ' active' : '') + '" id="r-mode-qty">'
+    + '<div class="r-qty-row">'
+    + '<span class="r-qty-lbl">' + t('r_batch_qty_lbl') + '</span>'
+    + '<input class="r-qty-input" id="r-qty-input" type="number" min="1" step="1" value="' + _recipeQtyVal + '">'
+    + '<span class="r-qty-unit">' + RECIPE_BASE.unit + '</span>'
+    + '</div>'
+    + '<div class="r-calc-result" id="r-calc-result">'
+    + '<div class="r-calc-item"><span class="r-calc-lbl">' + t('r_batch_calc') + '</span>'
+      + '<span class="r-calc-val" id="r-calc-qty">' + currQty + ' ' + RECIPE_BASE.unit + '</span></div>'
+    + '<div class="r-calc-item"><span class="r-calc-lbl">' + t('r_batch_factor') + '</span>'
+      + '<span class="r-calc-val" id="r-calc-factor">' + _fmtFactor(factor) + '</span></div>'
+    + '</div></div>';
+
+  var modeIngBody = '<div class="r-mode-body' + (_recipeMode === 'ing' ? ' active' : '') + '" id="r-mode-ing">'
+    + '<p class="r-coming-soon">' + t('r_batch_ing_soon') + '</p></div>';
+
+  var modeCntBody = '<div class="r-mode-body' + (_recipeMode === 'cnt' ? ' active' : '') + '" id="r-mode-cnt">'
+    + '<p class="r-coming-soon">' + t('r_batch_cnt_soon') + '</p></div>';
+
+  var modePills = '<div class="r-mode-pills">'
+    + '<div class="r-mpill' + (_recipeMode === 'qty' ? ' active' : '') + '" data-mode="qty">' + t('r_batch_mode_qty') + '</div>'
+    + '<div class="r-mpill disabled" data-mode="ing">' + t('r_batch_mode_ing') + '</div>'
+    + '<div class="r-mpill disabled" data-mode="cnt">' + t('r_batch_mode_cnt') + '</div>'
+    + '</div>';
+
+  var customPanel = '<div class="r-custom-panel' + (_recipeCustom ? ' open' : '') + '" id="r-custom-panel">'
+    + '<div class="r-custom-hd">'
+    + '<span class="r-custom-title">' + t('r_batch_custom') + '</span>'
+    + '<span class="r-custom-close" id="r-custom-close">✕</span>'
+    + '</div>'
+    + modePills
+    + modeQtyBody + modeIngBody + modeCntBody
+    + '</div>';
+
+  /* ── Meta strip ── */
+  var metaStrip = '<div class="r-meta">'
+    + '<div class="r-meta-item"><span class="r-meta-lbl">' + t('r_shelf') + '</span>'
+      + '<span class="r-meta-val">24h</span></div>'
+    + '<div class="r-meta-item"><span class="r-meta-lbl">' + t('r_last_prod') + '</span>'
+      + '<span class="r-meta-val">' + t('r_last_prod_val') + '</span></div>'
+    + '</div>';
 
   /* ── Panel: PROCEDURA ── */
-  var procPanel = '<div id="rp-proc" class="r-panel'+(
-    _recipeTab==='proc'?'':' r-panel-hide')+'">'
+  var procPanel = '<div id="rp-proc" class="r-panel' + (_recipeTab === 'proc' ? '' : ' r-panel-hide') + '">'
     + metaStrip
     + batchBar
-    +'<ol class="slist">'
-    +STEPS.map(function(s,i){
-      return '<li class="sitem"><span class="snum">'+(i+1)+'</span><span>'+s+'</span></li>';
-    }).join('')
-    +'</ol>'
-    +'</div>';
+    + batchSummary
+    + customPanel
+    + '<ol class="slist">'
+    + STEPS.map(function(s, i){
+        return '<li class="sitem"><span class="snum">' + (i+1) + '</span><span>' + s + '</span></li>';
+      }).join('')
+    + '</ol></div>';
 
   /* ── Panel: BOM ── */
   var bomRows = can('view_bom')
-    ? '<div class="bom-hd"><span>'+t('rbom').split(' ')[0]+'</span><span>×'+_recipeBatch+'</span></div>'
+    ? '<div class="bom-hd"><span>' + t('r_tab_bom') + '</span><span id="bom-mult-hd">×' + factor.toFixed(2).replace(/\.00$/,'') + '</span></div>'
       + BOM.map(function(r){
-          return '<div class="brow"><span class="bitem">'+r.i+'</span>'
-            +'<span class="bqty" data-bom-item="'+r.i+'">'+_bomQty(r,_recipeBatch)+'</span></div>';
+          return '<div class="brow"><span class="bitem">' + r.i + '</span>'
+            + '<span class="bqty" data-bom-item="' + r.i + '">' + _bomQty(r, factor) + '</span></div>';
         }).join('')
-      /* Sub-recipe collapsible (mock: Berry Coulis as sub) */
-      +'<div class="r-sub-toggle" id="r-sub-toggle">'
-        +'<svg width="12" height="12" viewBox="0 0 12 12" fill="none">'
-          +'<path d="M4 2l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>'
-        +'</svg>'
-        +'<span>'+t('r_sub_title')+'</span>'
-      +'</div>'
-      +'<div class="r-sub-list" id="r-sub-list">'
-        +'<div class="brow"><span class="bitem">Berry Coulis</span>'
-          +'<span class="bqty">70g × '+_recipeBatch+' = '+_bomQty({v:70,u:'g'},_recipeBatch)+'</span></div>'
-        +'<div class="brow"><span class="bitem">Meringa italiana</span>'
-          +'<span class="bqty">45g × '+_recipeBatch+' = '+_bomQty({v:45,u:'g'},_recipeBatch)+'</span></div>'
-      +'</div>'
-    : '<p style="font-size:13px;color:var(--txm);padding:12px 0">'+t('r_bom_na')+'</p>';
+      + '<div class="r-sub-toggle" id="r-sub-toggle">'
+        + '<svg width="12" height="12" viewBox="0 0 12 12" fill="none">'
+          + '<path d="M4 2l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>'
+        + '</svg><span>' + t('r_sub_title') + '</span></div>'
+      + '<div class="r-sub-list" id="r-sub-list">'
+        + '<div class="brow"><span class="bitem">Berry Coulis</span>'
+          + '<span class="bqty" data-sub-item="coulis">' + _bomQty({v:70,u:'g'}, factor) + '</span></div>'
+        + '<div class="brow"><span class="bitem">Meringa italiana</span>'
+          + '<span class="bqty" data-sub-item="meringa">' + _bomQty({v:45,u:'g'}, factor) + '</span></div>'
+      + '</div>'
+    : '<p style="font-size:14px;color:var(--txm);padding:12px 0">' + t('r_bom_na') + '</p>';
 
-  var bomPanel = '<div id="rp-bom" class="r-panel'+(
-    _recipeTab==='bom'?'':' r-panel-hide')+'">'+bomRows+'</div>';
+  var bomPanel = '<div id="rp-bom" class="r-panel' + (_recipeTab === 'bom' ? '' : ' r-panel-hide') + '">'
+    + '<div style="margin-bottom:12px">' + batchBar + batchSummary + customPanel + '</div>'
+    + bomRows + '</div>';
 
   /* ── Panel: STORICO ── */
-  var histPanel = '<div id="rp-hist" class="r-panel'+(
-    _recipeTab==='hist'?'':' r-panel-hide')+'">'
-    +'<div class="r-hist-empty">'
-    +'<div class="r-hist-empty-ico">📅</div>'
-    +'<p>'+t('r_hist_placeholder')+'</p>'
-    +'</div></div>';
+  var histPanel = '<div id="rp-hist" class="r-panel' + (_recipeTab === 'hist' ? '' : ' r-panel-hide') + '">'
+    + '<div class="r-hist-empty"><div class="r-hist-empty-ico">📅</div>'
+    + '<p>' + t('r_hist_placeholder') + '</p></div></div>';
+
+  /* ── Page header ── */
+  var batchTitle = Math.round(factor * RECIPE_BASE.qty * 100) / 100;
 
   return '<div class="pi"><div class="ph">'
-    +'<div class="ph-row">'
-    +'<h2 class="ptitle">Tiramisu</h2>'
-    +'<span class="bdg b-in">'+t('rsta',{n:'Pastry'})+'</span>'
-    +'</div>'
-    +'<p class="psub">'+t('rbatch',{n:10})+'</p>'
-    +'</div>'
+    + '<div class="ph-row">'
+    + '<h2 class="ptitle">Tiramisu</h2>'
+    + '<span class="bdg b-in">' + t('rsta', {n:'Pastry'}) + '</span>'
+    + '</div>'
+    + '<p class="psub" id="r-page-sub">' + t('rbatch', {n: batchTitle}) + '</p>'
+    + '</div>'
     + tabBar
     + procPanel
     + bomPanel
     + histPanel
-    +'<p class="note"><span class="nd"></span>'+t('rnote')+'</p>'
-    +'</div>';
+    + '<p class="note"><span class="nd"></span>' + t('rnote') + '</p>'
+    + '</div>';
+}
+
+/* ── Helper: apply new factor to all BOM cells + summary strip ── */
+function _applyFactor(factor, ws){
+  var currQty = Math.round(factor * RECIPE_BASE.qty * 100) / 100;
+
+  /* BOM main rows */
+  BOM.forEach(function(item){
+    var el = ws.querySelector('[data-bom-item="' + item.i + '"]');
+    if(el) el.textContent = _bomQty(item, factor);
+  });
+
+  /* Sub-recipe rows */
+  var subItems = [{key:'coulis',v:70,u:'g'},{key:'meringa',v:45,u:'g'}];
+  subItems.forEach(function(si){
+    var el = ws.querySelector('[data-sub-item="' + si.key + '"]');
+    if(el) el.textContent = _bomQty({v:si.v, u:si.u}, factor);
+  });
+
+  /* BOM header multiplier */
+  var hdMult = ws.querySelector('#bom-mult-hd');
+  if(hdMult) hdMult.textContent = '×' + (factor % 1 === 0 ? factor : factor.toFixed(2));
+
+  /* Summary strip — all instances (proc tab and bom tab) */
+  ws.querySelectorAll('#r-curr-val').forEach(function(el){ el.textContent = currQty + ' ' + RECIPE_BASE.unit; });
+  ws.querySelectorAll('#r-factor-val').forEach(function(el){ el.textContent = _fmtFactor(factor); });
+
+  /* Page subtitle */
+  var sub = ws.querySelector('#r-page-sub');
+  if(sub) sub.textContent = t('rbatch', {n: currQty});
+
+  /* Calc result in panel */
+  var calcQty = ws.querySelector('#r-calc-qty');
+  var calcFact = ws.querySelector('#r-calc-factor');
+  if(calcQty)  calcQty.textContent  = currQty + ' ' + RECIPE_BASE.unit;
+  if(calcFact) calcFact.textContent = _fmtFactor(factor);
 }
 
 function pageRecipeAfter(){
   var ws = document.getElementById('workspace');
   if(!ws) return;
 
-  /* ── Batch selector buttons ── */
+  /* ── Quick batch buttons (×1 / ×2 / ×3) ── */
   ws.querySelectorAll('.r-bx').forEach(function(btn){
     btn.addEventListener('click', function(){
       var n = parseInt(btn.dataset.batch);
-      if(n === _recipeBatch) return;
-      _recipeBatch = n;
-      /* Update active state on all batch buttons */
+      _recipeBatch  = n;
+      _recipeCustom = false;
+      _recipeQtyVal = n * RECIPE_BASE.qty;
+
+      /* Update button states */
       ws.querySelectorAll('.r-bx').forEach(function(b){
-        b.classList.toggle('r-bx-on', parseInt(b.dataset.batch)===n);
+        b.classList.toggle('r-bx-on', parseInt(b.dataset.batch) === n);
       });
-      /* Live-update BOM quantities without re-render */
-      BOM.forEach(function(item){
-        var el = ws.querySelector('[data-bom-item="'+item.i+'"]');
-        if(el) el.textContent = _bomQty(item, n);
+      ws.querySelectorAll('.r-bx-custom').forEach(function(b){
+        b.classList.remove('r-bx-on');
       });
-      /* Update BOM header multiplier */
-      var hdCell = ws.querySelector('.bom-hd span:last-child');
-      if(hdCell) hdCell.textContent = '×'+n;
-      /* Update sub-recipe if open */
-      var subList = ws.querySelector('#r-sub-list');
-      if(subList){
-        var subRows = subList.querySelectorAll('.bqty');
-        var subMocks = [{v:70,u:'g'},{v:45,u:'g'}];
-        subRows.forEach(function(el,i){
-          if(subMocks[i]) el.textContent = subMocks[i].v+'g × '+n+' = '+_bomQty(subMocks[i],n);
-        });
+
+      /* Close custom panel if open */
+      ws.querySelectorAll('.r-custom-panel').forEach(function(p){ p.classList.remove('open'); });
+
+      /* Apply */
+      _applyFactor(n, ws);
+
+      /* Sync qty input */
+      var inp = ws.querySelector('#r-qty-input');
+      if(inp) inp.value = n * RECIPE_BASE.qty;
+    });
+  });
+
+  /* ── Personalizza toggle ── */
+  ws.querySelectorAll('#r-custom-toggle').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      _recipeCustom = !_recipeCustom;
+      btn.classList.toggle('r-bx-on', _recipeCustom);
+      /* Toggle all custom panels (proc and bom tabs each have one) */
+      ws.querySelectorAll('.r-custom-panel').forEach(function(p){
+        p.classList.toggle('open', _recipeCustom);
+      });
+      if(_recipeCustom){
+        /* Deactivate quick buttons */
+        ws.querySelectorAll('.r-bx').forEach(function(b){ b.classList.remove('r-bx-on'); });
+        /* Focus input */
+        var inp = ws.querySelector('#r-qty-input');
+        if(inp){ inp.focus(); inp.select(); }
       }
+    });
+  });
+
+  /* ── Close button inside panel ── */
+  ws.querySelectorAll('#r-custom-close').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      _recipeCustom = false;
+      ws.querySelectorAll('.r-custom-panel').forEach(function(p){ p.classList.remove('open'); });
+      ws.querySelectorAll('#r-custom-toggle').forEach(function(b){ b.classList.remove('r-bx-on'); });
+      /* Restore last quick batch */
+      ws.querySelectorAll('.r-bx').forEach(function(b){
+        b.classList.toggle('r-bx-on', parseInt(b.dataset.batch) === _recipeBatch);
+      });
+      _applyFactor(_recipeBatch, ws);
+    });
+  });
+
+  /* ── Qty input: live update as user types ── */
+  ws.querySelectorAll('#r-qty-input').forEach(function(inp){
+    inp.addEventListener('input', function(){
+      var raw = parseFloat(inp.value);
+      if(!raw || raw <= 0) return;
+      _recipeQtyVal = raw;
+      var factor = raw / RECIPE_BASE.qty;
+      _applyFactor(factor, ws);
     });
   });
 
@@ -2155,30 +2408,24 @@ function pageRecipeAfter(){
       var key = tab.dataset.rtab;
       if(key === _recipeTab) return;
       _recipeTab = key;
-      /* Update tab active state */
       ws.querySelectorAll('.r-tab').forEach(function(t){
-        t.classList.toggle('active', t.dataset.rtab===key);
+        t.classList.toggle('active', t.dataset.rtab === key);
       });
-      /* Show/hide panels */
-      ws.querySelectorAll('.r-panel').forEach(function(p){
-        p.classList.add('r-panel-hide');
-      });
-      var target = ws.querySelector('#rp-'+key);
+      ws.querySelectorAll('.r-panel').forEach(function(p){ p.classList.add('r-panel-hide'); });
+      var target = ws.querySelector('#rp-' + key);
       if(target) target.classList.remove('r-panel-hide');
     });
   });
 
   /* ── Sub-recipe toggle ── */
-  var subToggle = ws.querySelector('#r-sub-toggle');
-  var subList   = ws.querySelector('#r-sub-list');
-  if(subToggle && subList){
-    subToggle.addEventListener('click', function(){
-      subToggle.classList.toggle('open');
-      subList.classList.toggle('open');
+  ws.querySelectorAll('#r-sub-toggle').forEach(function(tog){
+    tog.addEventListener('click', function(){
+      var list = tog.nextElementSibling;
+      tog.classList.toggle('open');
+      if(list) list.classList.toggle('open');
     });
-  }
+  });
 }
-
 /* INVENTORY */
 function pageInventory(){
   var rows=MOVS.map(function(m){
