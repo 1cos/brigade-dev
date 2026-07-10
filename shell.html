@@ -1,6 +1,6 @@
 <!-- ── NEW SHELL LAB BANNER ── -->
 <div id="shell-lab-banner" style="position:fixed;top:0;left:0;right:0;z-index:99999;background:linear-gradient(90deg,#0f766e,#0891b2);color:white;font-size:11px;font-weight:800;letter-spacing:0.09em;text-transform:uppercase;text-align:center;padding:5px 16px;font-family:-apple-system,BlinkMacSystemFont,sans-serif;user-select:none;box-shadow:0 1px 6px rgba(8,145,178,0.4);">
-  🎨 NEW SHELL LAB &nbsp;·&nbsp; brigade-dev/shell.html &nbsp;·&nbsp; v010d1 &nbsp;·&nbsp; Not for kitchen use
+  🎨 NEW SHELL LAB &nbsp;·&nbsp; brigade-dev/shell.html &nbsp;·&nbsp; v010d2 &nbsp;·&nbsp; Not for kitchen use
 </div>
 <style>
 /* push shell content below banner */
@@ -946,6 +946,37 @@ input,select,textarea{font-family:inherit}
 .gtimer-chip.has-finished{
   background:rgba(22,163,74,.12);border-color:rgba(22,163,74,.35);color:var(--ok)}
 
+/* ── LAB diagnostic panel ── */
+.lab-diag-wrap{
+  border:1.5px dashed #f59e0b;border-radius:12px;
+  padding:12px 14px;margin-bottom:14px;
+  background:rgba(245,158,11,.05)}
+.lab-diag-hd{
+  font-size:11px;font-weight:700;color:#92400e;
+  text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px}
+.lab-diag-panel{display:flex;flex-direction:column;gap:0}
+.diag-row{
+  display:flex;justify-content:space-between;
+  padding:5px 0;border-bottom:1px solid rgba(245,158,11,.15);
+  font-size:12px}
+.diag-k{color:#78716c;font-weight:600}
+.diag-v{color:var(--tx);font-family:var(--fm);font-size:11px}
+.diag-log-hd{font-size:10px;font-weight:700;color:#92400e;
+  margin-top:8px;margin-bottom:4px;text-transform:uppercase}
+.diag-log{
+  font-size:10px;font-family:var(--fm);color:#44403c;
+  white-space:pre-wrap;word-break:break-all;
+  max-height:100px;overflow-y:auto;
+  background:rgba(0,0,0,.04);border-radius:6px;padding:6px 8px;margin:0}
+.diag-btns{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.diag-btn{
+  padding:7px 14px;border-radius:20px;
+  font-size:12px;font-weight:700;
+  border:1.5px solid #f59e0b;color:#92400e;
+  background:rgba(245,158,11,.1);cursor:pointer;
+  -webkit-tap-highlight-color:transparent}
+.diag-btn:active{background:rgba(245,158,11,.25)}
+
 /* ── LAB prep banner ── */
 .lab-prep-banner{
   display:flex;align-items:center;gap:8px;
@@ -1581,7 +1612,7 @@ es:{
 };
 
 /* lang stored in module-scope var + sessionStorage */
-const SHELL_VERSION = 'v010d1';
+const SHELL_VERSION = 'v010d2';
 /* Recipe state lives in RECIPE object + _driverQty inside recipe JS block */
 let LANG = sessionStorage.getItem('ws_lang') || 'it';
 function setLang(l){ LANG=l; sessionStorage.setItem('ws_lang',l); renderAll(); }
@@ -2669,29 +2700,63 @@ function _installCloseTabGuard(){
    Called exactly once when RAF reaches 0, and on visibilitychange if done state
    found in localStorage. Idempotency via done_notified flag in localStorage.
    ════════════════════════════════════════════════════════════════════════════ */
-/* ── AudioContext: created + unlocked on first user gesture (Start tap).
-   iOS Safari requires AudioContext.resume() inside a user gesture — if we
-   create it at completion time the audio policy blocks it silently.
-   _audioCtx is initialised in _unlockAudio() called from the Start handler. ── */
-var _audioCtx = null;
+/* ══════════════════════════════════════════════════════════════════════════
+   AUDIO SYSTEM — v010d2
+   Key insight: AudioContext.resume() on iOS is ASYNC (returns Promise).
+   Creating oscillators before the Promise resolves plays nothing — the
+   context is still suspended when start() is called.
+   Fix: schedule oscillators inside .then() callback.
+   ══════════════════════════════════════════════════════════════════════ */
 
-function _unlockAudio(){
-  try {
-    if(!_audioCtx){
-      _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    }
-    /* Resume if suspended (iOS default state after creation) */
-    if(_audioCtx.state === 'suspended') _audioCtx.resume();
-  } catch(e){}
+var _audioCtx    = null;   /* shared context — created once on Start tap   */
+var _audioReady  = false;  /* true once context.state === 'running'        */
+var _audioLog    = [];     /* diagnostic log for LAB panel                 */
+
+function _alog(msg){
+  var ts = new Date().toISOString().substr(11,12);
+  _audioLog.push('['+ts+'] '+msg);
+  if(_audioLog.length > 20) _audioLog.shift();
+  /* Update panel if open */
+  var el = document.getElementById('lab-audio-log');
+  if(el) el.textContent = _audioLog.join('\n');
 }
 
-function _playTimerSound(){
+/* Create / resume AudioContext inside a user gesture.
+   Returns a Promise that resolves when state === 'running'. */
+function _unlockAudio(){
+  return new Promise(function(resolve){
+    try {
+      if(!_audioCtx){
+        _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        _alog('AudioContext created — state: ' + _audioCtx.state);
+      }
+      if(_audioCtx.state === 'running'){
+        _audioReady = true;
+        _alog('Context already running');
+        resolve(_audioCtx);
+        return;
+      }
+      _alog('Calling resume() — state before: ' + _audioCtx.state);
+      _audioCtx.resume().then(function(){
+        _audioReady = true;
+        _alog('resume() resolved — state now: ' + _audioCtx.state);
+        resolve(_audioCtx);
+      }).catch(function(err){
+        _alog('resume() rejected: ' + err);
+        resolve(null);  /* resolve null so callers can handle gracefully */
+      });
+    } catch(err){
+      _alog('AudioContext error: ' + err);
+      resolve(null);
+    }
+  });
+}
+
+/* Schedule three ascending beeps on a running context.
+   ctx MUST be in 'running' state when this is called. */
+function _scheduleBeeps(ctx){
   try {
-    var ctx = _audioCtx;
-    if(!ctx){ ctx = new (window.AudioContext||window.webkitAudioContext)(); }
-    if(ctx.state === 'suspended') ctx.resume();
-    /* Three short ascending beeps: 660 → 784 → 988 Hz */
-    var times = [0, 0.18, 0.36];
+    var times = [0, 0.20, 0.40];
     var freqs  = [660, 784, 988];
     times.forEach(function(t, i){
       var osc  = ctx.createOscillator();
@@ -2700,13 +2765,78 @@ function _playTimerSound(){
       gain.connect(ctx.destination);
       osc.frequency.value = freqs[i];
       osc.type = 'sine';
+      /* Gain envelope: attack 20ms, sustain, release */
       gain.gain.setValueAtTime(0,    ctx.currentTime + t);
-      gain.gain.linearRampToValueAtTime(0.38, ctx.currentTime + t + 0.02);
-      gain.gain.linearRampToValueAtTime(0,    ctx.currentTime + t + 0.14);
+      gain.gain.linearRampToValueAtTime(0.5, ctx.currentTime + t + 0.02);
+      gain.gain.setValueAtTime(0.5,        ctx.currentTime + t + 0.10);
+      gain.gain.linearRampToValueAtTime(0, ctx.currentTime + t + 0.18);
       osc.start(ctx.currentTime + t);
-      osc.stop(ctx.currentTime  + t + 0.16);
+      osc.stop(ctx.currentTime  + t + 0.20);
     });
-  } catch(e){}
+    _alog('Beeps scheduled on running context');
+    return true;
+  } catch(err){
+    _alog('scheduleBeeps error: ' + err);
+    return false;
+  }
+}
+
+/* Fallback: <audio> element with inline tiny WAV (beep encoded as data URI).
+   Generated at first call, reused. Works even if AudioContext is blocked. */
+var _audioEl = null;
+function _playFallbackBeep(){
+  try {
+    if(!_audioEl){
+      /* 440 Hz sine, 0.3s, 8-bit PCM WAV — tiny inline base64 */
+      /* Generated offline: python3 -c "import struct,math,base64;
+         rate=8000;dur=0.3;freq=440;amp=100
+         frames=[int(amp*math.sin(2*math.pi*freq*i/rate)) for i in range(int(rate*dur))]
+         data=struct.pack('<'+'b'*len(frames),*frames)
+         hdr=struct.pack('<4sI4s4sIHHIIHH4sI',b'RIFF',36+len(data),b'WAVE',b'fmt ',
+           16,1,1,rate,rate,1,8,b'data',len(data))
+         print(base64.b64encode(hdr+data).decode())" */
+      _audioEl = new Audio('data:audio/wav;base64,UklGRtQCAABXQVZFZm10IBAAAAABAAEAgD4AAIA+AAABAAgAZGF0YbACAAAAAQIEBgcJCgwNDhAREhMUFBUWFhcXFxcXFxcWFhUUExISEA8ODAsKCAcFBAIBAP/9/Pv5+Pf19PPy8fDv7+7u7e3t7e7u7+/w8fLz9PX3+Pn6+/3+AAEDBAYHCQoMDQ4QERITExQVFRYWFhYWFhYVFRQTEhEQDw4NCwkIBgUDAgAA/v38+/n49/X08/Lx8O/v7u7t7e3t7e7u7+/w8fLz9PX3+Pn6/P3+AAIDBQYICQsNDg8REhMUFRUWFhcXFxcXFxYWFRQUExEQDw0MCwoIBwUDAgAA/v38+/r49/b18/Lx8O/u7u3t7Ozt7e3u7u/w8fLz9Pb3+fn7/P3/AAEDBQYICgsMDQ8QERITFBQVFhYWFxcWFhYVFRQTEhEQDw0MCwoIBwUDAgAA/v38+/n49vX08/Hx8O/u7u3t7Ozt7e3u7+/w8fLz9PX2+Pn6/P3/AAEDBAYHCQoMDQ8QERITFBQVFhYXFxcXFxYWFhUUExISEA8ODAsKCAcFBAIBAP/9/Pv6+Pf29PTy8fDv7+7t7e3s7O3t7e7u7/Dw8fLz9PX3+Pn6/P3+AAIDBQcICgsNDhAREhMUFRUWFhcXFxcXFhYVFRQTEhEQDg0MCwoIBwUDAgD//v38+/r59/b19PPy8fDv7u7t7e3s7e3t7u7v8PDx8vP09vf4+vv8/f8AAQMEBgcJCwwNDhAREhMUFRUWFhYXFxcWFhUVFBMSEQ8ODQwKCQgGBAMBAAD+/fz6+fj29fTy8vHw7+7t7e3s7Ozt7e3u7+/w8fLz9Pb3+Pn7/P3/AAIDBQcICgsNDg8RERMUFBUWFhcXFxcXFhYWFBQTEhEQDw4NCwoIBwUDAgD//v38+/r59/b09PPy8fDv7+7t7e3s7O3t7e7u7/Dw8fPz9Pb3+fn7/P3/AAEDBAYHCQoMDQ8QERITFBUVFhYWFhcWFhYVFBQTEhEPDg0MCwkIBgUDAgD//f38+/r59/b08/Lx8O/v7u3t7e3s7e3t7u7v8PHx8vP09vf4+vv8/f8A');
+      _audioEl.volume = 1.0;
+    }
+    _audioEl.currentTime = 0;
+    _audioEl.play().then(function(){
+      _alog('Fallback audio played OK');
+    }).catch(function(err){
+      _alog('Fallback audio failed: '+err);
+    });
+  } catch(err){
+    _alog('Fallback audio error: '+err);
+  }
+}
+
+/* Main play function: unlock → then schedule beeps (proper async chain).
+   Falls back to <audio> element if context stays suspended. */
+function _playTimerSound(){
+  _unlockAudio().then(function(ctx){
+    if(ctx && ctx.state === 'running'){
+      _scheduleBeeps(ctx);
+    } else {
+      _alog('Context not running after resume — using fallback');
+      _playFallbackBeep();
+    }
+  });
+}
+
+/* LAB: immediate sound test — call from button click handler */
+function _labTestSound(){
+  _alog('--- LAB sound test triggered ---');
+  _alog('vibrate supported: ' + (!!navigator.vibrate));
+  _alog('visibility: ' + document.visibilityState);
+  _unlockAudio().then(function(ctx){
+    if(ctx && ctx.state === 'running'){
+      _alog('immediate beep: context running');
+      _scheduleBeeps(ctx);
+    } else {
+      _alog('immediate beep: context NOT running — fallback');
+      _playFallbackBeep();
+    }
+    _updateLabDiagPanel();
+  });
 }
 
 function _vibrateTimer(){
@@ -2818,6 +2948,8 @@ function _onTimerDone(step){
   _playTimerSound();
   _vibrateTimer();
   _showTimerDoneBanner(step);
+  /* LAB: refresh diag panel to show context state at completion */
+  setTimeout(_updateLabDiagPanel, 900);
 }
 
 function _rafStart(step){
@@ -3050,6 +3182,47 @@ function _wireTimerBlock(container, step){
 }
 
 /* ════════════════════════════════════════════════════════════════════════════
+   LAB DIAGNOSTIC PANEL — v010d2
+   Shows audio/vibration/visibility state. Visible only in Lab shell.
+   ════════════════════════════════════════════════════════════════════════════ */
+function _updateLabDiagPanel(){
+  var panel = document.getElementById('lab-diag-panel');
+  if(!panel) return;
+
+  var audioAPI  = !!(window.AudioContext || window.webkitAudioContext) ? '✅ Available' : '❌ Not found';
+  var ctxState  = _audioCtx ? _audioCtx.state : 'not created';
+  var vibrateOk = !!navigator.vibrate ? '✅ Supported' : '❌ Not supported (iOS Safari)';
+  var visState  = document.visibilityState;
+  var audioReady= _audioReady ? '✅ Ready' : '⚠️ Not ready';
+
+  panel.innerHTML =
+    '<div class="diag-row"><span class="diag-k">Audio API</span><span class="diag-v">'+audioAPI+'</span></div>'
+   +'<div class="diag-row"><span class="diag-k">Context state</span><span class="diag-v">'+ctxState+'</span></div>'
+   +'<div class="diag-row"><span class="diag-k">Audio ready</span><span class="diag-v">'+audioReady+'</span></div>'
+   +'<div class="diag-row"><span class="diag-k">Vibration</span><span class="diag-v">'+vibrateOk+'</span></div>'
+   +'<div class="diag-row"><span class="diag-k">Visibility</span><span class="diag-v">'+visState+'</span></div>'
+   +'<div class="diag-log-hd">Log</div>'
+   +'<pre class="diag-log" id="lab-audio-log">'+(_audioLog.join('\n')||'-')+'</pre>'
+   +'<div class="diag-btns">'
+     +'<button class="diag-btn" id="diag-test-sound">▶ Test sound now</button>'
+     +'<button class="diag-btn" id="diag-refresh">↻ Refresh</button>'
+   +'</div>';
+
+  /* Wire buttons */
+  var soundBtn = panel.querySelector('#diag-test-sound');
+  var refBtn   = panel.querySelector('#diag-refresh');
+  if(soundBtn) soundBtn.addEventListener('click', function(e){
+    e.stopPropagation();
+    _labTestSound();
+    setTimeout(_updateLabDiagPanel, 800);
+  });
+  if(refBtn) refBtn.addEventListener('click', function(e){
+    e.stopPropagation();
+    _updateLabDiagPanel();
+  });
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
    PAGE RENDER
    ════════════════════════════════════════════════════════════════════════════ */
 function pageRecipe(){
@@ -3101,12 +3274,18 @@ function pageRecipe(){
 
   var labBanner = '<div class="lab-prep-banner">'
     +'<span class="lab-prep-ico">⚗️</span>'
-    +'<span>LAB — lo step in fondo ha un timer da 10s per il QA</span>'
+    +'<span>LAB — timer 10s in fondo · pannello diagnostica audio sotto</span>'
+    +'</div>';
+  /* LAB diagnostic panel — rendered once, updated by _updateLabDiagPanel() */
+  var diagPanel = '<div class="lab-diag-wrap">'
+    +'<div class="lab-diag-hd">⚗️ LAB Diagnostics — Audio &amp; Platform</div>'
+    +'<div id="lab-diag-panel" class="lab-diag-panel">Caricamento...</div>'
     +'</div>';
   var cards=RECIPE.steps.map(function(step){ return _renderCard(step,fac); }).join('');
   var prepPanel='<div id="rp-prep" class="r-panel'+(
     _recipeTab==='prep'?'':' r-panel-hide')+'">'
     +labBanner
+    +diagPanel
     +'<div class="r-prep-list">'+cards+'</div></div>';
 
   var histPanel='<div id="rp-hist" class="r-panel'+(
@@ -3205,6 +3384,9 @@ function pageRecipeAfter(){
   /* Update global UI */
   _updateGlobalTimerUI();
   if(_activeTimerCount()>0) _startGlobalTick();
+
+  /* LAB: populate diagnostic panel after render */
+  setTimeout(_updateLabDiagPanel, 50);
 }
 
 /* INVENTORY */
