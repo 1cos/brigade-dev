@@ -1,6 +1,6 @@
 <!-- ── NEW SHELL LAB BANNER ── -->
 <div id="shell-lab-banner" style="position:fixed;top:0;left:0;right:0;z-index:99999;background:linear-gradient(90deg,#0f766e,#0891b2);color:white;font-size:11px;font-weight:800;letter-spacing:0.09em;text-transform:uppercase;text-align:center;padding:5px 16px;font-family:-apple-system,BlinkMacSystemFont,sans-serif;user-select:none;box-shadow:0 1px 6px rgba(8,145,178,0.4);">
-  🎨 NEW SHELL LAB &nbsp;·&nbsp; brigade-dev/shell.html &nbsp;·&nbsp; v010c &nbsp;·&nbsp; Not for kitchen use
+  🎨 NEW SHELL LAB &nbsp;·&nbsp; brigade-dev/shell.html &nbsp;·&nbsp; v010d &nbsp;·&nbsp; Not for kitchen use
 </div>
 <style>
 /* push shell content below banner */
@@ -907,7 +907,46 @@ input,select,textarea{font-family:inherit}
 .cg-stop:hover{background:rgba(239,68,68,.07)}
 .cg-cancel:hover{background:var(--surf-g)}
 
-/* ── Panel visibility ── */
+/* ── Timer finished banner ── */
+.timer-done-banner{
+  position:fixed;bottom:0;left:0;right:0;
+  z-index:8500;
+  background:var(--ok);color:#fff;
+  padding:14px 16px 22px;
+  box-shadow:0 -4px 24px rgba(0,0,0,.18);
+  animation:tdb-slide-up .25s ease-out;
+  -webkit-tap-highlight-color:transparent}
+@keyframes tdb-slide-up{
+  from{transform:translateY(100%);opacity:0}
+  to{transform:translateY(0);opacity:1}}
+.tdb-inner{
+  max-width:480px;margin:0 auto;
+  display:flex;flex-direction:column;gap:10px}
+.tdb-top{
+  display:flex;align-items:flex-start;gap:12px}
+.tdb-ico{font-size:24px;flex-shrink:0;line-height:1.2}
+.tdb-text{flex:1;min-width:0}
+.tdb-title{font-size:15px;font-weight:700;line-height:1.3}
+.tdb-sub{font-size:13px;opacity:.88;margin-top:2px;line-height:1.4}
+.tdb-close{
+  font-size:18px;opacity:.8;cursor:pointer;
+  padding:2px 6px;flex-shrink:0;line-height:1}
+.tdb-btns{display:flex;gap:8px;flex-wrap:wrap}
+.tdb-btn{
+  padding:8px 16px;border-radius:20px;
+  font-size:13px;font-weight:700;cursor:pointer;
+  border:1.5px solid rgba(255,255,255,.5);
+  background:rgba(255,255,255,.15);color:#fff;
+  -webkit-tap-highlight-color:transparent;min-height:38px;
+  transition:background .15s}
+.tdb-btn:hover,.tdb-btn:active{background:rgba(255,255,255,.28)}
+.tdb-btn.primary{background:rgba(255,255,255,.28);border-color:rgba(255,255,255,.8)}
+
+/* Finished state on global chip */
+.gtimer-chip.has-finished{
+  background:rgba(22,163,74,.12);border-color:rgba(22,163,74,.35);color:var(--ok)}
+
+/* Panel visibility */
 .r-panel-hide{display:none}
 
 
@@ -1230,6 +1269,9 @@ it:{
   r_tab_bom:'BOM', r_tab_proc:'Procedura',
   r_prep_todo:'Da fare', r_prep_active:'In corso', r_prep_done:'Fatto',
   r_timer_lbl:'Timer',
+  r_timer_done_title:'Timer finito',
+  r_timer_done_goto:'Vai allo step',
+  r_timer_done_dismiss:'Chiudi',
   r_timer_start:'Avvia', r_timer_stop:'Pausa', r_timer_reset:'Ricomincia', r_timer_resume:'Riprendi',
   r_timer_panel_title:'Timer attivi',
   r_close_guard_title:'Timer attivo',
@@ -1341,6 +1383,9 @@ en:{
   r_tab_bom:'BOM', r_tab_proc:'Procedure',
   r_prep_todo:'To do', r_prep_active:'In progress', r_prep_done:'Done',
   r_timer_lbl:'Timer',
+  r_timer_done_title:'Timer finished',
+  r_timer_done_goto:'Go to step',
+  r_timer_done_dismiss:'Dismiss',
   r_timer_start:'Start', r_timer_stop:'Pause', r_timer_reset:'Reset', r_timer_resume:'Resume',
   r_timer_panel_title:'Active timers',
   r_close_guard_title:'Timer active',
@@ -1447,6 +1492,9 @@ es:{
   r_tab_bom:'BOM', r_tab_proc:'Procedimiento',
   r_prep_todo:'Pendiente', r_prep_active:'En curso', r_prep_done:'Listo',
   r_timer_lbl:'Timer',
+  r_timer_done_title:'Timer finalizado',
+  r_timer_done_goto:'Ir al paso',
+  r_timer_done_dismiss:'Cerrar',
   r_timer_start:'Iniciar', r_timer_stop:'Pausa', r_timer_reset:'Reiniciar', r_timer_resume:'Reanudar',
   r_timer_panel_title:'Timers activos',
   r_close_guard_title:'Timer activo',
@@ -1522,7 +1570,7 @@ es:{
 };
 
 /* lang stored in module-scope var + sessionStorage */
-const SHELL_VERSION = 'v010c';
+const SHELL_VERSION = 'v010d';
 /* Recipe state lives in RECIPE object + _driverQty inside recipe JS block */
 let LANG = sessionStorage.getItem('ws_lang') || 'it';
 function setLang(l){ LANG=l; sessionStorage.setItem('ws_lang',l); renderAll(); }
@@ -2393,11 +2441,19 @@ function _updateGlobalTimerUI(){
   var urgent = _urgentTimer();
   var activeN = _activeTimerCount();
 
-  if(activeN === 0){
+  /* Count finished timers (done but not yet dismissed) */
+  var finishedN = 0;
+  RECIPE.steps.forEach(function(step){
+    if(!step.timer_s) return;
+    var ts = _timerLoad(step.id);
+    if(ts && ts.status==='done') finishedN++;
+  });
+  var totalVisible = activeN + finishedN;
+
+  if(totalVisible === 0){
     if(chip) chip.style.display = 'none';
   } else {
     if(!chip){
-      /* Inject chip into topbar t-right — once */
       var tRight = document.querySelector('.t-right');
       if(tRight){
         var el = document.createElement('div');
@@ -2410,10 +2466,17 @@ function _updateGlobalTimerUI(){
     }
     if(chip){
       chip.style.display = '';
-      if(activeN > 1){
+      if(finishedN > 0){
+        /* Highlight: show finished count prominently */
+        chip.className = 'gtimer-chip has-finished';
+        chip.innerHTML = '✅ <strong>'+finishedN+'</strong>' + (activeN > 0 ? ' · ⏱ '+activeN : '');
+        chip.title = finishedN + ' timer finiti' + (activeN > 0 ? ' · '+activeN+' attivi' : '');
+      } else if(activeN > 1){
+        chip.className = 'gtimer-chip';
         chip.innerHTML = '⏱ <strong>'+activeN+'</strong>';
         chip.title = activeN + ' timer attivi';
       } else if(urgent){
+        chip.className = 'gtimer-chip';
         chip.innerHTML = '⏱ <strong>'+_fmtTimer(urgent.ts.remaining_s)+'</strong>';
         chip.title = urgent.step.title;
       }
@@ -2517,9 +2580,9 @@ function _startGlobalTick(){
         if(ts.status === 'running' && !_rafHandles[step.id]){
           _rafStart(step);
         }
-        /* Refresh card if done */
+        /* Trigger completion handler if done — idempotency inside _onTimerDone */
         if(ts.status === 'done'){
-          _refreshCard(step);
+          _onTimerDone(step);
         }
       });
       _updateGlobalTimerUI();
@@ -2585,6 +2648,146 @@ function _installCloseTabGuard(){
 /* ════════════════════════════════════════════════════════════════════════════
    RAF TIMER ENGINE
    ════════════════════════════════════════════════════════════════════════════ */
+/* ════════════════════════════════════════════════════════════════════════════
+   TIMER COMPLETION — foreground handler
+   Called exactly once when RAF reaches 0, and on visibilitychange if done state
+   found in localStorage. Idempotency via done_notified flag in localStorage.
+   ════════════════════════════════════════════════════════════════════════════ */
+function _playTimerSound(){
+  try {
+    var ctx = new (window.AudioContext || window.webkitAudioContext)();
+    /* Three short ascending beeps — recognizable, not jarring */
+    var times = [0, 0.18, 0.36];
+    var freqs  = [660, 784, 988];
+    times.forEach(function(t, i){
+      var osc  = ctx.createOscillator();
+      var gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.frequency.value = freqs[i];
+      osc.type = 'sine';
+      gain.gain.setValueAtTime(0, ctx.currentTime + t);
+      gain.gain.linearRampToValueAtTime(0.35, ctx.currentTime + t + 0.02);
+      gain.gain.linearRampToValueAtTime(0,    ctx.currentTime + t + 0.14);
+      osc.start(ctx.currentTime + t);
+      osc.stop(ctx.currentTime  + t + 0.16);
+    });
+    /* Close context after last beep */
+    setTimeout(function(){ ctx.close(); }, 600);
+  } catch(e){ /* AudioContext not available — silent fail */ }
+}
+
+function _vibrateTimer(){
+  try {
+    if(navigator.vibrate) navigator.vibrate([200, 100, 200]);
+  } catch(e){}
+}
+
+function _showTimerDoneBanner(step){
+  /* Remove any existing banner first */
+  var existing = document.getElementById('timer-done-banner');
+  if(existing) existing.remove();
+
+  var banner = document.createElement('div');
+  banner.id = 'timer-done-banner';
+  banner.className = 'timer-done-banner';
+  banner.innerHTML =
+    '<div class="tdb-inner">'
+    +'<div class="tdb-top">'
+      +'<span class="tdb-ico">✅</span>'
+      +'<div class="tdb-text">'
+        +'<div class="tdb-title">'+t('r_timer_done_title')+'</div>'
+        +'<div class="tdb-sub">'+step.title+'</div>'
+      +'</div>'
+      +'<span class="tdb-close" id="tdb-close">✕</span>'
+    +'</div>'
+    +'<div class="tdb-btns">'
+      +'<button class="tdb-btn primary" id="tdb-goto">'+t('r_timer_done_goto')+'</button>'
+      +'<button class="tdb-btn" id="tdb-reset">'+t('r_timer_reset')+'</button>'
+      +'<button class="tdb-btn" id="tdb-dismiss">'+t('r_timer_done_dismiss')+'</button>'
+    +'</div>'
+    +'</div>';
+  document.body.appendChild(banner);
+
+  /* Dismiss */
+  function _dismiss(){ var b=document.getElementById('timer-done-banner'); if(b) b.remove(); }
+
+  document.getElementById('tdb-close').addEventListener('click', _dismiss);
+  document.getElementById('tdb-dismiss').addEventListener('click', _dismiss);
+
+  /* Go to step: switch to Prep tab, expand card, scroll to it */
+  document.getElementById('tdb-goto').addEventListener('click', function(){
+    _dismiss();
+    /* Ensure recipe tab is active workspace tab */
+    var recipeTab = TABS.find(function(x){ return x.type==='recipe'; });
+    if(recipeTab && recipeTab.id !== AID){ activateTab(recipeTab.id); }
+    /* Switch inner tab to Prep */
+    _recipeTab = 'prep';
+    /* Expand the card */
+    _cardOpen[step.id] = true;
+    /* Re-render if recipe page is showing */
+    var ws = document.getElementById('workspace');
+    var activeTab = TABS.find(function(x){ return x.id===AID; });
+    if(activeTab && activeTab.type==='recipe'){
+      /* Just switch inner tab and expand */
+      ws.querySelectorAll('.r-tab').forEach(function(t){
+        t.classList.toggle('active', t.dataset.rtab==='prep');
+      });
+      ws.querySelectorAll('.r-panel').forEach(function(p){ p.classList.add('r-panel-hide'); });
+      var prepPanel = ws.querySelector('#rp-prep');
+      if(prepPanel) prepPanel.classList.remove('r-panel-hide');
+      /* Expand card */
+      var body = ws.querySelector('#pbody-'+step.id);
+      if(body){ body.classList.add('open'); _cardOpen[step.id]=true; }
+      /* Scroll card into view */
+      setTimeout(function(){
+        var card = document.getElementById('pcard-'+step.id);
+        if(card) card.scrollIntoView({behavior:'smooth', block:'center'});
+      }, 80);
+    } else {
+      /* Recipe page not open: renderAll will pick up _recipeTab='prep' and _cardOpen */
+      renderAll();
+    }
+  });
+
+  /* Reset: clear timer state, dismiss banner */
+  document.getElementById('tdb-reset').addEventListener('click', function(){
+    _timerDelete(step.id);
+    if(_rafHandles[step.id]){ cancelAnimationFrame(_rafHandles[step.id]); delete _rafHandles[step.id]; }
+    _refreshCard(step);
+    _updateGlobalTimerUI();
+    _dismiss();
+  });
+
+  /* Auto-dismiss after 30 seconds */
+  setTimeout(function(){
+    var b = document.getElementById('timer-done-banner');
+    if(b) b.remove();
+  }, 30000);
+}
+
+/* Main completion handler — idempotent via done_notified flag */
+function _onTimerDone(step){
+  var ts = _timerLoad(step.id);
+  if(!ts) return;
+
+  /* Idempotency: only fire once per completion */
+  if(ts.done_notified) return;
+  ts.done_notified = true;
+  ts.status = 'done';
+  ts.remaining_s = 0;
+  _timerSave(step.id, ts);
+
+  /* Refresh card state + global chip */
+  _refreshCard(step);
+  _updateGlobalTimerUI();
+
+  /* Foreground: sound + vibration + banner */
+  _playTimerSound();
+  _vibrateTimer();
+  _showTimerDoneBanner(step);
+}
+
 function _rafStart(step){
   if(_rafHandles[step.id]) cancelAnimationFrame(_rafHandles[step.id]);
   function tick(){
@@ -2601,8 +2804,7 @@ function _rafStart(step){
       ts.status = 'done'; ts.remaining_s = 0;
       _timerSave(step.id, ts);
       delete _rafHandles[step.id];
-      _refreshCard(step);
-      _updateGlobalTimerUI();
+      _onTimerDone(step);   /* handles card refresh + banner + sound + vibration */
       return;
     }
     _rafHandles[step.id] = requestAnimationFrame(tick);
