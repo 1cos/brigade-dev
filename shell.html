@@ -1,6 +1,6 @@
 <!-- ── NEW SHELL LAB BANNER ── -->
 <div id="shell-lab-banner" style="position:fixed;top:0;left:0;right:0;z-index:99999;background:linear-gradient(90deg,#0f766e,#0891b2);color:white;font-size:11px;font-weight:800;letter-spacing:0.09em;text-transform:uppercase;text-align:center;padding:5px 16px;font-family:-apple-system,BlinkMacSystemFont,sans-serif;user-select:none;box-shadow:0 1px 6px rgba(8,145,178,0.4);">
-  🎨 NEW SHELL LAB &nbsp;·&nbsp; brigade-dev/shell.html &nbsp;·&nbsp; v010d &nbsp;·&nbsp; Not for kitchen use
+  🎨 NEW SHELL LAB &nbsp;·&nbsp; brigade-dev/shell.html &nbsp;·&nbsp; v010d1 &nbsp;·&nbsp; Not for kitchen use
 </div>
 <style>
 /* push shell content below banner */
@@ -946,6 +946,17 @@ input,select,textarea{font-family:inherit}
 .gtimer-chip.has-finished{
   background:rgba(22,163,74,.12);border-color:rgba(22,163,74,.35);color:var(--ok)}
 
+/* ── LAB prep banner ── */
+.lab-prep-banner{
+  display:flex;align-items:center;gap:8px;
+  padding:8px 12px;border-radius:10px;
+  background:rgba(245,158,11,.10);border:1px solid rgba(245,158,11,.3);
+  font-size:12px;font-weight:600;color:#92400e;
+  margin-bottom:12px}
+.lab-prep-ico{font-size:14px}
+/* ── LAB test step card ── */
+.r-pcard._lab-step{ border:1.5px dashed #f59e0b;background:rgba(245,158,11,.06) }
+.r-pcard._lab-step .r-pcard-num{ background:#f59e0b }
 /* Panel visibility */
 .r-panel-hide{display:none}
 
@@ -1570,7 +1581,7 @@ es:{
 };
 
 /* lang stored in module-scope var + sessionStorage */
-const SHELL_VERSION = 'v010d';
+const SHELL_VERSION = 'v010d1';
 /* Recipe state lives in RECIPE object + _driverQty inside recipe JS block */
 let LANG = sessionStorage.getItem('ws_lang') || 'it';
 function setLang(l){ LANG=l; sessionStorage.setItem('ws_lang',l); renderAll(); }
@@ -2360,7 +2371,12 @@ var RECIPE = {
     { id:'s7', title:'Riposo in frigo',
       bom_refs:[], equip:['Frigo 2–4 °C','Min. 4 ore'],
       proc:'Copri le vaschette con pellicola. Minimo 4 ore — ideale overnight.',
-      proc_vals:{}, timer_s:4*60*60 }
+      proc_vals:{}, timer_s:4*60*60 },
+    /* ── LAB ONLY: 10-second test timer — never ship to production ── */
+    { id:'s_test', title:'⚗️ LAB: Test timer 10s',
+      bom_refs:[], equip:['LAB ONLY'],
+      proc:'Timer di test 10 secondi — verifica beep, banner, vibrazione, chip, stato Finito.',
+      proc_vals:{}, timer_s:10, _lab:true }
   ]
 };
 
@@ -2653,10 +2669,28 @@ function _installCloseTabGuard(){
    Called exactly once when RAF reaches 0, and on visibilitychange if done state
    found in localStorage. Idempotency via done_notified flag in localStorage.
    ════════════════════════════════════════════════════════════════════════════ */
+/* ── AudioContext: created + unlocked on first user gesture (Start tap).
+   iOS Safari requires AudioContext.resume() inside a user gesture — if we
+   create it at completion time the audio policy blocks it silently.
+   _audioCtx is initialised in _unlockAudio() called from the Start handler. ── */
+var _audioCtx = null;
+
+function _unlockAudio(){
+  try {
+    if(!_audioCtx){
+      _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    /* Resume if suspended (iOS default state after creation) */
+    if(_audioCtx.state === 'suspended') _audioCtx.resume();
+  } catch(e){}
+}
+
 function _playTimerSound(){
   try {
-    var ctx = new (window.AudioContext || window.webkitAudioContext)();
-    /* Three short ascending beeps — recognizable, not jarring */
+    var ctx = _audioCtx;
+    if(!ctx){ ctx = new (window.AudioContext||window.webkitAudioContext)(); }
+    if(ctx.state === 'suspended') ctx.resume();
+    /* Three short ascending beeps: 660 → 784 → 988 Hz */
     var times = [0, 0.18, 0.36];
     var freqs  = [660, 784, 988];
     times.forEach(function(t, i){
@@ -2666,15 +2700,13 @@ function _playTimerSound(){
       gain.connect(ctx.destination);
       osc.frequency.value = freqs[i];
       osc.type = 'sine';
-      gain.gain.setValueAtTime(0, ctx.currentTime + t);
-      gain.gain.linearRampToValueAtTime(0.35, ctx.currentTime + t + 0.02);
+      gain.gain.setValueAtTime(0,    ctx.currentTime + t);
+      gain.gain.linearRampToValueAtTime(0.38, ctx.currentTime + t + 0.02);
       gain.gain.linearRampToValueAtTime(0,    ctx.currentTime + t + 0.14);
       osc.start(ctx.currentTime + t);
       osc.stop(ctx.currentTime  + t + 0.16);
     });
-    /* Close context after last beep */
-    setTimeout(function(){ ctx.close(); }, 600);
-  } catch(e){ /* AudioContext not available — silent fail */ }
+  } catch(e){}
 }
 
 function _vibrateTimer(){
@@ -2890,7 +2922,8 @@ function _renderCard(step, factor){
   var isOpen = !!_cardOpen[step.id];
   var badgeTxt={todo:t('r_prep_todo'),active:t('r_prep_active'),done:t('r_prep_done')};
   var num = RECIPE.steps.indexOf(step)+1;
-  return '<div class="r-pcard '+state+'" id="pcard-'+step.id+'">'
+  var labClass = step._lab ? ' _lab-step' : '';
+  return '<div class="r-pcard '+state+labClass+'" id="pcard-'+step.id+'">'
     +'<div class="r-pcard-hd" data-card="'+step.id+'">'
       +'<span class="r-pcard-num">'+num+'</span>'
       +'<div class="r-pcard-main">'
@@ -2973,6 +3006,7 @@ function _wireTimerBlock(container, step){
     var btn = startBtn||resumeBtn;
     btn.addEventListener('click', function(e){
       e.stopPropagation();
+      _unlockAudio();   /* iOS: must unlock AudioContext inside user gesture */
       var ts = _timerLoad(step.id)||{};
       var remaining = (ts.remaining_s !== undefined) ? ts.remaining_s : step.timer_s;
       var newTs = {
@@ -3065,9 +3099,14 @@ function pageRecipe(){
       : '<p style="font-size:14px;color:var(--txm);padding:12px 0">'+t('r_bom_na')+'</p>'
     )+'</div>';
 
+  var labBanner = '<div class="lab-prep-banner">'
+    +'<span class="lab-prep-ico">⚗️</span>'
+    +'<span>LAB — lo step in fondo ha un timer da 10s per il QA</span>'
+    +'</div>';
   var cards=RECIPE.steps.map(function(step){ return _renderCard(step,fac); }).join('');
   var prepPanel='<div id="rp-prep" class="r-panel'+(
     _recipeTab==='prep'?'':' r-panel-hide')+'">'
+    +labBanner
     +'<div class="r-prep-list">'+cards+'</div></div>';
 
   var histPanel='<div id="rp-hist" class="r-panel'+(
