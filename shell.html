@@ -569,6 +569,7 @@ input,select,textarea{font-family:inherit}
 }
 .bc-status{display:flex;align-items:center;gap:10px}
 .bc-status-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.bc-live-dot{width:6px;height:6px;border-radius:50%;background:var(--ok);flex-shrink:0;display:inline-block;margin-right:5px}
 .bc-status-dot.ok{background:var(--ok);box-shadow:0 0 0 3px var(--ok-bg)}
 .bc-status-dot.warn{background:var(--wn);box-shadow:0 0 0 3px var(--wn-bg)}
 .bc-status-dot.err{background:var(--er);box-shadow:0 0 0 3px var(--er-bg)}
@@ -976,10 +977,12 @@ it:{
   bt:'Bot Center', bsub:'Pipeline POS — esecuzione sequenziale nightly',
   bpipe:'Pipeline nightly', blast:'Ultima esecuzione', bobs:'Osservazioni',
   bok:'OK', bwn:'Attenzione', ber:'Errore', bpd:'In attesa', bidle:'Idle',
-  bstatus_ok:'Pipeline OK', bstatus_warn:'Avvisi minori', bstatus_err:'Errore critico',
+  bstatus_ok:'Pipeline OK', bstatus_warn:'Avvisi minori', bstatus_err:'Errore critico', bstatus_idle:'Nessun dato',
   blast_run:'Ultima run', bnext_run:'Prossima run', brows:'righe processate',
   bdur:'Durata', binp:'Input', bout:'Output', bnext:'Prossimo step',
   bcat_pos:'POS import', bcat_deduction:'Deduction', bcat_prep:'Prep', bcat_ai:'Chef AI',
+  blive:'Live data · bot_runs', blive_fail:'Live data unavailable — showing demo', bobs_allok:'No issues — pipeline completed cleanly.',
+  blive:'Dati live · bot_runs', blive_fail:'Dati live non disponibili — visualizzazione demo', bobs_allok:'Nessun avviso — pipeline completata senza problemi.',
   bdetails:'Dettagli', bdetails_hide:'Nascondi',
   rbom:'Ingredienti (BOM)', rsteps:'Procedura', rsta:'Stazione: {n}', rbatch:'Batch da {n} pezzi',
   rnote:'Dati demo — nessuna query DB in questo prototipo',
@@ -1048,10 +1051,12 @@ en:{
   bt:'Bot Center', bsub:'POS Pipeline — sequential nightly execution',
   bpipe:'Nightly pipeline', blast:'Last run', bobs:'Observations',
   bok:'OK', bwn:'Warning', ber:'Error', bpd:'Pending', bidle:'Idle',
-  bstatus_ok:'Pipeline OK', bstatus_warn:'Minor alerts', bstatus_err:'Critical error',
+  bstatus_ok:'Pipeline OK', bstatus_warn:'Minor alerts', bstatus_err:'Critical error', bstatus_idle:'No data yet',
   blast_run:'Last run', bnext_run:'Next run', brows:'rows processed',
   bdur:'Duration', binp:'Input', bout:'Output', bnext:'Next step',
   bcat_pos:'POS import', bcat_deduction:'Deduction', bcat_prep:'Prep', bcat_ai:'Chef AI',
+  blive:'Live data · bot_runs', blive_fail:'Live data unavailable — showing demo', bobs_allok:'No issues — pipeline completed cleanly.',
+  blive:'Dati live · bot_runs', blive_fail:'Dati live non disponibili — visualizzazione demo', bobs_allok:'Nessun avviso — pipeline completata senza problemi.',
   bdetails:'Details', bdetails_hide:'Hide',
   rbom:'Ingredients (BOM)', rsteps:'Procedure', rsta:'Station: {n}', rbatch:'Batch of {n}',
   rnote:'Demo data — no DB query in this prototype',
@@ -1116,10 +1121,11 @@ es:{
   bt:'Centro Bot', bsub:'Pipeline POS — ejecución secuencial nocturna',
   bpipe:'Pipeline nocturna', blast:'Última ejecución', bobs:'Observaciones',
   bok:'OK', bwn:'Atención', ber:'Error', bpd:'Pendiente', bidle:'Inactivo',
-  bstatus_ok:'Pipeline OK', bstatus_warn:'Alertas menores', bstatus_err:'Error crítico',
+  bstatus_ok:'Pipeline OK', bstatus_warn:'Alertas menores', bstatus_err:'Error crítico', bstatus_idle:'Sin datos',
   blast_run:'Última ejecución', bnext_run:'Próxima ejecución', brows:'filas procesadas',
   bdur:'Duración', binp:'Entrada', bout:'Salida', bnext:'Próximo paso',
   bcat_pos:'Importación POS', bcat_deduction:'Deducción', bcat_prep:'Prep', bcat_ai:'Chef AI',
+  blive:'Datos en vivo · bot_runs', blive_fail:'Datos en vivo no disponibles — mostrando demo', bobs_allok:'Sin alertas — pipeline completada correctamente.',
   bdetails:'Detalles', bdetails_hide:'Ocultar',
   rbom:'Ingredientes (BOM)', rsteps:'Procedimiento', rsta:'Estación: {n}', rbatch:'Batch de {n} porciones',
   rnote:'Datos demo — sin consulta DB en este prototipo',
@@ -1593,6 +1599,55 @@ function pageSales(){
 }
 
 /* BOTS */
+
+/* ══ NIGHTLY PIPELINE — bot registry (v007) ═══════════════════════════════
+   Maps DB bot_name → display config.
+   pageBots() renders with BOT_DATA (mock).
+   botsAfterRender() fetches bot_runs and patches live data in-place.   */
+var SUPABASE_URL = 'https://ydqmumpytgrlceuinoqt.supabase.co';
+var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlkcW11bXB5dGdybGNldWlub3F0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzcyOTUsImV4cCI6MjA5NDUxMzI5NX0.MSIKL4nCOxK8YFFTkt9AbFGViiwl-KEhHy6cL25gnKc';
+
+/* Bot name in DB → card id (used in BOT_DATA) */
+var NIGHTLY_BOT_MAP = {
+  'pos-touchbistro-bot':    'pos-touchbistro',
+  'pos-cleaner':            'pos-cleaner',
+  'bot-direct-deduction':   'direct-deduction',
+  'bot-bom-chain-deduction':'bom-chain',
+  'bot-modifier-depletion': 'modifier-depletion',
+  'bot-stock-consolidator': 'stock-consolidator'
+};
+
+/* status in DB → internal status code */
+function _mapStatus(s){
+  if(s==='success') return 'ok';
+  if(s==='warning') return 'warn';
+  if(s==='running') return 'running';
+  if(s==='error'||s==='failed') return 'error';
+  return 'idle';
+}
+
+/* Convert UTC ISO string → CDT time string "HH:MM CDT" */
+function _toCDT(iso){
+  if(!iso) return '—';
+  try{
+    var d = new Date(iso);
+    /* CDT = UTC-5 (summer: UTC-5 when DST active, else UTC-6; we use fixed -5 for CDT display) */
+    var cdt = new Date(d.getTime() - 5*60*60*1000);
+    var h = cdt.getUTCHours(), m = cdt.getUTCMinutes();
+    return (h<10?'0':'')+h+':'+(m<10?'0':'')+m+' CDT';
+  }catch(e){ return '—'; }
+}
+
+/* Duration: seconds → human "Xs" or "Xm Ys" */
+function _dur(started, finished){
+  if(!started||!finished) return '—';
+  try{
+    var secs = Math.round((new Date(finished) - new Date(started))/1000);
+    if(secs<60) return secs+'s';
+    return Math.floor(secs/60)+'m '+(secs%60)+'s';
+  }catch(e){ return '—'; }
+}
+
 function pageBots(){
   var anyErr  = BOT_DATA.some(function(b){ return b.s==='error'; });
   var anyWarn = BOT_DATA.some(function(b){ return b.s==='warn'; });
@@ -1671,6 +1726,8 @@ function pageBots(){
 
 function botsAfterRender(){
   var ws = document.getElementById('workspace');
+
+  /* ── 1. Wire expand/collapse (always, regardless of live data) ── */
   ws.querySelectorAll('.bc-card').forEach(function(card){
     var main = card.querySelector('.bc-card-main');
     var det  = card.querySelector('.bc-details');
@@ -1683,6 +1740,150 @@ function botsAfterRender(){
       if(e.key==='Enter'||e.key===' '){ e.preventDefault(); main.click(); }
     });
   });
+
+  /* ── 2. Fetch live bot_runs from Supabase (read-only, anon) ── */
+  /* Query: last run per nightly bot, ordered by bot_name + started_at DESC   */
+  var botNames = Object.keys(NIGHTLY_BOT_MAP);
+  var inClause = botNames.map(function(n){ return '"'+n+'"'; }).join(',');
+  var q = SUPABASE_URL
+    + '/rest/v1/bot_runs'
+    + '?select=bot_name,status,started_at,finished_at,rows_written,warnings_count,errors_count,summary'
+    + '&bot_name=in.(' + botNames.join(',') + ')'
+    + '&order=bot_name.asc,started_at.desc';
+
+  fetch(q, {
+    headers:{
+      'apikey': SUPABASE_KEY,
+      'Authorization': 'Bearer ' + SUPABASE_KEY,
+      'Accept': 'application/json',
+      'Prefer': 'return=representation'
+    }
+  })
+  .then(function(r){
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    return r.json();
+  })
+  .then(function(rows){
+    /* Keep only the most recent run per bot_name */
+    var latest = {};
+    rows.forEach(function(row){
+      if(!latest[row.bot_name]) latest[row.bot_name] = row;
+    });
+
+    /* Patch each card */
+    botNames.forEach(function(dbName){
+      var cardId = NIGHTLY_BOT_MAP[dbName];
+      var card   = ws.querySelector('[data-botid="'+cardId+'"]');
+      if(!card) return;
+
+      var row = latest[dbName];
+      var s   = row ? _mapStatus(row.status) : 'idle';
+      var sKey = s==='ok'?'bok': s==='warn'?'bwn': s==='error'?'ber': s==='idle'?'bidle':'bpd';
+      var sCls = s==='ok'?'b-ok': s==='warn'?'b-wn': s==='error'?'b-er':'b-in';
+
+      /* Update badge */
+      var badge = card.querySelector('.bdg');
+      if(badge){ badge.className='bdg '+sCls; badge.textContent=t(sKey); }
+
+      /* Update meta line */
+      var meta = card.querySelector('.bc-card-meta');
+      if(meta && row){
+        var time = _toCDT(row.started_at);
+        var dur  = _dur(row.started_at, row.finished_at);
+        var rows = (row.rows_written||0);
+        var warn = row.warnings_count>0 ? ' · ⚠️ '+row.warnings_count : '';
+        meta.textContent = time + ' · ' + dur + ' · ' + rows + ' ' + t('brows') + warn;
+      } else if(meta && !row){
+        meta.textContent = t('bidle');
+      }
+
+      /* Update detail — input/output cells */
+      var cells = card.querySelectorAll('.bc-detail-val');
+      if(cells.length>=2 && row){
+        cells[0].textContent = (row.rows_written||0) + ' rows read → written';
+        cells[1].textContent = row.summary
+          ? row.summary.slice(0,120)+(row.summary.length>120?'…':'')
+          : '—';
+      }
+    });
+
+    /* ── 3. Patch header status ── */
+    var statuses = botNames.map(function(n){
+      var r=latest[n]; return r?_mapStatus(r.status):'idle';
+    });
+    var anyErr  = statuses.some(function(s){ return s==='error'; });
+    var anyWarn = statuses.some(function(s){ return s==='warn'; });
+    var allIdle = statuses.every(function(s){ return s==='idle'; });
+    var hCls    = anyErr?'err': anyWarn?'warn': allIdle?'idle':'ok';
+    var hKey    = anyErr?'bstatus_err': anyWarn?'bstatus_warn': allIdle?'bstatus_idle':'bstatus_ok';
+
+    var dot = ws.querySelector('.bc-status-dot');
+    var lbl = ws.querySelector('.bc-status-label');
+    if(dot){ dot.className='bc-status-dot '+hCls; }
+    if(lbl){ lbl.textContent=t(hKey); }
+
+    /* Last run time */
+    var allRows = botNames.map(function(n){ return latest[n]; }).filter(Boolean);
+    if(allRows.length){
+      var lastRow = allRows.sort(function(a,b){
+        return new Date(b.started_at)-new Date(a.started_at);
+      })[0];
+      var timeEl = ws.querySelector('.bc-times .bc-time-val');
+      if(timeEl) timeEl.textContent = _toCDT(lastRow.started_at);
+    }
+
+    /* ── 4. Patch observations from summaries ── */
+    _patchObservations(ws, latest);
+
+    /* ── 5. Remove demo note, show live indicator ── */
+    var noteEl = ws.querySelector('.note');
+    if(noteEl){
+      noteEl.innerHTML='<span class="bc-live-dot"></span>'
+        +'<span style="font-size:11px;color:var(--ok)">'+t('blive')+'</span>';
+    }
+  })
+  .catch(function(err){
+    /* Graceful fallback — mock stays, soft note */
+    console.warn('[v007] bot_runs fetch failed:', err);
+    var noteEl = ws.querySelector('.note');
+    if(noteEl){
+      noteEl.innerHTML='<span class="nd"></span>'
+        +'<span style="font-size:11px;color:var(--txm)">'
+        +t('blive_fail')+'</span>';
+    }
+  });
+}
+
+function _patchObservations(ws, latest){
+  /* Build obs from real summaries where available, fallback to mock */
+  var obsList = ws.querySelector('.obslist');
+  if(!obsList) return;
+
+  var liveObs = [];
+  Object.keys(latest).forEach(function(dbName){
+    var row = latest[dbName];
+    if(!row) return;
+    if(row.warnings_count>0){
+      liveObs.push({tp:'wn', text:row.summary ? row.summary.slice(0,140) : dbName+': '+row.warnings_count+' warnings'});
+    }
+    if(row.errors_count>0){
+      liveObs.push({tp:'er', text:dbName+': '+row.errors_count+' error(s)'});
+    }
+  });
+
+  /* Always add a pipeline-ok line if all good */
+  var anyIssue = liveObs.length>0;
+  if(!anyIssue){
+    liveObs.push({tp:'ok', text:t('bobs_allok')});
+  }
+
+  var obsIco = {ok:'✅',wn:'⚠️',er:'🔴','in':'ℹ️'};
+  obsList.innerHTML = liveObs.map(function(o){
+    return '<div class="obs obs-'+(o.tp==='er'?'er':o.tp==='ok'?'in':o.tp)+'">'
+      +'<span style="flex-shrink:0">'+(obsIco[o.tp]||'ℹ️')+'</span>'
+      +'<span>'+o.text+'</span>'
+      +'</div>';
+  }).join('');
 }
 
 /* RECIPE */
