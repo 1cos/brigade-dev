@@ -883,6 +883,7 @@ it:{
   ch_bo:'Bot Center', cd_bo:'Pipeline POS · deduction log · avvisi sistema', cs_bo:'Pipeline OK · 5 bot · 02:13 CDT',
   ch_jo:'Diario operativo', cd_jo:'Log condiviso · manutenzione · eventi servizio', cs_jo:'4 voci oggi',
   ch_re:'Ricetta: Tiramisu', cd_re:'BOM · procedura Pastry · 10 porzioni', cs_re:'Ultima modifica: 08/07',
+  ch_ve:'Vendite', cd_ve:'POS · analisi giornaliera', cs_ve:'Importato ogni notte',
   ch_in:'Dispensa: Caesar', cd_in:'Stock · carichi · modifier depletion 60gg', cs_in:'Stock: 2.4 kg · 312 uses/60gg',
   bt:'Bot Center', bsub:'Pipeline POS — esecuzione sequenziale nightly',
   bpipe:'Pipeline nightly · 2026-07-08', blast:'Ultima esecuzione', bobs:'Osservazioni',
@@ -949,6 +950,7 @@ en:{
   ch_bo:'Bot Center', cd_bo:'POS pipeline · deduction log · system alerts', cs_bo:'Pipeline OK · 5 bots · 02:13 CDT',
   ch_jo:'Operations Journal', cd_jo:'Shared log · maintenance · service events', cs_jo:'4 entries today',
   ch_re:'Recipe: Tiramisu', cd_re:'BOM · Pastry procedure · 10 servings', cs_re:'Last edited: 08/07',
+  ch_ve:'Sales', cd_ve:'POS · daily analysis', cs_ve:'Imported nightly',
   ch_in:'Pantry: Caesar', cd_in:'Stock · loads · modifier depletion 60d', cs_in:'Stock: 2.4 kg · 312 uses/60d',
   bt:'Bot Center', bsub:'POS Pipeline — sequential nightly execution',
   bpipe:'Nightly pipeline · 2026-07-08', blast:'Last run', bobs:'Observations',
@@ -1011,6 +1013,7 @@ es:{
   ch_bo:'Centro Bot', cd_bo:'Pipeline POS · log deducciones · alertas sistema', cs_bo:'Pipeline OK · 5 bots · 02:13 CDT',
   ch_jo:'Diario operativo', cd_jo:'Registro compartido · mantenimiento · eventos', cs_jo:'4 entradas hoy',
   ch_re:'Receta: Tiramisu', cd_re:'BOM · procedimiento Pastelería · 10 porciones', cs_re:'Última edición: 08/07',
+  ch_ve:'Ventas', cd_ve:'POS · análisis diario', cs_ve:'Importado cada noche',
   ch_in:'Despensa: Caesar', cd_in:'Stock · cargas · modifier depletion 60d', cs_in:'Stock: 2.4 kg · 312 usos/60d',
   bt:'Centro Bot', bsub:'Pipeline POS — ejecución secuencial nocturna',
   bpipe:'Pipeline nocturna · 2026-07-08', blast:'Última ejecución', bobs:'Observaciones',
@@ -1134,11 +1137,30 @@ function openTab(type, params){
 function closeTab(id){
   var i = TABS.findIndex(function(x){ return x.id===id; });
   if(i<0) return;
+  /* debounce: ignore rapid double-tap on mobile */
+  var now = Date.now();
+  var tab = TABS[i];
+  if(tab._closing) return;
+  tab._closing = true;
   if(AID===id){
-    var next = TABS[i+1] || TABS[i-1] || null;
-    AID = next ? next.id : null;
+    /* prefer next, then prev; skip home if others exist */
+    var candidates = TABS.filter(function(x,idx){ return idx!==i; });
+    var next = TABS[i+1] && TABS[i+1].id!==AID ? TABS[i+1] : null;
+    var prev = i>0 ? TABS[i-1] : null;
+    var fallback = next || prev || candidates[0] || null;
+    AID = fallback ? fallback.id : null;
   }
   TABS.splice(i,1);
+  /* if no tabs remain, open Home */
+  if(TABS.length===0){
+    _persist();
+    openTab('home',{});
+    return;
+  }
+  /* if AID points to nothing (shouldn't happen but guard), go to first */
+  if(AID && !TABS.find(function(x){ return x.id===AID; })){
+    AID = TABS[0].id;
+  }
   _persist();
   renderAll();
 }
@@ -1179,12 +1201,21 @@ function _persist(){
 function _restoreTabs(){
   try{
     var raw = sessionStorage.getItem('ws_tabs');
-    TABS = raw ? JSON.parse(raw) : [];
-    AID  = sessionStorage.getItem('ws_aid') || null;
+    var aid = sessionStorage.getItem('ws_aid') || null;
+    var parsed = raw ? JSON.parse(raw) : [];
+    /* validate: must be array, every item must have id/type/title */
+    if(!Array.isArray(parsed)) throw new Error('not array');
+    parsed.forEach(function(t){ if(!t.id||!t.type||!t.title) throw new Error('corrupt tab'); });
+    TABS = parsed;
+    AID  = aid;
     if(AID && !TABS.find(function(x){ return x.id===AID; })){
       AID = TABS.length ? TABS[0].id : null;
     }
-  }catch(e){ TABS=[]; AID=null; }
+  }catch(e){
+    /* corrupted storage — clean slate */
+    try{ sessionStorage.removeItem('ws_tabs'); sessionStorage.removeItem('ws_aid'); }catch(e2){}
+    TABS=[]; AID=null;
+  }
 }
 
 /* ══ PAGE DATA ════════════════════════════════════════════════════════════ */
@@ -1312,8 +1343,8 @@ function pageHome(){
   var cards=[
     {key:'bo',type:'bot_center',   perm:'see_bots',      ico:'🤖', sd:'s-ok', p:{}},
     {key:'jo',type:'daily_journal',perm:'see_journal',   ico:'📓', sd:'s-in', p:{}},
+    {key:'ve',type:'pos',          perm:'see_sales',     ico:'📊', sd:'s-in', p:{}},
     {key:'re',type:'recipe',       perm:'see_recipes',   ico:'📋', sd:'s-ok', p:{id:'tiramisu',name:'Tiramisu'}},
-    {key:'in',type:'inventory',    perm:'see_inventory', ico:'📦', sd:'s-in', p:{id:'caesar',name:'Caesar Dressing'}}
   ].filter(function(c){ return can(c.perm); });
 
   var cardHTML = cards.map(function(c){
@@ -1860,6 +1891,87 @@ function renderTopBar(){
   wireSearch();
 }
 
+
+/* ── New-tab quick-menu ─────────────────────────────────────────────────────
+   Shows a small floating menu anchored to the + button.
+   Lists pages that are NOT already open as a singleton tab.
+   If all pages are already open → activates Home.                           */
+function _showNewTabMenu(){
+  /* remove any existing menu */
+  var old = document.getElementById('ntm-menu');
+  if(old){ old.remove(); return; }
+
+  var candidates = [
+    {type:'home',         label:t('th'),          ico:'🏠', p:{}},
+    {type:'bot_center',   label:t('tb'),           ico:'🤖', p:{}},
+    {type:'daily_journal',label:t('tj_short'),     ico:'📓', p:{}},
+    {type:'pos',          label:t('tp'),            ico:'📊', p:{}},
+  ].filter(function(c){
+    /* only if NOT already open as a singleton */
+    return !TABS.find(function(x){ return x.type===c.type; });
+  });
+
+  if(candidates.length===0){
+    /* everything is open — just go to Home */
+    var homeTab = TABS.find(function(x){ return x.type==='home'; });
+    if(homeTab) activateTab(homeTab.id); else openTab('home',{});
+    return;
+  }
+
+  var btn = document.getElementById('tab-plus');
+  if(!btn) return;
+  var rect = btn.getBoundingClientRect();
+
+  var menu = document.createElement('div');
+  menu.id = 'ntm-menu';
+  menu.style.cssText = [
+    'position:fixed',
+    'left:'+(rect.left)+'px',
+    'top:'+(rect.bottom+4)+'px',
+    'background:var(--surf)',
+    'border:1px solid var(--bd2)',
+    'border-radius:var(--r2)',
+    'box-shadow:var(--sh2)',
+    'z-index:9000',
+    'min-width:180px',
+    'padding:6px 0',
+    'overflow:hidden'
+  ].join(';');
+
+  candidates.forEach(function(c){
+    var item = document.createElement('button');
+    item.style.cssText = [
+      'display:flex','align-items:center','gap:10px',
+      'width:100%','padding:10px 16px',
+      'background:none','border:none',
+      'font:15px/1.3 inherit','color:var(--tx)',
+      'cursor:pointer','text-align:left',
+      '-webkit-tap-highlight-color:transparent'
+    ].join(';');
+    item.innerHTML = '<span style="font-size:18px">'+c.ico+'</span><span>'+c.label+'</span>';
+    item.addEventListener('mouseenter',function(){ item.style.background='var(--bg)'; });
+    item.addEventListener('mouseleave',function(){ item.style.background='none'; });
+    item.addEventListener('click', function(e){
+      e.stopPropagation();
+      menu.remove();
+      openTab(c.type, c.p);
+    });
+    menu.appendChild(item);
+  });
+
+  document.body.appendChild(menu);
+
+  /* close on any outside click */
+  function dismiss(e){
+    if(!menu.contains(e.target) && e.target.id!=='tab-plus'){
+      menu.remove();
+      document.removeEventListener('click', dismiss, true);
+    }
+  }
+  /* slight delay so this click doesn't immediately close it */
+  setTimeout(function(){ document.addEventListener('click', dismiss, true); }, 50);
+}
+
 function renderTabBar(){
   var inner = TABS.map(function(tab){
     var on = tab.id===AID;
@@ -1882,7 +1994,7 @@ function renderTabBar(){
     var closeBtn=e.target.closest('[data-close]');
     if(closeBtn){ e.stopPropagation(); closeTab(closeBtn.dataset.close); return; }
     /* new tab */
-    if(e.target.closest('#tab-plus')){ openTab('home',{}); return; }
+    if(e.target.closest('#tab-plus')){ _showNewTabMenu(); return; }
     /* activate tab */
     var tabEl=e.target.closest('[data-tid]');
     if(tabEl) activateTab(tabEl.dataset.tid);
@@ -1896,9 +2008,14 @@ function renderTabBar(){
 }
 
 function renderWorkspace(){
+  /* guard: if AID is stale or null but tabs exist, recover */
+  if((!AID || !TABS.find(function(x){ return x.id===AID; })) && TABS.length>0){
+    AID = TABS[0].id;
+    _persist();
+  }
   var tab=TABS.find(function(x){ return x.id===AID; });
   var ws=document.getElementById('workspace');
-  if(!tab){ ws.innerHTML=''; return; }
+  if(!tab){ ws.innerHTML='<div style="padding:60px;text-align:center;color:var(--txm)">—</div>'; return; }
   var page=PAGES[tab.type];
   ws.innerHTML = page ? page.render(tab.params||{}) : '<p style="padding:40px;color:var(--txm)">Pagina non trovata.</p>';
   /* restore scroll */
@@ -2257,8 +2374,15 @@ document.addEventListener('DOMContentLoaded', function(){
   LANG = sessionStorage.getItem('ws_lang') || 'it';
   ROLE = sessionStorage.getItem('ws_role') || 'executive';
   _restoreTabs();
-  if(TABS.length===0) openTab('home', {});
-  else renderAll();
+  if(TABS.length===0){
+    openTab('home', {});
+  } else {
+    /* ensure AID is valid before first render */
+    if(!AID || !TABS.find(function(x){ return x.id===AID; })){
+      AID = TABS[0].id;
+    }
+    renderAll();
+  }
 });
 </script>
 
