@@ -1,6 +1,6 @@
 <!-- ── NEW SHELL LAB BANNER ── -->
 <div id="shell-lab-banner" style="position:fixed;top:0;left:0;right:0;z-index:99999;background:linear-gradient(90deg,#0f766e,#0891b2);color:white;font-size:11px;font-weight:800;letter-spacing:0.09em;text-transform:uppercase;text-align:center;padding:5px 16px;font-family:-apple-system,BlinkMacSystemFont,sans-serif;user-select:none;box-shadow:0 1px 6px rgba(8,145,178,0.4);">
-  🎨 NEW SHELL LAB &nbsp;·&nbsp; brigade-dev/shell.html &nbsp;·&nbsp; v010d2 &nbsp;·&nbsp; Not for kitchen use
+  🎨 NEW SHELL LAB &nbsp;·&nbsp; brigade-dev/shell.html &nbsp;·&nbsp; v010d3 &nbsp;·&nbsp; Not for kitchen use
 </div>
 <style>
 /* push shell content below banner */
@@ -941,6 +941,9 @@ input,select,textarea{font-family:inherit}
   transition:background .15s}
 .tdb-btn:hover,.tdb-btn:active{background:rgba(255,255,255,.28)}
 .tdb-btn.primary{background:rgba(255,255,255,.28);border-color:rgba(255,255,255,.8)}
+.tdb-btn.stop-alarm{
+  background:rgba(0,0,0,.25);border-color:rgba(255,255,255,.8);
+  font-size:14px;font-weight:800}
 
 /* Finished state on global chip */
 .gtimer-chip.has-finished{
@@ -1311,6 +1314,7 @@ it:{
   r_tab_bom:'BOM', r_tab_proc:'Procedura',
   r_prep_todo:'Da fare', r_prep_active:'In corso', r_prep_done:'Fatto',
   r_timer_lbl:'Timer',
+  r_timer_stop_alarm:'Stop allarme',
   r_timer_done_title:'Timer finito',
   r_timer_done_goto:'Vai allo step',
   r_timer_done_dismiss:'Chiudi',
@@ -1425,6 +1429,7 @@ en:{
   r_tab_bom:'BOM', r_tab_proc:'Procedure',
   r_prep_todo:'To do', r_prep_active:'In progress', r_prep_done:'Done',
   r_timer_lbl:'Timer',
+  r_timer_stop_alarm:'Stop alarm',
   r_timer_done_title:'Timer finished',
   r_timer_done_goto:'Go to step',
   r_timer_done_dismiss:'Dismiss',
@@ -1534,6 +1539,7 @@ es:{
   r_tab_bom:'BOM', r_tab_proc:'Procedimiento',
   r_prep_todo:'Pendiente', r_prep_active:'En curso', r_prep_done:'Listo',
   r_timer_lbl:'Timer',
+  r_timer_stop_alarm:'Detener alarma',
   r_timer_done_title:'Timer finalizado',
   r_timer_done_goto:'Ir al paso',
   r_timer_done_dismiss:'Cerrar',
@@ -1612,7 +1618,7 @@ es:{
 };
 
 /* lang stored in module-scope var + sessionStorage */
-const SHELL_VERSION = 'v010d2';
+const SHELL_VERSION = 'v010d3';
 /* Recipe state lives in RECIPE object + _driverQty inside recipe JS block */
 let LANG = sessionStorage.getItem('ws_lang') || 'it';
 function setLang(l){ LANG=l; sessionStorage.setItem('ws_lang',l); renderAll(); }
@@ -2708,42 +2714,53 @@ function _installCloseTabGuard(){
    Fix: schedule oscillators inside .then() callback.
    ══════════════════════════════════════════════════════════════════════ */
 
-var _audioCtx    = null;   /* shared context — created once on Start tap   */
-var _audioReady  = false;  /* true once context.state === 'running'        */
-var _audioLog    = [];     /* diagnostic log for LAB panel                 */
+/* ══════════════════════════════════════════════════════════════════════════
+   KITCHEN ALARM ENGINE — v010d3
+   Design: two-beep pattern (1200 Hz), looping every ~1.1s until dismissed.
+   AudioBuffer pre-built at Start tap (inside user gesture → iOS unlocked).
+   Loop via setInterval — survives brief context suspension better than
+   chained AudioBufferSourceNode scheduling.
+   ══════════════════════════════════════════════════════════════════════ */
+
+var _audioCtx      = null;   /* shared AudioContext, created on first Start tap */
+var _audioReady    = false;  /* true once context.state === 'running'           */
+var _alarmBuffer   = null;   /* pre-rendered AudioBuffer of one alarm cycle     */
+var _alarmInterval = null;   /* setInterval handle for the alarm loop           */
+var _alarmTimeout  = null;   /* safety stop after 60 s                         */
+var _alarmActive   = false;  /* prevents double-start                           */
+var _audioLog      = [];     /* diagnostic log for LAB panel                   */
 
 function _alog(msg){
   var ts = new Date().toISOString().substr(11,12);
   _audioLog.push('['+ts+'] '+msg);
-  if(_audioLog.length > 20) _audioLog.shift();
-  /* Update panel if open */
+  if(_audioLog.length > 30) _audioLog.shift();
   var el = document.getElementById('lab-audio-log');
   if(el) el.textContent = _audioLog.join('\n');
 }
 
-/* Create / resume AudioContext inside a user gesture.
-   Returns a Promise that resolves when state === 'running'. */
+/* ── Create / resume AudioContext (MUST be called inside user gesture) ──────
+   Returns Promise<AudioContext|null>. Oscillators must only be scheduled
+   inside .then() — iOS suspends the context by default and resume() is async. */
 function _unlockAudio(){
   return new Promise(function(resolve){
     try {
       if(!_audioCtx){
         _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        _alog('AudioContext created — state: ' + _audioCtx.state);
+        _alog('AudioContext created, state: ' + _audioCtx.state);
       }
       if(_audioCtx.state === 'running'){
         _audioReady = true;
-        _alog('Context already running');
         resolve(_audioCtx);
         return;
       }
-      _alog('Calling resume() — state before: ' + _audioCtx.state);
+      _alog('resume() called, state before: ' + _audioCtx.state);
       _audioCtx.resume().then(function(){
-        _audioReady = true;
-        _alog('resume() resolved — state now: ' + _audioCtx.state);
+        _audioReady = _audioCtx.state === 'running';
+        _alog('resume() resolved, state: ' + _audioCtx.state);
         resolve(_audioCtx);
       }).catch(function(err){
         _alog('resume() rejected: ' + err);
-        resolve(null);  /* resolve null so callers can handle gracefully */
+        resolve(null);
       });
     } catch(err){
       _alog('AudioContext error: ' + err);
@@ -2752,183 +2769,135 @@ function _unlockAudio(){
   });
 }
 
-/* Schedule three ascending beeps on a running context.
-   ctx MUST be in 'running' state when this is called. */
-function _scheduleBeeps(ctx){
+/* ── Build alarm AudioBuffer: two-beep pattern rendered offline ─────────────
+   Pattern: beep(80ms) + gap(120ms) + beep(80ms) + silence(820ms) = 1100ms
+   Frequency: 1200 Hz — cuts through kitchen noise.
+   Gain: 0.8 — loud but not clipping.
+   Called once inside user gesture (Start tap), result cached in _alarmBuffer. */
+function _buildAlarmBuffer(ctx){
+  if(_alarmBuffer) return _alarmBuffer;
   try {
-    var times = [0, 0.20, 0.40];
-    var freqs  = [660, 784, 988];
-    times.forEach(function(t, i){
-      var osc  = ctx.createOscillator();
-      var gain = ctx.createGain();
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.frequency.value = freqs[i];
-      osc.type = 'sine';
-      /* Gain envelope: attack 20ms, sustain, release */
-      gain.gain.setValueAtTime(0,    ctx.currentTime + t);
-      gain.gain.linearRampToValueAtTime(0.5, ctx.currentTime + t + 0.02);
-      gain.gain.setValueAtTime(0.5,        ctx.currentTime + t + 0.10);
-      gain.gain.linearRampToValueAtTime(0, ctx.currentTime + t + 0.18);
-      osc.start(ctx.currentTime + t);
-      osc.stop(ctx.currentTime  + t + 0.20);
-    });
-    _alog('Beeps scheduled on running context');
-    return true;
+    var sampleRate  = ctx.sampleRate;
+    var cycleSecs   = 1.1;
+    var bufLen      = Math.floor(sampleRate * cycleSecs);
+    var buf         = ctx.createBuffer(1, bufLen, sampleRate);
+    var data        = buf.getChannelData(0);
+    var freq        = 1200;
+    var gain        = 0.8;
+    /* Beep 1: 0–80ms */
+    var b1end = Math.floor(sampleRate * 0.080);
+    /* Beep 2: 200ms–280ms */
+    var b2start = Math.floor(sampleRate * 0.200);
+    var b2end   = Math.floor(sampleRate * 0.280);
+
+    for(var i = 0; i < bufLen; i++){
+      var inBeep1 = i < b1end;
+      var inBeep2 = i >= b2start && i < b2end;
+      if(inBeep1 || inBeep2){
+        /* Sine wave with fast attack/release envelope to avoid click */
+        var phase = (2 * Math.PI * freq * i) / sampleRate;
+        var env   = 1.0;
+        /* 5ms attack */
+        if(inBeep1){
+          if(i < sampleRate * 0.005)            env = i / (sampleRate * 0.005);
+          else if(i > b1end - sampleRate*0.005) env = (b1end - i) / (sampleRate * 0.005);
+        }
+        if(inBeep2){
+          var rel = i - b2start;
+          var len = b2end - b2start;
+          if(rel < sampleRate * 0.005)         env = rel / (sampleRate * 0.005);
+          else if(rel > len - sampleRate*0.005) env = (len - rel) / (sampleRate * 0.005);
+        }
+        data[i] = Math.sin(phase) * gain * env;
+      }
+      /* silence: data[i] already 0 */
+    }
+    _alarmBuffer = buf;
+    _alog('AlarmBuffer built: ' + bufLen + ' samples @ ' + sampleRate + 'Hz');
+    return buf;
   } catch(err){
-    _alog('scheduleBeeps error: ' + err);
-    return false;
+    _alog('buildAlarmBuffer error: ' + err);
+    return null;
   }
 }
 
-/* Fallback: <audio> element with inline tiny WAV (beep encoded as data URI).
-   Generated at first call, reused. Works even if AudioContext is blocked. */
-var _audioEl = null;
-function _playFallbackBeep(){
+/* ── Play one cycle of the alarm ─────────────────────────────────────────── */
+function _playOneCycle(){
+  if(!_audioCtx || !_alarmBuffer){ _alog('playOneCycle: no ctx or buffer'); return; }
+  if(_audioCtx.state === 'suspended'){
+    _audioCtx.resume().catch(function(){});  /* best-effort re-activate */
+    _alog('playOneCycle: context suspended, attempted resume');
+  }
   try {
-    if(!_audioEl){
-      /* 440 Hz sine, 0.3s, 8-bit PCM WAV — tiny inline base64 */
-      /* Generated offline: python3 -c "import struct,math,base64;
-         rate=8000;dur=0.3;freq=440;amp=100
-         frames=[int(amp*math.sin(2*math.pi*freq*i/rate)) for i in range(int(rate*dur))]
-         data=struct.pack('<'+'b'*len(frames),*frames)
-         hdr=struct.pack('<4sI4s4sIHHIIHH4sI',b'RIFF',36+len(data),b'WAVE',b'fmt ',
-           16,1,1,rate,rate,1,8,b'data',len(data))
-         print(base64.b64encode(hdr+data).decode())" */
-      _audioEl = new Audio('data:audio/wav;base64,UklGRtQCAABXQVZFZm10IBAAAAABAAEAgD4AAIA+AAABAAgAZGF0YbACAAAAAQIEBgcJCgwNDhAREhMUFBUWFhcXFxcXFxcWFhUUExISEA8ODAsKCAcFBAIBAP/9/Pv5+Pf19PPy8fDv7+7u7e3t7e7u7+/w8fLz9PX3+Pn6+/3+AAEDBAYHCQoMDQ4QERITExQVFRYWFhYWFhYVFRQTEhEQDw4NCwkIBgUDAgAA/v38+/n49/X08/Lx8O/v7u7t7e3t7e7u7+/w8fLz9PX3+Pn6/P3+AAIDBQYICQsNDg8REhMUFRUWFhcXFxcXFxYWFRQUExEQDw0MCwoIBwUDAgAA/v38+/r49/b18/Lx8O/u7u3t7Ozt7e3u7u/w8fLz9Pb3+fn7/P3/AAEDBQYICgsMDQ8QERITFBQVFhYWFxcWFhYVFRQTEhEQDw0MCwoIBwUDAgAA/v38+/n49vX08/Hx8O/u7u3t7Ozt7e3u7+/w8fLz9PX2+Pn6/P3/AAEDBAYHCQoMDQ8QERITFBQVFhYXFxcXFxYWFhUUExISEA8ODAsKCAcFBAIBAP/9/Pv6+Pf29PTy8fDv7+7t7e3s7O3t7e7u7/Dw8fLz9PX3+Pn6/P3+AAIDBQcICgsNDhAREhMUFRUWFhcXFxcXFhYVFRQTEhEQDg0MCwoIBwUDAgD//v38+/r59/b19PPy8fDv7u7t7e3s7e3t7u7v8PDx8vP09vf4+vv8/f8AAQMEBgcJCwwNDhAREhMUFRUWFhYXFxcWFhUVFBMSEQ8ODQwKCQgGBAMBAAD+/fz6+fj29fTy8vHw7+7t7e3s7Ozt7e3u7+/w8fLz9Pb3+Pn7/P3/AAIDBQcICgsNDg8RERMUFBUWFhcXFxcXFhYWFBQTEhEQDw4NCwoIBwUDAgD//v38+/r59/b09PPy8fDv7+7t7e3s7O3t7e7u7/Dw8fPz9Pb3+fn7/P3/AAEDBAYHCQoMDQ8QERITFBUVFhYWFhcWFhYVFBQTEhEPDg0MCwkIBgUDAgD//f38+/r59/b08/Lx8O/v7u3t7e3s7e3t7u7v8PHx8vP09vf4+vv8/f8A');
-      _audioEl.volume = 1.0;
-    }
-    _audioEl.currentTime = 0;
-    _audioEl.play().then(function(){
-      _alog('Fallback audio played OK');
-    }).catch(function(err){
-      _alog('Fallback audio failed: '+err);
-    });
+    var src = _audioCtx.createBufferSource();
+    src.buffer = _alarmBuffer;
+    src.connect(_audioCtx.destination);
+    src.start();
+    _alog('cycle played');
   } catch(err){
-    _alog('Fallback audio error: '+err);
+    _alog('playOneCycle error: ' + err);
   }
 }
 
-/* Main play function: unlock → then schedule beeps (proper async chain).
-   Falls back to <audio> element if context stays suspended. */
-function _playTimerSound(){
-  _unlockAudio().then(function(ctx){
-    if(ctx && ctx.state === 'running'){
-      _scheduleBeeps(ctx);
-    } else {
-      _alog('Context not running after resume — using fallback');
-      _playFallbackBeep();
-    }
+/* ── Start alarm loop (call from _onTimerDone) ───────────────────────────── */
+function _startAlarm(){
+  if(_alarmActive){ _alog('alarm already active'); return; }
+  _alarmActive = true;
+  _alog('alarm START');
+
+  /* Play first cycle immediately */
+  _playOneCycle();
+
+  /* Loop every 1100ms */
+  _alarmInterval = setInterval(_playOneCycle, 1100);
+
+  /* Safety stop after 60 seconds */
+  _alarmTimeout = setTimeout(function(){
+    _alog('alarm auto-stop (60s timeout)');
+    _stopAlarm();
+  }, 60000);
+}
+
+/* ── Stop alarm loop ─────────────────────────────────────────────────────── */
+function _stopAlarm(){
+  if(_alarmInterval){ clearInterval(_alarmInterval); _alarmInterval = null; }
+  if(_alarmTimeout){  clearTimeout(_alarmTimeout);   _alarmTimeout  = null; }
+  _alarmActive = false;
+  _alog('alarm STOP');
+  _updateGlobalTimerUI();
+}
+
+/* ── Pre-build alarm buffer on Start tap (inside user gesture) ───────────── */
+function _unlockAudioAndPreload(){
+  return _unlockAudio().then(function(ctx){
+    if(ctx) _buildAlarmBuffer(ctx);
+    return ctx;
   });
 }
 
-/* LAB: immediate sound test — call from button click handler */
+/* ── Immediate test: play one cycle now (LAB "Test sound" button) ────────── */
 function _labTestSound(){
   _alog('--- LAB sound test triggered ---');
-  _alog('vibrate supported: ' + (!!navigator.vibrate));
+  _alog('vibrate: ' + (!!navigator.vibrate));
   _alog('visibility: ' + document.visibilityState);
   _unlockAudio().then(function(ctx){
-    if(ctx && ctx.state === 'running'){
-      _alog('immediate beep: context running');
-      _scheduleBeeps(ctx);
+    if(ctx){
+      _buildAlarmBuffer(ctx);
+      _playOneCycle();
+      _alog('LAB test: one cycle played');
     } else {
-      _alog('immediate beep: context NOT running — fallback');
-      _playFallbackBeep();
+      _alog('LAB test: no audio context');
     }
     _updateLabDiagPanel();
   });
 }
 
+/* ── Vibrate (best-effort — Android only, silent fail on iOS) ────────────── */
 function _vibrateTimer(){
-  try {
-    if(navigator.vibrate) navigator.vibrate([200, 100, 200]);
-  } catch(e){}
+  try { if(navigator.vibrate) navigator.vibrate([200,100,200,100,200]); } catch(e){}
 }
 
-function _showTimerDoneBanner(step){
-  /* Remove any existing banner first */
-  var existing = document.getElementById('timer-done-banner');
-  if(existing) existing.remove();
 
-  var banner = document.createElement('div');
-  banner.id = 'timer-done-banner';
-  banner.className = 'timer-done-banner';
-  banner.innerHTML =
-    '<div class="tdb-inner">'
-    +'<div class="tdb-top">'
-      +'<span class="tdb-ico">✅</span>'
-      +'<div class="tdb-text">'
-        +'<div class="tdb-title">'+t('r_timer_done_title')+'</div>'
-        +'<div class="tdb-sub">'+step.title+'</div>'
-      +'</div>'
-      +'<span class="tdb-close" id="tdb-close">✕</span>'
-    +'</div>'
-    +'<div class="tdb-btns">'
-      +'<button class="tdb-btn primary" id="tdb-goto">'+t('r_timer_done_goto')+'</button>'
-      +'<button class="tdb-btn" id="tdb-reset">'+t('r_timer_reset')+'</button>'
-      +'<button class="tdb-btn" id="tdb-dismiss">'+t('r_timer_done_dismiss')+'</button>'
-    +'</div>'
-    +'</div>';
-  document.body.appendChild(banner);
-
-  /* Dismiss */
-  function _dismiss(){ var b=document.getElementById('timer-done-banner'); if(b) b.remove(); }
-
-  document.getElementById('tdb-close').addEventListener('click', _dismiss);
-  document.getElementById('tdb-dismiss').addEventListener('click', _dismiss);
-
-  /* Go to step: switch to Prep tab, expand card, scroll to it */
-  document.getElementById('tdb-goto').addEventListener('click', function(){
-    _dismiss();
-    /* Ensure recipe tab is active workspace tab */
-    var recipeTab = TABS.find(function(x){ return x.type==='recipe'; });
-    if(recipeTab && recipeTab.id !== AID){ activateTab(recipeTab.id); }
-    /* Switch inner tab to Prep */
-    _recipeTab = 'prep';
-    /* Expand the card */
-    _cardOpen[step.id] = true;
-    /* Re-render if recipe page is showing */
-    var ws = document.getElementById('workspace');
-    var activeTab = TABS.find(function(x){ return x.id===AID; });
-    if(activeTab && activeTab.type==='recipe'){
-      /* Just switch inner tab and expand */
-      ws.querySelectorAll('.r-tab').forEach(function(t){
-        t.classList.toggle('active', t.dataset.rtab==='prep');
-      });
-      ws.querySelectorAll('.r-panel').forEach(function(p){ p.classList.add('r-panel-hide'); });
-      var prepPanel = ws.querySelector('#rp-prep');
-      if(prepPanel) prepPanel.classList.remove('r-panel-hide');
-      /* Expand card */
-      var body = ws.querySelector('#pbody-'+step.id);
-      if(body){ body.classList.add('open'); _cardOpen[step.id]=true; }
-      /* Scroll card into view */
-      setTimeout(function(){
-        var card = document.getElementById('pcard-'+step.id);
-        if(card) card.scrollIntoView({behavior:'smooth', block:'center'});
-      }, 80);
-    } else {
-      /* Recipe page not open: renderAll will pick up _recipeTab='prep' and _cardOpen */
-      renderAll();
-    }
-  });
-
-  /* Reset: clear timer state, dismiss banner */
-  document.getElementById('tdb-reset').addEventListener('click', function(){
-    _timerDelete(step.id);
-    if(_rafHandles[step.id]){ cancelAnimationFrame(_rafHandles[step.id]); delete _rafHandles[step.id]; }
-    _refreshCard(step);
-    _updateGlobalTimerUI();
-    _dismiss();
-  });
-
-  /* Auto-dismiss after 30 seconds */
-  setTimeout(function(){
-    var b = document.getElementById('timer-done-banner');
-    if(b) b.remove();
-  }, 30000);
-}
-
-/* Main completion handler — idempotent via done_notified flag */
 function _onTimerDone(step){
   var ts = _timerLoad(step.id);
   if(!ts) return;
@@ -2944,12 +2913,102 @@ function _onTimerDone(step){
   _refreshCard(step);
   _updateGlobalTimerUI();
 
-  /* Foreground: sound + vibration + banner */
-  _playTimerSound();
+  /* Foreground: alarm loop + vibration + banner */
+  _startAlarm();        /* kitchen alarm loop — runs until dismissed */
   _vibrateTimer();
   _showTimerDoneBanner(step);
-  /* LAB: refresh diag panel to show context state at completion */
+  /* LAB: refresh diag panel */
   setTimeout(_updateLabDiagPanel, 900);
+}
+
+/* ── Timer-done banner: slides up from bottom, stays until dismissed ── */
+function _showTimerDoneBanner(step){
+  /* Remove any existing banner first */
+  var existing = document.getElementById('timer-done-banner');
+  if(existing) existing.remove();
+
+  /* Count total finished timers for multi-timer message */
+  var finCount = 0;
+  RECIPE.steps.forEach(function(s){
+    if(!s.timer_s) return;
+    var ts = _timerLoad(s.id);
+    if(ts && ts.status==='done') finCount++;
+  });
+  var subTitle = finCount > 1
+    ? step.title + ' (+' + (finCount-1) + ' altri)'
+    : step.title;
+
+  var banner = document.createElement('div');
+  banner.id = 'timer-done-banner';
+  banner.className = 'timer-done-banner';
+  banner.innerHTML =
+    '<div class="tdb-inner">'
+    +'<div class="tdb-top">'
+      +'<span class="tdb-ico">⏰</span>'
+      +'<div class="tdb-text">'
+        +'<div class="tdb-title">'+t('r_timer_done_title')+'</div>'
+        +'<div class="tdb-sub">'+subTitle+'</div>'
+      +'</div>'
+      +'<span class="tdb-close" id="tdb-close">✕</span>'
+    +'</div>'
+    +'<div class="tdb-btns">'
+      +'<button class="tdb-btn stop-alarm" id="tdb-stop-alarm">'+t('r_timer_stop_alarm')+'</button>'
+      +'<button class="tdb-btn primary" id="tdb-goto">'+t('r_timer_done_goto')+'</button>'
+      +'<button class="tdb-btn" id="tdb-reset">'+t('r_timer_reset')+'</button>'
+      +'<button class="tdb-btn" id="tdb-dismiss">'+t('r_timer_done_dismiss')+'</button>'
+    +'</div>'
+    +'</div>';
+  document.body.appendChild(banner);
+
+  function _dismiss(){ var b=document.getElementById('timer-done-banner'); if(b) b.remove(); }
+
+  /* ✕ and Dismiss: close banner only, alarm keeps running */
+  document.getElementById('tdb-close').addEventListener('click', _dismiss);
+  document.getElementById('tdb-dismiss').addEventListener('click', _dismiss);
+
+  /* Stop alarm: stop audio + close banner */
+  document.getElementById('tdb-stop-alarm').addEventListener('click', function(){
+    _stopAlarm(); _dismiss();
+  });
+
+  /* Vai allo step: stop alarm + navigate + close banner */
+  document.getElementById('tdb-goto').addEventListener('click', function(){
+    _stopAlarm(); _dismiss();
+    _recipeTab = 'prep';
+    _cardOpen[step.id] = true;
+    var ws = document.getElementById('workspace');
+    var activeTab = TABS.find(function(x){ return x.id===AID; });
+    if(activeTab && activeTab.type==='recipe' && ws){
+      ws.querySelectorAll('.r-tab').forEach(function(t){
+        t.classList.toggle('active', t.dataset.rtab==='prep');
+      });
+      ws.querySelectorAll('.r-panel').forEach(function(p){ p.classList.add('r-panel-hide'); });
+      var pp = ws.querySelector('#rp-prep');
+      if(pp) pp.classList.remove('r-panel-hide');
+      var body = ws.querySelector('#pbody-'+step.id);
+      if(body) body.classList.add('open');
+      setTimeout(function(){
+        var card = document.getElementById('pcard-'+step.id);
+        if(card) card.scrollIntoView({behavior:'smooth',block:'center'});
+      }, 80);
+    } else { renderAll(); }
+  });
+
+  /* Reset: stop alarm + clear timer + close banner */
+  document.getElementById('tdb-reset').addEventListener('click', function(){
+    _stopAlarm();
+    _timerDelete(step.id);
+    if(_rafHandles[step.id]){ cancelAnimationFrame(_rafHandles[step.id]); delete _rafHandles[step.id]; }
+    _refreshCard(step);
+    _updateGlobalTimerUI();
+    _dismiss();
+  });
+
+  /* Auto-dismiss banner after 60s (alarm auto-stops separately) */
+  setTimeout(function(){
+    var b = document.getElementById('timer-done-banner');
+    if(b) b.remove();
+  }, 60000);
 }
 
 function _rafStart(step){
@@ -3138,7 +3197,8 @@ function _wireTimerBlock(container, step){
     var btn = startBtn||resumeBtn;
     btn.addEventListener('click', function(e){
       e.stopPropagation();
-      _unlockAudio();   /* iOS: must unlock AudioContext inside user gesture */
+      /* iOS: unlock AudioContext AND pre-build alarm buffer in this gesture */
+      _unlockAudioAndPreload();
       var ts = _timerLoad(step.id)||{};
       var remaining = (ts.remaining_s !== undefined) ? ts.remaining_s : step.timer_s;
       var newTs = {
