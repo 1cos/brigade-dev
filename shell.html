@@ -1,6 +1,6 @@
 <!-- ── NEW SHELL LAB BANNER ── -->
 <div id="shell-lab-banner" style="position:fixed;top:0;left:0;right:0;z-index:99999;background:linear-gradient(90deg,#0f766e,#0891b2);color:white;font-size:11px;font-weight:800;letter-spacing:0.09em;text-transform:uppercase;text-align:center;padding:5px 16px;font-family:-apple-system,BlinkMacSystemFont,sans-serif;user-select:none;box-shadow:0 1px 6px rgba(8,145,178,0.4);">
-  🎨 NEW SHELL LAB &nbsp;·&nbsp; brigade-dev/shell.html &nbsp;·&nbsp; v010 &nbsp;·&nbsp; Not for kitchen use
+  🎨 NEW SHELL LAB &nbsp;·&nbsp; brigade-dev/shell.html &nbsp;·&nbsp; v010a &nbsp;·&nbsp; Not for kitchen use
 </div>
 <style>
 /* push shell content below banner */
@@ -686,109 +686,140 @@ input,select,textarea{font-family:inherit}
 .obs-wn{border-color:var(--wn-bd);background:var(--wn-bg)}
 .obs-in{border-color:var(--in-bd);background:var(--in-bg)}
 
-/* ════ RECIPE v010 — chef's workbench ═══════════════════════════════════ */
+/* ════ RECIPE v010a — operational tabs ═══════════════════════════════════ */
 
-/* ── Driver block: the one number the chef touches ── */
+/* ── Production Driver: the single source of truth ── */
 .r-driver{
   background:var(--surf-g);backdrop-filter:blur(10px);
   border:1.5px solid var(--bd2);border-radius:var(--r3);
-  padding:20px 22px 18px;margin-bottom:18px}
+  padding:20px 22px 16px;margin-bottom:16px}
 .r-driver-lbl{
   font-size:11px;font-weight:700;color:var(--txm);
-  text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px}
+  text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px}
 .r-driver-row{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
 .r-driver-num{
-  font-size:42px;font-weight:800;color:var(--tx);
+  font-size:44px;font-weight:800;color:var(--tx);
   font-family:var(--fm);line-height:1;cursor:pointer;
   border-bottom:2px dashed transparent;transition:border-color .15s;
   -webkit-tap-highlight-color:transparent}
-.r-driver-num:hover{border-bottom-color:var(--bd2)}
-.r-driver-num.editing{border-bottom-color:var(--b6)}
+.r-driver-num:hover,.r-driver-num:active{border-bottom-color:var(--bd2)}
 .r-driver-input{
-  font-size:42px;font-weight:800;color:var(--b6);
+  font-size:44px;font-weight:800;color:var(--b6);
   font-family:var(--fm);line-height:1;
-  width:3ch;min-width:60px;max-width:160px;
+  width:3ch;min-width:60px;max-width:180px;
   border:none;border-bottom:2px solid var(--b6);
   background:transparent;outline:none;
   -webkit-appearance:none;appearance:none;padding:0;
   -moz-appearance:textfield}
 .r-driver-input::-webkit-inner-spin-button,
 .r-driver-input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
-.r-driver-unit{font-size:20px;font-weight:600;color:var(--tx2)}
-.r-driver-hint{
-  font-size:12px;color:var(--txm);margin-top:8px;line-height:1.5}
-.r-driver-hint.visible{display:block}
-.r-driver-hint{display:none}
+.r-driver-unit{font-size:22px;font-weight:600;color:var(--tx2)}
 
-/* ── Meta strip: shelf life + last production ── */
+/* ── Meta strip ── */
 .r-meta{
   display:flex;gap:0;flex-wrap:wrap;
   border:1px solid var(--bd);border-radius:var(--r2);
-  overflow:hidden;margin-bottom:20px}
+  overflow:hidden;margin-bottom:16px}
 .r-meta-item{
-  flex:1;min-width:120px;
-  padding:11px 16px;
-  border-right:1px solid var(--bd)}
+  flex:1;min-width:110px;
+  padding:10px 16px;border-right:1px solid var(--bd)}
 .r-meta-item:last-child{border-right:none}
-.r-meta-lbl{
-  font-size:11px;font-weight:700;color:var(--txm);
-  text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px}
+.r-meta-lbl{font-size:10px;font-weight:700;color:var(--txm);
+  text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px}
 .r-meta-val{font-size:14px;font-weight:600;color:var(--tx)}
 
-/* ── Section headers ── */
-.r-sec-hd{
-  font-size:11px;font-weight:700;color:var(--txm);
-  text-transform:uppercase;letter-spacing:.06em;
-  padding-bottom:10px;border-bottom:1px solid var(--bd);
-  margin-bottom:0}
+/* ── Inner tab bar ── */
+.r-tabs{
+  display:flex;gap:0;border-bottom:1px solid var(--bd);
+  margin-bottom:18px;overflow-x:auto;
+  -webkit-overflow-scrolling:touch;scrollbar-width:none}
+.r-tabs::-webkit-scrollbar{display:none}
+.r-tab{
+  padding:10px 16px;font-size:14px;font-weight:600;color:var(--tx2);
+  border-bottom:2px solid transparent;cursor:pointer;white-space:nowrap;
+  transition:color .15s,border-color .15s;
+  -webkit-tap-highlight-color:transparent;
+  min-height:44px;display:flex;align-items:center}
+.r-tab.active{color:var(--b6);border-bottom-color:var(--b6)}
+.r-tab:hover:not(.active){color:var(--tx)}
+@media(max-width:480px){.r-tab{padding:10px 13px;font-size:13px}}
 
-/* ── BOM list ── */
-.r-bom{display:flex;flex-direction:column;margin-bottom:24px}
+/* ── BOM tab ── */
+.r-bom{display:flex;flex-direction:column}
 .r-brow{
   display:grid;grid-template-columns:1fr auto;gap:14px;
-  padding:11px 2px;border-bottom:1px solid var(--bd);
-  align-items:center}
+  padding:11px 2px;border-bottom:1px solid var(--bd);align-items:center}
 .r-brow:last-child{border-bottom:none}
 .r-bitem{font-size:15px;color:var(--tx)}
-.r-bqty{
-  font-size:15px;font-weight:700;
-  font-family:var(--fm);color:var(--b6);white-space:nowrap}
-
-/* Sub-recipe (derived ingredients) */
+.r-bqty{font-size:15px;font-weight:700;font-family:var(--fm);
+  color:var(--b6);white-space:nowrap}
 .r-sub-toggle{
   display:flex;align-items:center;gap:6px;
   font-size:13px;font-weight:600;color:var(--tx2);
-  cursor:pointer;padding:11px 2px;
-  border-top:1px solid var(--bd);
+  cursor:pointer;padding:12px 2px;border-top:1px solid var(--bd);
   -webkit-tap-highlight-color:transparent}
 .r-sub-toggle svg{transition:transform .2s;flex-shrink:0}
 .r-sub-toggle.open svg{transform:rotate(90deg)}
 .r-sub-body{display:none}
 .r-sub-body.open{display:block}
 
-/* ── Constraining ingredient notice ── */
-.r-constraint{
-  margin-top:10px;padding:10px 14px;
-  background:rgba(217,119,6,.08);border:1px solid rgba(217,119,6,.22);
-  border-radius:12px;font-size:13px;color:var(--tx);line-height:1.55;
-  display:none}
-.r-constraint.visible{display:block}
-
-/* ── Steps list ── */
-.r-steps{display:flex;flex-direction:column;gap:10px;margin-bottom:24px}
+/* ── Procedure tab ── */
+.r-steps{display:flex;flex-direction:column;gap:10px}
 .r-step{
   display:flex;align-items:flex-start;gap:14px;
-  font-size:15px;line-height:1.6;color:var(--tx);
+  font-size:15px;line-height:1.65;color:var(--tx);
   padding:14px 16px;
   background:var(--surf-g);border:1px solid var(--bd);border-radius:var(--r2)}
 .r-snum{
   width:26px;height:26px;border-radius:50%;
-  background:var(--b6);color:#fff;
-  font-size:11px;font-weight:700;
+  background:var(--b6);color:#fff;font-size:11px;font-weight:700;
   display:flex;align-items:center;justify-content:center;
   flex-shrink:0;margin-top:2px}
+/* Inline qty highlight inside step text */
+.r-step-qty{
+  font-weight:700;color:var(--b6);font-family:var(--fm)}
 
-/* ── History placeholder ── */
+/* ── Prep tab ── */
+.r-prep-list{display:flex;flex-direction:column;gap:10px}
+.r-prep-item{
+  background:var(--surf-g);border:1px solid var(--bd);
+  border-radius:var(--r2);overflow:hidden}
+.r-prep-hd{
+  display:flex;align-items:center;gap:12px;
+  padding:13px 16px;cursor:pointer;
+  -webkit-tap-highlight-color:transparent}
+.r-prep-ico{font-size:18px;flex-shrink:0}
+.r-prep-info{flex:1;min-width:0}
+.r-prep-name{font-size:14px;font-weight:600;color:var(--tx);line-height:1.3}
+.r-prep-sub{font-size:12px;color:var(--txm);margin-top:2px}
+.r-prep-badge{
+  padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;
+  white-space:nowrap;flex-shrink:0}
+.r-prep-badge.todo{background:rgba(37,99,235,.10);color:var(--b6)}
+.r-prep-badge.active{background:rgba(22,163,74,.12);color:var(--ok)}
+.r-prep-badge.done{background:rgba(100,116,139,.10);color:var(--txm)}
+/* Timer block inside prep item */
+.r-prep-timer{
+  display:none;padding:12px 16px 14px;
+  border-top:1px solid var(--bd);
+  background:rgba(37,99,235,.04)}
+.r-prep-timer.open{display:block}
+.r-timer-display{
+  font-size:32px;font-weight:800;font-family:var(--fm);
+  color:var(--tx);letter-spacing:.04em;margin-bottom:10px}
+.r-timer-display.running{color:var(--ok)}
+.r-timer-display.done{color:var(--txm)}
+.r-timer-btns{display:flex;gap:8px;flex-wrap:wrap}
+.r-tbtn{
+  padding:8px 18px;border-radius:20px;font-size:13px;font-weight:700;
+  border:1.5px solid var(--bd2);color:var(--tx2);background:var(--surf);
+  cursor:pointer;transition:all .15s;
+  -webkit-tap-highlight-color:transparent;min-height:40px}
+.r-tbtn.primary{background:var(--b6);border-color:var(--b6);color:#fff}
+.r-tbtn.danger{border-color:var(--er);color:var(--er)}
+.r-tbtn:disabled{opacity:.4;cursor:default}
+
+/* ── History tab placeholder ── */
 .r-hist{
   padding:40px 16px;text-align:center;
   color:var(--txm);font-size:14px;line-height:1.6}
@@ -1112,7 +1143,10 @@ it:{
   r_driver_hint:'Tocca il numero per modificare',
   r_sec_ingredients:'Ingredienti',
   r_sec_procedure:'Procedura',
-  r_tab_proc:'Procedura', r_tab_bom:'BOM', r_tab_hist:'Storico',
+  r_tab_bom:'BOM', r_tab_proc:'Procedura',
+  r_tab_prep:'Prep', r_tab_hist:'Storico',
+  r_prep_todo:'Da fare', r_prep_active:'In corso', r_prep_done:'Fatto',
+  r_timer_start:'Avvia timer', r_timer_stop:'Pausa', r_timer_reset:'Ricomincia',
   r_shelf:'Shelf life', r_last_prod:'Ultima produzione',
   r_last_prod_val:'Ieri · Samantha · 10 pz',
   r_batch_sel:'Batch',
@@ -1213,7 +1247,10 @@ en:{
   r_driver_hint:'Tap the number to change',
   r_sec_ingredients:'Ingredients',
   r_sec_procedure:'Procedure',
-  r_tab_proc:'Procedure', r_tab_bom:'BOM', r_tab_hist:'History',
+  r_tab_bom:'BOM', r_tab_proc:'Procedure',
+  r_tab_prep:'Prep', r_tab_hist:'History',
+  r_prep_todo:'To do', r_prep_active:'In progress', r_prep_done:'Done',
+  r_timer_start:'Start timer', r_timer_stop:'Pause', r_timer_reset:'Reset',
   r_shelf:'Shelf life', r_last_prod:'Last produced',
   r_last_prod_val:'Yesterday · Samantha · 10 pcs',
   r_batch_sel:'Batch',
@@ -1309,7 +1346,10 @@ es:{
   r_driver_hint:'Toca el número para cambiar',
   r_sec_ingredients:'Ingredientes',
   r_sec_procedure:'Procedimiento',
-  r_tab_proc:'Procedimiento', r_tab_bom:'BOM', r_tab_hist:'Historial',
+  r_tab_bom:'BOM', r_tab_proc:'Procedimiento',
+  r_tab_prep:'Prep', r_tab_hist:'Historial',
+  r_prep_todo:'Pendiente', r_prep_active:'En curso', r_prep_done:'Listo',
+  r_timer_start:'Iniciar timer', r_timer_stop:'Pausa', r_timer_reset:'Reiniciar',
   r_shelf:'Vida útil', r_last_prod:'Última producción',
   r_last_prod_val:'Ayer · Samantha · 10 pz',
   r_batch_sel:'Batch',
@@ -1378,7 +1418,7 @@ es:{
 };
 
 /* lang stored in module-scope var + sessionStorage */
-const SHELL_VERSION = 'v010';
+const SHELL_VERSION = 'v010a';
 /* Recipe state lives in RECIPE object + _driverQty inside recipe JS block */
 let LANG = sessionStorage.getItem('ws_lang') || 'it';
 function setLang(l){ LANG=l; sessionStorage.setItem('ws_lang',l); renderAll(); }
@@ -2104,156 +2144,265 @@ function _patchObservations(ws, latest){
   }).join('');
 }
 
-/* ════ RECIPE v010 — chef's workbench ════════════════════════════════════════
-   Philosophy:
-   - Every number is live. Touch it, change it. No panels.
-   - Production Driver: the unit this recipe actually produces (vaschette, not pz).
-   - Chef sees result first. Math is hidden unless needed.
-   - One column scroll. No inner tabs.
-   - Zero DB writes. All mock.
+/* ════ RECIPE v010a — operational tabs ═══════════════════════════════════════
+   Architecture:
+   - Production Driver: single editable number above all tabs
+   - Tabs: BOM | Procedura | Prep | Storico
+   - Step values: structured placeholders {key} → scaled from BOM values
+   - Timer: in-memory only, requestAnimationFrame, zero DB
+   - RECIPE object is the single data source (DB-swap ready)
    ════════════════════════════════════════════════════════════════════════════ */
 
-/* ── Mock recipe data ── */
+/* ── Recipe data ── */
 var RECIPE = {
   name:        'Tiramisu',
   station:     'Pastry',
-  driver_unit: 'vaschette',   /* what this recipe actually produces */
-  driver_base: 10,            /* base batch = 10 vaschette */
+  driver_unit: 'vaschette',
+  driver_base: 10,
   shelf_life:  '24h',
-  last_prod:   null,          /* localised via TR key */
   bom: [
-    {i:'Savoiardi',      v:400,  u:'g'},
-    {i:'Mascarpone',     v:500,  u:'g'},
-    {i:'Tuorli',         v:6,    u:'pz',  p:true},
-    {i:'Heavy Cream',    v:300,  u:'ml'},
-    {i:'Zucchero',       v:120,  u:'g'},
-    {i:'Espresso',       v:300,  u:'ml'},
-    {i:'Cacao in polvere',v:30,  u:'g'},
-    {i:'Kahlúa',         v:60,   u:'ml'}
+    {key:'sav',  label:'Savoiardi',       v:400, u:'g'},
+    {key:'mas',  label:'Mascarpone',       v:500, u:'g'},
+    {key:'egg',  label:'Tuorli',           v:6,   u:'pz', p:true},
+    {key:'cre',  label:'Heavy Cream',      v:300, u:'ml'},
+    {key:'sug',  label:'Zucchero',         v:120, u:'g'},
+    {key:'esp',  label:'Espresso',         v:300, u:'ml'},
+    {key:'cac',  label:'Cacao in polvere', v:30,  u:'g'},
+    {key:'kah',  label:'Kahlúa',           v:60,  u:'ml'}
   ],
   sub_bom: [
-    {i:'Berry Coulis',     v:70, u:'g'},
-    {i:'Meringa italiana', v:45, u:'g'}
+    {key:'cou',  label:'Berry Coulis',     v:70,  u:'g'},
+    {key:'mer',  label:'Meringa italiana', v:45,  u:'g'}
   ],
-  steps: null   /* populated from STEPS global */
+  /* Steps with structured value placeholders.
+     {key} references a bom key; values scaled by driver factor at render time.
+     Text is IT; EN/ES handled via separate step arrays when i18n is wired. */
+  steps: [
+    { text: 'Monta {egg} con {sug} fino a ottenere un composto chiaro e spumoso.',
+      vals: {egg:{base:6,u:'pz',p:true}, sug:{base:120,u:'g'}} },
+    { text: 'Incorpora {mas} ai tuorli montati — mescola delicatamente con la marisa.',
+      vals: {mas:{base:500,u:'g'}} },
+    { text: 'Monta {cre} semi-ferma e incorporala al composto in due riprese.',
+      vals: {cre:{base:300,u:'ml'}} },
+    { text: 'Inzuppa {sav} nell\'espresso + Kahlúa per 2 secondi per lato.',
+      vals: {sav:{base:400,u:'g'}} },
+    { text: 'Strati: crema / savoiardi / crema. Riempi {count} vaschette individuali.',
+      vals: {count:{base:10,u:'pz',p:true,isDriver:true}} },
+    { text: 'Spolverizza {cac} sulla superficie di ogni vaschetta.',
+      vals: {cac:{base:30,u:'g'}} },
+    { text: 'Riposa in frigo minimo 4 ore — ideale overnight.',
+      vals: {} }
+  ],
+  /* Prep steps: operational tasks with optional timer (seconds) */
+  prep: [
+    { id:'p1', icon:'🥚', name:'Monta tuorli + zucchero',
+      sub:'Planetaria · vel. media-alta',      timer_s: 8*60,  state:'todo' },
+    { id:'p2', icon:'🫙', name:'Prepara espresso + Kahlúa',
+      sub:'Lascia raffreddare prima di usare', timer_s: 5*60,  state:'todo' },
+    { id:'p3', icon:'🍦', name:'Monta panna semi-ferma',
+      sub:'Non montare troppo',                timer_s: 4*60,  state:'todo' },
+    { id:'p4', icon:'🏺', name:'Inzuppa savoiardi',
+      sub:'2 secondi per lato, non di più',    timer_s: null,  state:'todo' },
+    { id:'p5', icon:'❄️', name:'Riposo in frigo',
+      sub:'Minimo 4h — ideale overnight',      timer_s:4*60*60, state:'todo' }
+  ]
 };
 
-/* ── Quantity formatting ── */
+/* ── State ── */
+var _driverQty  = RECIPE.driver_base;
+var _recipeTab  = 'bom';
+var _timerState = {};   /* {prepId: {running, remaining_s, raf_id, started_at}} */
+
+/* ── Quantity formatter ── */
 function _qty(v, u, isPiece){
-  if(isPiece) return Math.round(v) + ' pz';
-  if(u === 'g'  && v >= 1000) return +(v/1000).toFixed(1) + ' kg';
-  if(u === 'ml' && v >= 1000) return +(v/1000).toFixed(1) + ' L';
-  return (Number.isInteger(v) ? v : +v.toFixed(1)) + u;
+  if(isPiece) return Math.round(v) + (u||'pz');
+  var n = v >= 1000 ? v/1000 : v;
+  var unit = v >= 1000 ? (u==='g'?'kg':'L') : u;
+  return (Number.isInteger(Math.round(n*10)/10) ? Math.round(n) : +(n).toFixed(1)) + ' ' + unit;
 }
 
-/* ── Current driver quantity (in-memory state) ── */
-var _driverQty = RECIPE.driver_base;  /* chef's target */
+/* ── Format timer seconds → MM:SS or H:MM:SS ── */
+function _fmtTimer(s){
+  s = Math.max(0, Math.round(s));
+  var h = Math.floor(s/3600), m = Math.floor((s%3600)/60), sec = s%60;
+  if(h > 0) return h+':'+(m<10?'0':'')+m+':'+(sec<10?'0':'')+sec;
+  return (m<10?'0':'')+m+':'+(sec<10?'0':'')+sec;
+}
 
-/* ── Compute factor ── */
-function _factor(){ return _driverQty / RECIPE.driver_base; }
+/* ── Render step text: replace {key} with scaled quantity ── */
+function _renderStep(step, factor){
+  var txt = step.text;
+  Object.keys(step.vals).forEach(function(k){
+    var v = step.vals[k];
+    var scaled = v.base * factor;
+    var display = v.p ? Math.round(scaled)+(v.u||'pz') : _qty(scaled, v.u);
+    txt = txt.replace('{'+k+'}', '<span class="r-step-qty">'+display+'</span>');
+  });
+  return txt;
+}
 
-/* ── Update all live BOM cells without full re-render ── */
-function _updateBOM(){
-  var ws  = document.getElementById('workspace');
+/* ── Live DOM updates (no full re-render) ── */
+function _updateLive(){
+  var ws = document.getElementById('workspace');
   if(!ws) return;
-  var fac = _factor();
+  var fac = _driverQty / RECIPE.driver_base;
+
+  /* BOM cells */
   RECIPE.bom.forEach(function(item){
-    var el = ws.querySelector('[data-bi="'+item.i+'"]');
-    if(el) el.textContent = _qty(item.v * fac, item.u, item.p);
+    var el = ws.querySelector('[data-bi="'+item.key+'"]');
+    if(el) el.textContent = _qty(item.v*fac, item.u, item.p);
   });
   RECIPE.sub_bom.forEach(function(item){
-    var el = ws.querySelector('[data-si="'+item.i+'"]');
-    if(el) el.textContent = _qty(item.v * fac, item.u, item.p);
+    var el = ws.querySelector('[data-si="'+item.key+'"]');
+    if(el) el.textContent = _qty(item.v*fac, item.u, item.p);
   });
-  /* Update page subtitle */
+
+  /* Step texts */
+  RECIPE.steps.forEach(function(step, i){
+    var el = ws.querySelector('[data-step="'+i+'"]');
+    if(el) el.innerHTML = _renderStep(step, fac);
+  });
+
+  /* Subtitle */
   var sub = ws.querySelector('#r-subtitle');
-  if(sub) sub.textContent = t('r_produces', {n: _driverQty, u: RECIPE.driver_unit});
+  if(sub) sub.textContent = t('r_produces',{n:_driverQty, u:RECIPE.driver_unit});
 }
 
-/* ── Render ── */
+/* ── Render prep badge ── */
+function _prepBadge(state){
+  var labels = {todo: t('r_prep_todo'), active: t('r_prep_active'), done: t('r_prep_done')};
+  return '<span class="r-prep-badge '+state+'">'+(labels[state]||state)+'</span>';
+}
+
+/* ── Render timer block for a prep step ── */
+function _timerBlock(p){
+  if(!p.timer_s) return '';
+  var ts = _timerState[p.id] || {};
+  var remaining = ts.remaining_s !== undefined ? ts.remaining_s : p.timer_s;
+  var isRunning = ts.running || false;
+  var isDone    = ts.done || false;
+  var cls = isDone ? 'done' : (isRunning ? 'running' : '');
+  return '<div class="r-prep-timer" id="timer-'+p.id+'">'
+    +'<div class="r-timer-display '+cls+'" id="tdisp-'+p.id+'">'+_fmtTimer(remaining)+'</div>'
+    +'<div class="r-timer-btns">'
+    +(isDone
+      ? '<button class="r-tbtn" data-treset="'+p.id+'">'+t('r_timer_reset')+'</button>'
+      : isRunning
+        ? '<button class="r-tbtn danger" data-tstop="'+p.id+'">'+t('r_timer_stop')+'</button>'
+        : '<button class="r-tbtn primary" data-tstart="'+p.id+'" data-tsec="'+p.timer_s+'">'+t('r_timer_start')+'</button>'
+    )
+    +'</div></div>';
+}
+
+/* ── Render page ── */
 function pageRecipe(){
-  RECIPE.steps = RECIPE.steps || STEPS;
-  var fac = _factor();
+  var fac = _driverQty / RECIPE.driver_base;
 
-  /* BOM rows */
+  /* Driver block */
+  var driver = '<div class="r-driver">'
+    +'<div class="r-driver-lbl">'+t('r_driver_lbl')+'</div>'
+    +'<div class="r-driver-row">'
+      +'<span class="r-driver-num" id="r-driver-num">'+_driverQty+'</span>'
+      +'<input class="r-driver-input" id="r-driver-input" type="number" min="1" step="1" '
+        +'value="'+_driverQty+'" style="display:none">'
+      +'<span class="r-driver-unit">'+RECIPE.driver_unit+'</span>'
+    +'</div></div>';
+
+  /* Meta strip */
+  var meta = '<div class="r-meta">'
+    +'<div class="r-meta-item">'
+      +'<div class="r-meta-lbl">'+t('r_shelf')+'</div>'
+      +'<div class="r-meta-val">'+RECIPE.shelf_life+'</div>'
+    +'</div>'
+    +'<div class="r-meta-item">'
+      +'<div class="r-meta-lbl">'+t('r_last_prod')+'</div>'
+      +'<div class="r-meta-val">'+t('r_last_prod_val')+'</div>'
+    +'</div>'
+    +'</div>';
+
+  /* Tab bar: BOM | Procedura | Prep | Storico */
+  var tabDefs = [
+    {k:'bom',  lbl:t('r_tab_bom')},
+    {k:'proc', lbl:t('r_tab_proc')},
+    {k:'prep', lbl:t('r_tab_prep')},
+    {k:'hist', lbl:t('r_tab_hist')}
+  ];
+  var tabBar = '<div class="r-tabs">'
+    +tabDefs.map(function(td){
+      return '<div class="r-tab'+(td.k===_recipeTab?' active':'')+'" data-rtab="'+td.k+'">'+td.lbl+'</div>';
+    }).join('')
+    +'</div>';
+
+  /* ── BOM panel ── */
   var bomRows = RECIPE.bom.map(function(item){
-    return '<div class="r-brow">'
-      +'<span class="r-bitem">'+item.i+'</span>'
-      +'<span class="r-bqty" data-bi="'+item.i+'">'+_qty(item.v*fac, item.u, item.p)+'</span>'
-      +'</div>';
+    return '<div class="r-brow"><span class="r-bitem">'+item.label+'</span>'
+      +'<span class="r-bqty" data-bi="'+item.key+'">'+_qty(item.v*fac,item.u,item.p)+'</span></div>';
   }).join('');
-
-  /* Sub-recipe rows */
   var subRows = RECIPE.sub_bom.map(function(item){
-    return '<div class="r-brow">'
-      +'<span class="r-bitem">'+item.i+'</span>'
-      +'<span class="r-bqty" data-si="'+item.i+'">'+_qty(item.v*fac, item.u, item.p)+'</span>'
-      +'</div>';
+    return '<div class="r-brow"><span class="r-bitem">'+item.label+'</span>'
+      +'<span class="r-bqty" data-si="'+item.key+'">'+_qty(item.v*fac,item.u,item.p)+'</span></div>';
   }).join('');
-
-  /* Steps */
-  var steps = (RECIPE.steps||[]).map(function(s, i){
-    return '<div class="r-step"><span class="r-snum">'+(i+1)+'</span><span>'+s+'</span></div>';
-  }).join('');
-
-  /* BOM section (role-gated) */
-  var bomSection = can('view_bom')
-    ? '<p class="r-sec-hd">'+t('r_sec_ingredients')+'</p>'
-      +'<div class="r-bom">'+bomRows
-        +'<div class="r-sub-toggle" id="r-sub-toggle">'
-          +'<svg width="12" height="12" viewBox="0 0 12 12" fill="none">'
-            +'<path d="M4 2l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>'
-          +'</svg> '+t('r_sub_title')
+  var bomPanel = '<div id="rp-bom" class="r-panel'+(
+    _recipeTab==='bom'?'':' r-panel-hide')+'">'
+    +(can('view_bom')
+      ? '<div class="r-bom">'+bomRows
+          +'<div class="r-sub-toggle" id="r-sub-toggle">'
+            +'<svg width="12" height="12" viewBox="0 0 12 12" fill="none">'
+              +'<path d="M4 2l4 4-4 4" stroke="currentColor" stroke-width="1.8" '
+               +'stroke-linecap="round" stroke-linejoin="round"/></svg> '
+            +t('r_sub_title')
+          +'</div>'
+          +'<div class="r-sub-body" id="r-sub-body">'+subRows+'</div>'
         +'</div>'
-        +'<div class="r-sub-body" id="r-sub-body">'+subRows+'</div>'
+      : '<p style="font-size:14px;color:var(--txm);padding:12px 0">'+t('r_bom_na')+'</p>'
+    )
+    +'</div>';
+
+  /* ── Procedure panel ── */
+  var stepItems = RECIPE.steps.map(function(step, i){
+    return '<div class="r-step"><span class="r-snum">'+(i+1)+'</span>'
+      +'<span data-step="'+i+'">'+_renderStep(step,fac)+'</span></div>';
+  }).join('');
+  var procPanel = '<div id="rp-proc" class="r-panel'+(
+    _recipeTab==='proc'?'':' r-panel-hide')+'">'
+    +'<div class="r-steps">'+stepItems+'</div>'
+    +'</div>';
+
+  /* ── Prep panel ── */
+  var prepItems = RECIPE.prep.map(function(p){
+    return '<div class="r-prep-item" id="prepitem-'+p.id+'">'
+      +'<div class="r-prep-hd" data-prepmain="'+p.id+'">'
+        +'<span class="r-prep-ico">'+p.icon+'</span>'
+        +'<div class="r-prep-info">'
+          +'<div class="r-prep-name">'+p.name+'</div>'
+          +(p.sub ? '<div class="r-prep-sub">'+p.sub+'</div>' : '')
+        +'</div>'
+        +_prepBadge((_timerState[p.id]&&_timerState[p.id].done)?'done':p.state)
       +'</div>'
-    : '';
+      +_timerBlock(p)
+    +'</div>';
+  }).join('');
+  var prepPanel = '<div id="rp-prep" class="r-panel'+(
+    _recipeTab==='prep'?'':' r-panel-hide')+'">'
+    +'<div class="r-prep-list">'+prepItems+'</div>'
+    +'</div>';
 
-  /* Steps section */
-  var stepsSection = '<p class="r-sec-hd">'+t('r_sec_procedure')+'</p>'
-    +'<div class="r-steps">'+steps+'</div>';
+  /* ── History panel ── */
+  var histPanel = '<div id="rp-hist" class="r-panel'+(
+    _recipeTab==='hist'?'':' r-panel-hide')+'">'
+    +'<div class="r-hist"><div class="r-hist-ico">📅</div>'
+    +'<p>'+t('r_hist_placeholder')+'</p></div></div>';
 
-  /* Page */
+  /* ── Full page ── */
   return '<div class="pi">'
-
-    /* ── Header ── */
-    +'<div class="ph">'
-      +'<div class="ph-row">'
-        +'<h2 class="ptitle">'+RECIPE.name+'</h2>'
-        +'<span class="bdg b-in">'+t('rsta',{n:RECIPE.station})+'</span>'
-      +'</div>'
-      +'<p class="psub" id="r-subtitle">'+t('r_produces',{n:_driverQty,u:RECIPE.driver_unit})+'</p>'
+    +'<div class="ph"><div class="ph-row">'
+      +'<h2 class="ptitle">'+RECIPE.name+'</h2>'
+      +'<span class="bdg b-in">'+t('rsta',{n:RECIPE.station})+'</span>'
     +'</div>'
-
-    /* ── Driver block ── */
-    +'<div class="r-driver">'
-      +'<div class="r-driver-lbl">'+t('r_driver_lbl')+'</div>'
-      +'<div class="r-driver-row">'
-        +'<span class="r-driver-num" id="r-driver-num">'+_driverQty+'</span>'
-        +'<input class="r-driver-input" id="r-driver-input" type="number" min="1" step="1" value="'+_driverQty+'" style="display:none">'
-        +'<span class="r-driver-unit">'+RECIPE.driver_unit+'</span>'
-      +'</div>'
-      +'<div class="r-driver-hint" id="r-driver-hint">'+t('r_driver_hint')+'</div>'
+    +'<p class="psub" id="r-subtitle">'+t('r_produces',{n:_driverQty,u:RECIPE.driver_unit})+'</p>'
     +'</div>'
-
-    /* ── Meta strip ── */
-    +'<div class="r-meta">'
-      +'<div class="r-meta-item">'
-        +'<div class="r-meta-lbl">'+t('r_shelf')+'</div>'
-        +'<div class="r-meta-val">'+RECIPE.shelf_life+'</div>'
-      +'</div>'
-      +'<div class="r-meta-item">'
-        +'<div class="r-meta-lbl">'+t('r_last_prod')+'</div>'
-        +'<div class="r-meta-val">'+t('r_last_prod_val')+'</div>'
-      +'</div>'
-    +'</div>'
-
-    /* ── BOM ── */
-    + bomSection
-
-    /* ── Steps ── */
-    + stepsSection
-
+    + driver + meta + tabBar
+    + bomPanel + procPanel + prepPanel + histPanel
     +'<p class="note"><span class="nd"></span>'+t('rnote')+'</p>'
     +'</div>';
 }
@@ -2264,62 +2413,161 @@ function pageRecipeAfter(){
 
   var numEl   = ws.querySelector('#r-driver-num');
   var inputEl = ws.querySelector('#r-driver-input');
-  var hintEl  = ws.querySelector('#r-driver-hint');
 
+  /* Commit edit: hide input, show number, update live */
   function _commit(){
     var raw = parseFloat(inputEl.value);
-    if(raw && raw > 0){
-      _driverQty = Math.round(raw * 10) / 10;
-    }
-    /* Swap back to display */
+    if(raw && raw > 0) _driverQty = Math.round(raw * 10) / 10;
     inputEl.style.display = 'none';
     numEl.textContent = _driverQty;
     numEl.style.display = '';
-    numEl.classList.remove('editing');
-    if(hintEl) hintEl.classList.remove('visible');
-    _updateBOM();
+    _updateLive();
   }
 
+  /* Open edit: hide number, show input */
   function _startEdit(){
     numEl.style.display = 'none';
     inputEl.style.display = '';
-    inputEl.classList.add('editing');
-    if(hintEl) hintEl.classList.add('visible');
     inputEl.value = _driverQty;
-    inputEl.focus();
-    inputEl.select();
+    inputEl.focus(); inputEl.select();
   }
 
-  /* Tap number → edit */
-  if(numEl) numEl.addEventListener('click', _startEdit);
-
-  /* Live update while typing */
+  if(numEl)   numEl.addEventListener('click', _startEdit);
   if(inputEl){
     inputEl.addEventListener('input', function(){
       var raw = parseFloat(inputEl.value);
-      if(raw && raw > 0){
-        _driverQty = Math.round(raw * 10) / 10;
-        _updateBOM();
-      }
+      if(raw && raw > 0){ _driverQty = Math.round(raw*10)/10; _updateLive(); }
     });
-    /* Enter or blur → commit */
     inputEl.addEventListener('keydown', function(e){
-      if(e.key === 'Enter' || e.key === 'Tab'){ e.preventDefault(); _commit(); }
-      if(e.key === 'Escape'){ inputEl.value = _driverQty; _commit(); }
+      if(e.key==='Enter'||e.key==='Tab'){ e.preventDefault(); _commit(); }
+      if(e.key==='Escape'){ inputEl.value=_driverQty; _commit(); }
     });
     inputEl.addEventListener('blur', _commit);
   }
 
-  /* Sub-recipe toggle */
+  /* ── Inner tab switching ── */
+  ws.querySelectorAll('.r-tab').forEach(function(tab){
+    tab.addEventListener('click', function(){
+      var key = tab.dataset.rtab;
+      if(key===_recipeTab) return;
+      _recipeTab = key;
+      ws.querySelectorAll('.r-tab').forEach(function(t){
+        t.classList.toggle('active', t.dataset.rtab===key);
+      });
+      ws.querySelectorAll('.r-panel').forEach(function(p){ p.classList.add('r-panel-hide'); });
+      var target = ws.querySelector('#rp-'+key);
+      if(target) target.classList.remove('r-panel-hide');
+    });
+  });
+
+  /* ── Sub-recipe toggle ── */
   var subToggle = ws.querySelector('#r-sub-toggle');
   var subBody   = ws.querySelector('#r-sub-body');
-  if(subToggle && subBody){
+  if(subToggle&&subBody){
     subToggle.addEventListener('click', function(){
       subToggle.classList.toggle('open');
       subBody.classList.toggle('open');
     });
   }
+
+  /* ── Prep: expand/collapse timer on tap ── */
+  ws.querySelectorAll('[data-prepmain]').forEach(function(hd){
+    hd.addEventListener('click', function(){
+      var pid   = hd.dataset.prepmain;
+      var timer = ws.querySelector('#timer-'+pid);
+      if(timer) timer.classList.toggle('open');
+    });
+  });
+
+  /* ── Timer: start / stop / reset ── */
+  function _rafTick(pid){
+    var ts = _timerState[pid];
+    if(!ts||!ts.running) return;
+    var elapsed = (Date.now() - ts.started_at) / 1000;
+    var remaining = Math.max(0, ts.total_s - elapsed);
+    ts.remaining_s = remaining;
+
+    var dispEl   = ws.querySelector('#tdisp-'+pid);
+    if(dispEl) dispEl.textContent = _fmtTimer(remaining);
+
+    if(remaining <= 0){
+      ts.running = false; ts.done = true;
+      _refreshPrepItem(pid);
+      return;
+    }
+    ts.raf_id = requestAnimationFrame(function(){ _rafTick(pid); });
+  }
+
+  function _refreshPrepItem(pid){
+    /* Re-render just the timer block and badge without full page re-render */
+    var p = RECIPE.prep.filter(function(x){ return x.id===pid; })[0];
+    if(!p) return;
+    var ts = _timerState[pid]||{};
+    var timerEl = ws.querySelector('#timer-'+pid);
+    if(timerEl) timerEl.outerHTML = _timerBlock(p);
+
+    /* Re-wire the new timer element */
+    var newTimer = ws.querySelector('#timer-'+pid);
+    if(newTimer) _wireTimerBtns(newTimer);
+
+    /* Update badge */
+    var badgeEl = ws.querySelector('#prepitem-'+pid+' .r-prep-badge');
+    if(badgeEl){
+      var state = ts.done ? 'done' : (ts.running ? 'active' : 'todo');
+      badgeEl.className = 'r-prep-badge '+state;
+      badgeEl.textContent = t('r_prep_'+state);
+    }
+  }
+
+  function _wireTimerBtns(container){
+    var startBtn  = container.querySelector('[data-tstart]');
+    var stopBtn   = container.querySelector('[data-tstop]');
+    var resetBtn  = container.querySelector('[data-treset]');
+
+    if(startBtn){
+      startBtn.addEventListener('click', function(e){
+        e.stopPropagation();
+        var pid    = startBtn.dataset.tstart;
+        var total  = parseInt(startBtn.dataset.tsec);
+        var ts     = _timerState[pid] || {};
+        ts.total_s = total;
+        ts.remaining_s = ts.remaining_s !== undefined ? ts.remaining_s : total;
+        ts.running = true; ts.done = false;
+        ts.started_at = Date.now() - ((total - ts.remaining_s)*1000);
+        _timerState[pid] = ts;
+        _refreshPrepItem(pid);
+        _rafTick(pid);
+      });
+    }
+    if(stopBtn){
+      stopBtn.addEventListener('click', function(e){
+        e.stopPropagation();
+        var pid = stopBtn.dataset.tstop;
+        var ts  = _timerState[pid]||{};
+        if(ts.raf_id) cancelAnimationFrame(ts.raf_id);
+        ts.running = false;
+        _timerState[pid] = ts;
+        _refreshPrepItem(pid);
+      });
+    }
+    if(resetBtn){
+      resetBtn.addEventListener('click', function(e){
+        e.stopPropagation();
+        var pid = resetBtn.dataset.treset;
+        var p   = RECIPE.prep.filter(function(x){return x.id===pid;})[0];
+        if(!p) return;
+        var ts = _timerState[pid]||{};
+        if(ts.raf_id) cancelAnimationFrame(ts.raf_id);
+        _timerState[pid] = {total_s:p.timer_s, remaining_s:p.timer_s, running:false, done:false};
+        _refreshPrepItem(pid);
+      });
+    }
+  }
+
+  /* Wire all existing timer blocks */
+  ws.querySelectorAll('.r-prep-timer').forEach(function(tb){ _wireTimerBtns(tb); });
 }
+
 /* INVENTORY */
 function pageInventory(){
   var rows=MOVS.map(function(m){
