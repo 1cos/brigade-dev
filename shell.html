@@ -1,6 +1,6 @@
 <!-- ── NEW SHELL LAB BANNER ── -->
 <div id="shell-lab-banner" style="position:fixed;top:0;left:0;right:0;z-index:99999;background:linear-gradient(90deg,#0f766e,#0891b2);color:white;font-size:11px;font-weight:800;letter-spacing:0.09em;text-transform:uppercase;text-align:center;padding:5px 16px;font-family:-apple-system,BlinkMacSystemFont,sans-serif;user-select:none;box-shadow:0 1px 6px rgba(8,145,178,0.4);">
-  🎨 NEW SHELL LAB &nbsp;·&nbsp; brigade-dev/shell.html &nbsp;·&nbsp; v007b &nbsp;·&nbsp; Not for kitchen use
+  🎨 NEW SHELL LAB &nbsp;·&nbsp; brigade-dev/shell.html &nbsp;·&nbsp; v007c &nbsp;·&nbsp; Not for kitchen use
 </div>
 <style>
 /* push shell content below banner */
@@ -585,7 +585,7 @@ input,select,textarea{font-family:inherit}
   border:1px solid var(--bd);border-radius:var(--r2);
   overflow:hidden;transition:border-color .15s,box-shadow .15s
 }
-.bc-card:has(.bc-details[open]){border-color:var(--b3);box-shadow:var(--sh1)}
+.bc-card:has(.bc-details[open]){border-color:var(--b2);box-shadow:0 0 0 3px rgba(37,99,235,.08),var(--sh1)}
 
 .bc-card-main{
   display:grid;
@@ -1184,7 +1184,7 @@ es:{
 };
 
 /* lang stored in module-scope var + sessionStorage */
-const SHELL_VERSION = 'v007b';
+const SHELL_VERSION = 'v007c';
 let LANG = sessionStorage.getItem('ws_lang') || 'it';
 function setLang(l){ LANG=l; sessionStorage.setItem('ws_lang',l); renderAll(); }
 function t(k,p={}){
