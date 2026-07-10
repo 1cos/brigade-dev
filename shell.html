@@ -558,6 +558,94 @@ input,select,textarea{font-family:inherit}
 
 /* ════ BOTS ═══════════════════════════════════════════════════════════════ */
 .pipelist{display:flex;flex-direction:column;gap:8px}
+
+/* Bot Center v006 — operativo layout */
+.bc-header{
+  background:var(--surf-g);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  border:1px solid var(--bd);border-radius:var(--r3);
+  padding:18px 22px;margin-bottom:20px;
+  display:flex;align-items:center;justify-content:space-between;
+  gap:12px;flex-wrap:wrap;box-shadow:var(--shg)
+}
+.bc-status{display:flex;align-items:center;gap:10px}
+.bc-status-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.bc-status-dot.ok{background:var(--ok);box-shadow:0 0 0 3px var(--ok-bg)}
+.bc-status-dot.warn{background:var(--wn);box-shadow:0 0 0 3px var(--wn-bg)}
+.bc-status-dot.err{background:var(--er);box-shadow:0 0 0 3px var(--er-bg)}
+.bc-status-label{font-size:15px;font-weight:700;color:var(--tx)}
+.bc-times{display:flex;flex-direction:column;align-items:flex-end;gap:2px}
+.bc-time-row{font-size:11px;color:var(--txm)}
+.bc-time-val{font-weight:600;color:var(--tx2)}
+
+.bc-grid{display:flex;flex-direction:column;gap:10px;margin-bottom:6px}
+
+.bc-card{
+  background:var(--surf-g);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  border:1px solid var(--bd);border-radius:var(--r2);
+  overflow:hidden;transition:border-color .15s,box-shadow .15s
+}
+.bc-card:has(.bc-details[open]){border-color:var(--b3);box-shadow:var(--sh1)}
+
+.bc-card-main{
+  display:grid;
+  grid-template-columns:auto 1fr auto;
+  align-items:center;gap:0;
+  padding:14px 16px;cursor:pointer;
+  -webkit-tap-highlight-color:transparent
+}
+.bc-card-main:hover{background:rgba(239,246,255,.4)}
+
+.bc-card-num{
+  width:28px;height:28px;border-radius:50%;
+  background:var(--b1);color:var(--b7);
+  font-size:11px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;margin-right:12px
+}
+.bc-card-num.cat-pos{background:var(--b1);color:var(--b7)}
+.bc-card-num.cat-deduction{background:#ede9fe;color:#6d28d9}
+.bc-card-num.cat-prep{background:#d1fae5;color:#065f46}
+.bc-card-num.cat-ai{background:#fef3c7;color:#92400e}
+
+.bc-card-body{min-width:0}
+.bc-card-name{font-size:13px;font-weight:600;color:var(--tx);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:2px}
+.bc-card-meta{font-size:11px;color:var(--txm);display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.bc-meta-sep{color:var(--bd2)}
+
+.bc-card-right{display:flex;align-items:center;gap:8px;flex-shrink:0;margin-left:10px}
+
+.bc-details{border:none;background:none}
+.bc-details summary{display:none}  /* trigger is bc-card-main via JS */
+.bc-detail-body{
+  padding:0 16px 14px;
+  border-top:1px solid var(--bd);
+  margin-top:2px
+}
+.bc-detail-grid{
+  display:grid;grid-template-columns:1fr 1fr;gap:10px;
+  margin:12px 0 10px
+}
+@media(max-width:560px){.bc-detail-grid{grid-template-columns:1fr}}
+.bc-detail-cell{background:var(--bg);border-radius:var(--r2);padding:10px 12px}
+.bc-detail-lbl{font-size:10px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.06em;color:var(--txm);margin-bottom:4px}
+.bc-detail-val{font-size:12px;color:var(--tx);line-height:1.45}
+.bc-next{
+  margin-top:8px;padding:8px 12px;
+  background:var(--b0);border:1px solid var(--b2);border-radius:var(--r2);
+  font-size:11px;color:var(--b7);line-height:1.45
+}
+.bc-next::before{content:'→ ';font-weight:700}
+.bc-cat-pill{
+  display:inline-flex;align-items:center;
+  font-size:10px;font-weight:600;letter-spacing:.04em;
+  padding:2px 7px;border-radius:999px;
+  background:var(--b1);color:var(--b7)
+}
+.bc-cat-pill.cat-deduction{background:#ede9fe;color:#6d28d9}
+.bc-cat-pill.cat-prep{background:#d1fae5;color:#065f46}
+.bc-cat-pill.cat-ai{background:#fef3c7;color:#92400e}
 /* ── Page placeholder (Sales, future pages not yet implemented) ── */
 .pg-placeholder{display:flex;flex-direction:column;align-items:center;
   justify-content:center;padding:32px 24px 40px;text-align:center;gap:8px}
@@ -886,8 +974,13 @@ it:{
   ch_ve:'Vendite', cd_ve:'POS · analisi giornaliera', cs_ve:'Importato ogni notte',
   ch_in:'Dispensa: Caesar', cd_in:'Stock · carichi · modifier depletion 60gg', cs_in:'Stock: 2.4 kg · 312 uses/60gg',
   bt:'Bot Center', bsub:'Pipeline POS — esecuzione sequenziale nightly',
-  bpipe:'Pipeline nightly · 2026-07-08', blast:'Ultima esecuzione', bobs:'Osservazioni',
-  bok:'OK', bwn:'Attenzione', ber:'Errore', bpd:'In attesa',
+  bpipe:'Pipeline nightly', blast:'Ultima esecuzione', bobs:'Osservazioni',
+  bok:'OK', bwn:'Attenzione', ber:'Errore', bpd:'In attesa', bidle:'Idle',
+  bstatus_ok:'Pipeline OK', bstatus_warn:'Attenzione richiesta', bstatus_err:'Errore critico',
+  blast_run:'Ultima run', bnext_run:'Prossima run', brows:'righe processate',
+  bdur:'Durata', binp:'Input', bout:'Output', bnext:'Prossimo step',
+  bcat_pos:'POS import', bcat_deduction:'Deduction', bcat_prep:'Prep', bcat_ai:'Chef AI',
+  bdetails:'Dettagli', bdetails_hide:'Nascondi',
   rbom:'Ingredienti (BOM)', rsteps:'Procedura', rsta:'Stazione: {n}', rbatch:'Batch da {n} pezzi',
   rnote:'Dati demo — nessuna query DB in questo prototipo',
   istock:'Stock attuale', iloaded:'Caricato oggi', ideduct:'Scaricato POS (60gg)',
@@ -953,8 +1046,13 @@ en:{
   ch_ve:'Sales', cd_ve:'POS · daily analysis', cs_ve:'Imported nightly',
   ch_in:'Pantry: Caesar', cd_in:'Stock · loads · modifier depletion 60d', cs_in:'Stock: 2.4 kg · 312 uses/60d',
   bt:'Bot Center', bsub:'POS Pipeline — sequential nightly execution',
-  bpipe:'Nightly pipeline · 2026-07-08', blast:'Last run', bobs:'Observations',
-  bok:'OK', bwn:'Warning', ber:'Error', bpd:'Pending',
+  bpipe:'Nightly pipeline', blast:'Last run', bobs:'Observations',
+  bok:'OK', bwn:'Warning', ber:'Error', bpd:'Pending', bidle:'Idle',
+  bstatus_ok:'Pipeline OK', bstatus_warn:'Attention required', bstatus_err:'Critical error',
+  blast_run:'Last run', bnext_run:'Next run', brows:'rows processed',
+  bdur:'Duration', binp:'Input', bout:'Output', bnext:'Next step',
+  bcat_pos:'POS import', bcat_deduction:'Deduction', bcat_prep:'Prep', bcat_ai:'Chef AI',
+  bdetails:'Details', bdetails_hide:'Hide',
   rbom:'Ingredients (BOM)', rsteps:'Procedure', rsta:'Station: {n}', rbatch:'Batch of {n}',
   rnote:'Demo data — no DB query in this prototype',
   istock:'Current stock', iloaded:'Loaded today', ideduct:'POS deducted (60d)',
@@ -1016,8 +1114,13 @@ es:{
   ch_ve:'Ventas', cd_ve:'POS · análisis diario', cs_ve:'Importado cada noche',
   ch_in:'Despensa: Caesar', cd_in:'Stock · cargas · modifier depletion 60d', cs_in:'Stock: 2.4 kg · 312 usos/60d',
   bt:'Centro Bot', bsub:'Pipeline POS — ejecución secuencial nocturna',
-  bpipe:'Pipeline nocturna · 2026-07-08', blast:'Última ejecución', bobs:'Observaciones',
-  bok:'OK', bwn:'Atención', ber:'Error', bpd:'Pendiente',
+  bpipe:'Pipeline nocturna', blast:'Última ejecución', bobs:'Observaciones',
+  bok:'OK', bwn:'Atención', ber:'Error', bpd:'Pendiente', bidle:'Inactivo',
+  bstatus_ok:'Pipeline OK', bstatus_warn:'Atención requerida', bstatus_err:'Error crítico',
+  blast_run:'Última ejecución', bnext_run:'Próxima ejecución', brows:'filas procesadas',
+  bdur:'Duración', binp:'Entrada', bout:'Salida', bnext:'Próximo paso',
+  bcat_pos:'Importación POS', bcat_deduction:'Deducción', bcat_prep:'Prep', bcat_ai:'Chef AI',
+  bdetails:'Detalles', bdetails_hide:'Ocultar',
   rbom:'Ingredientes (BOM)', rsteps:'Procedimiento', rsta:'Estación: {n}', rbatch:'Batch de {n} porciones',
   rnote:'Datos demo — sin consulta DB en este prototipo',
   istock:'Stock actual', iloaded:'Cargado hoy', ideduct:'Deducido POS (60d)',
@@ -1219,16 +1322,108 @@ function _restoreTabs(){
 
 /* ══ PAGE DATA ════════════════════════════════════════════════════════════ */
 var BOT_DATA=[
-  {name:'bot-pos-cleaner',        s:'ok',  time:'02:05 CDT', rows:247},
-  {name:'bot-direct-deduction',   s:'ok',  time:'02:07 CDT', rows:8},
-  {name:'bot-bom-chain-deduction',s:'ok',  time:'02:09 CDT', rows:3},
-  {name:'bot-modifier-depletion', s:'ok',  time:'02:11 CDT', rows:4},
-  {name:'bot-stock-consolidator', s:'warn',time:'02:13 CDT', rows:12}
+  {
+    id:'pos-touchbistro',
+    name:'POS TouchBistro Bot',
+    s:'ok', time:'02:02 CDT', dur:'1m 04s', rows:247,
+    cat:'pos',
+    desc:{it:'Importa le vendite nightly dal CSV TouchBistro e normalizza i dati POS.',
+          en:'Imports nightly sales from TouchBistro CSV and normalises POS data.',
+          es:'Importa ventas nocturnas del CSV TouchBistro y normaliza datos POS.'},
+    inp:{it:'247 righe CSV raw',en:'247 raw CSV rows',es:'247 filas CSV raw'},
+    out:{it:'pos_daily_clean: 247 voci pulite',en:'pos_daily_clean: 247 clean entries',es:'pos_daily_clean: 247 entradas limpias'},
+    next:{it:'Supporto splitting per turno',en:'Shift-level split support',es:'Soporte de split por turno'}
+  },
+  {
+    id:'pos-cleaner',
+    name:'POS Cleaner Bot',
+    s:'ok', time:'02:05 CDT', dur:'48s', rows:219,
+    cat:'pos',
+    desc:{it:'Filtra noise, alias e voci non mappabili. Prepara le vendite per la deduzione.',
+          en:'Filters noise, aliases and unmappable entries. Prepares sales for deduction.',
+          es:'Filtra ruido, alias y entradas no mapeables. Prepara ventas para deducción.'},
+    inp:{it:'247 voci POS',en:'247 POS entries',es:'247 entradas POS'},
+    out:{it:'219 voci pulite · 28 skip (noise/bar)',en:'219 clean · 28 skipped (noise/bar)',es:'219 limpias · 28 omitidas (ruido/bar)'},
+    next:{it:'Regole alias centralizzate',en:'Centralised alias rules',es:'Reglas de alias centralizadas'}
+  },
+  {
+    id:'direct-deduction',
+    name:'Direct Recipe Deduction Bot',
+    s:'ok', time:'02:07 CDT', dur:'1m 22s', rows:8,
+    cat:'deduction',
+    desc:{it:'Scarica le prep task collegate direttamente alle ricette POS vendute (PATH A e PATH B).',
+          en:'Depletes prep tasks linked directly to sold POS recipes (PATH A and B).',
+          es:'Consume tareas de prep vinculadas directamente a recetas POS vendidas (PATH A y B).'},
+    inp:{it:'219 voci POS pulite',en:'219 clean POS entries',es:'219 entradas POS limpias'},
+    out:{it:'8 deduzioni · Tiramisù 2pz, Crème Brûlée 3pz, Cheesecake 5pz...',en:'8 deductions · Tiramisu 2pcs, Crème Brûlée 3pcs, Cheesecake 5pcs...',es:'8 deducciones · Tiramisú 2pzs, Crème Brûlée 3pzs, Cheesecake 5pzs...'},
+    next:{it:'Brussels Sprouts: dividere BOM qty per base_servings',en:'Brussels Sprouts: divide BOM qty by base_servings',es:'Brussels Sprouts: dividir BOM qty por base_servings'}
+  },
+  {
+    id:'bom-chain',
+    name:'BOM Chain Deduction Bot',
+    s:'ok', time:'02:09 CDT', dur:'58s', rows:3,
+    cat:'deduction',
+    desc:{it:'Scarica gli ingredienti tramite catena BOM multi-livello. Regola 0: no run senza direct-deduction confermato.',
+          en:'Depletes ingredients via multi-level BOM chain. Rule 0: no run without confirmed direct-deduction.',
+          es:'Consume ingredientes via cadena BOM multinivel. Regla 0: no corre sin direct-deduction confirmado.'},
+    inp:{it:'8 deduzioni dirette confermate',en:'8 confirmed direct deductions',es:'8 deducciones directas confirmadas'},
+    out:{it:'3 chain deduzioni · safety mode attivo',en:'3 chain deductions · safety mode active',es:'3 deducciones en cadena · modo seguro activo'},
+    next:{it:'Batch recipes: divisore base_servings',en:'Batch recipes: base_servings divisor',es:'Recetas batch: divisor base_servings'}
+  },
+  {
+    id:'modifier-depletion',
+    name:'Modifier Depletion Bot',
+    s:'ok', time:'02:11 CDT', dur:'34s', rows:4,
+    cat:'deduction',
+    desc:{it:'Scarica le prep dei dressing venduti come modifier POS (Balsamic, Citronette, Ranch, Caesar).',
+          en:'Depletes dressing preps sold as POS modifiers (Balsamic, Citronette, Ranch, Caesar).',
+          es:'Consume preps de aderezos vendidos como modificadores POS.'},
+    inp:{it:'86 Ranch · 195 Citronette · 151 Balsamic · 312 Caesar',en:'86 Ranch · 195 Citronette · 151 Balsamic · 312 Caesar',es:'86 Ranch · 195 Citronette · 151 Balsamic · 312 Caesar'},
+    out:{it:'4 stock_movements · source=pos_modifier_drain',en:'4 stock_movements · source=pos_modifier_drain',es:'4 stock_movements · source=pos_modifier_drain'},
+    next:{it:'Aggiungere protein add-ons (chicken, shrimp)',en:'Add protein add-ons (chicken, shrimp)',es:'Agregar proteínas como add-ons (pollo, camarones)'}
+  },
+  {
+    id:'prep-count-reconciler',
+    name:'Prep Count Reconciler',
+    s:'ok', time:'02:13 CDT', dur:'22s', rows:14,
+    cat:'prep',
+    desc:{it:'Riconcilia i count salvati dallo staff con i livelli attesi. Scrive solo su prep_stock_counts.',
+          en:'Reconciles staff-saved counts with expected levels. Writes only to prep_stock_counts.',
+          es:'Reconcilia conteos guardados por el equipo con niveles esperados. Escribe solo en prep_stock_counts.'},
+    inp:{it:'14 count salvati oggi',en:'14 counts saved today',es:'14 conteos guardados hoy'},
+    out:{it:'14 righe prep_stock_counts · 3 COUNT_FIRST segnalati',en:'14 prep_stock_counts rows · 3 COUNT_FIRST flagged',es:'14 filas prep_stock_counts · 3 COUNT_FIRST marcados'},
+    next:{it:'Separare segnali COUNT_FIRST in alert topbar',en:'Surface COUNT_FIRST signals in topbar alert',es:'Mostrar señales COUNT_FIRST en alerta topbar'}
+  },
+  {
+    id:'stock-consolidator',
+    name:'Stock Consolidator Bot',
+    s:'warn', time:'02:15 CDT', dur:'1m 08s', rows:12,
+    cat:'prep',
+    desc:{it:'Snapshot giornaliero stock: aggrega loaded_qty da prep_log. Solo lettura — nessuna scrittura current_stock.',
+          en:'Daily stock snapshot: aggregates loaded_qty from prep_log. Read-only — no current_stock writes.',
+          es:'Snapshot diario de stock: agrega loaded_qty de prep_log. Solo lectura — sin escrituras current_stock.'},
+    inp:{it:'12 prep task attive',en:'12 active prep tasks',es:'12 tareas de prep activas'},
+    out:{it:'12 snapshot · 3 warning unità (non critici)',en:'12 snapshots · 3 unit warnings (non-critical)',es:'12 snapshots · 3 advertencias de unidad (no críticas)'},
+    next:{it:'Promuovere a v2: attivare scrittura current_stock',en:'Promote to v2: enable current_stock writes',es:'Promover a v2: activar escrituras current_stock'}
+  },
+  {
+    id:'chef-ai-audit',
+    name:'Chef AI Night Audit',
+    s:'idle', time:'—', dur:'—', rows:0,
+    cat:'ai',
+    desc:{it:'Audit notturno AI: analizza osservazioni, anomalie BOM, prep critiche. In sviluppo.',
+          en:'AI nightly audit: analyses observations, BOM anomalies, critical preps. In development.',
+          es:'Auditoría nocturna IA: analiza observaciones, anomalías BOM, preps críticas. En desarrollo.'},
+    inp:{it:'bot_runs + prep_stock_counts + stock_daily_snapshot',en:'bot_runs + prep_stock_counts + stock_daily_snapshot',es:'bot_runs + prep_stock_counts + stock_daily_snapshot'},
+    out:{it:'—',en:'—',es:'—'},
+    next:{it:'Primo prototipo: riassunto notte in linguaggio naturale',en:'First prototype: natural language nightly summary',es:'Primer prototipo: resumen nocturno en lenguaje natural'}
+  }
 ];
 var OBS_DATA=[
-  {tp:'wn', msg:'Spring Mix: unità g vs buste — consolidator skip (non critico).'},
-  {tp:'in', msg:'Parsley: prep_type=checklist → skip silenzioso da tutti i bot.'},
-  {tp:'in', msg:'Edible Flower: BOM inconsistency non-blocking — open.'}
+  {tp:'ok', msg:{it:'Nessun bot failed nell\'ultima run — pipeline OK.',en:'No bot failed in the last run — pipeline OK.',es:'Ningún bot falló en la última ejecución — pipeline OK.'}},
+  {tp:'wn', msg:{it:'Modifier noise sotto controllo — 28 voci skip (noise/bar), nessuna critica.',en:'Modifier noise under control — 28 entries skipped (noise/bar), none critical.',es:'Ruido de modificadores bajo control — 28 entradas omitidas, ninguna crítica.'}},
+  {tp:'wn', msg:{it:'3 prep richiedono count fisico: Balsamic, Ranch, Brussels Sprouts Ready.',en:'3 preps require physical count: Balsamic, Ranch, Brussels Sprouts Ready.',es:'3 preps requieren conteo físico: Balsamic, Ranch, Brussels Sprouts Ready.'}},
+  {tp:'in', msg:{it:'Chef AI Night Audit idle — non ancora in produzione.',en:'Chef AI Night Audit idle — not yet in production.',es:'Chef AI Night Audit inactivo — aún no en producción.'}}
 ];
 var BOM=[
   {i:'Savoiardi',q:'400g'},{i:'Mascarpone',q:'500g'},{i:'Tuorli',q:'6 pz'},
@@ -1399,27 +1594,95 @@ function pageSales(){
 
 /* BOTS */
 function pageBots(){
-  var rows=BOT_DATA.map(function(b,i){
-    return '<div class="pitem">'
-      +'<div class="pstep">'+(i+1)+'</div>'
-      +'<div class="pbody">'
-      +'<span class="pname">'+b.name+'</span>'
-      +'<span class="pmeta">'+t('blast')+': '+b.time+' · '+b.rows+' rows</span>'
-      +'</div>'+badge(b.s)+'</div>';
+  var anyErr  = BOT_DATA.some(function(b){ return b.s==='error'; });
+  var anyWarn = BOT_DATA.some(function(b){ return b.s==='warn'; });
+  var statusKey = anyErr ? 'bstatus_err' : anyWarn ? 'bstatus_warn' : 'bstatus_ok';
+  var statusCls = anyErr ? 'err' : anyWarn ? 'warn' : 'ok';
+  var lastRan   = BOT_DATA.filter(function(b){ return b.time!=='—'; }).slice(-1)[0];
+  var lastTime  = lastRan ? lastRan.time : '—';
+
+  var catKey = {pos:'bcat_pos',deduction:'bcat_deduction',prep:'bcat_prep',ai:'bcat_ai'};
+  var catCls = {pos:'cat-pos',deduction:'cat-deduction',prep:'cat-prep',ai:'cat-ai'};
+  var obsIco = {ok:'✅',wn:'⚠️','in':'ℹ️'};
+
+  var header = '<div class="bc-header">'
+    + '<div class="bc-status">'
+    + '<span class="bc-status-dot ' + statusCls + '"></span>'
+    + '<span class="bc-status-label">' + t(statusKey) + '</span>'
+    + '</div>'
+    + '<div class="bc-times">'
+    + '<span class="bc-time-row">' + t('blast_run') + ': <span class="bc-time-val">' + lastTime + '</span></span>'
+    + '<span class="bc-time-row">' + t('bnext_run') + ': <span class="bc-time-val">04:00 CDT</span></span>'
+    + '</div>'
+    + '</div>';
+
+  var cards = BOT_DATA.map(function(b, i){
+    var sKey = b.s==='ok'?'bok': b.s==='warn'?'bwn': b.s==='error'?'ber': b.s==='idle'?'bidle':'bpd';
+    var sCls = b.s==='ok'?'b-ok': b.s==='warn'?'b-wn': b.s==='error'?'b-er':'b-in';
+    var meta = b.time!=='—'
+      ? b.time + ' · ' + b.dur + ' · ' + b.rows + ' ' + t('brows')
+      : t('bidle');
+    var catLabel = t(catKey[b.cat]||'bcat_pos');
+    var catC     = catCls[b.cat]||'cat-pos';
+    var detail = '<details class="bc-details" id="bcd-' + b.id + '">'
+      + '<summary></summary>'
+      + '<div class="bc-detail-body">'
+      + '<div class="bc-detail-grid">'
+      + '<div class="bc-detail-cell"><div class="bc-detail-lbl">' + t('binp') + '</div><div class="bc-detail-val">' + b.inp[LANG] + '</div></div>'
+      + '<div class="bc-detail-cell"><div class="bc-detail-lbl">' + t('bout') + '</div><div class="bc-detail-val">' + b.out[LANG] + '</div></div>'
+      + '</div>'
+      + '<div class="bc-next">' + b.next[LANG] + '</div>'
+      + '</div>'
+      + '</details>';
+    return '<div class="bc-card" data-botid="' + b.id + '">'
+      + '<div class="bc-card-main" role="button" tabindex="0">'
+      + '<div class="bc-card-num ' + catC + '">' + (i+1) + '</div>'
+      + '<div class="bc-card-body">'
+      + '<div class="bc-card-name">' + b.name + '</div>'
+      + '<div class="bc-card-meta">' + meta + '</div>'
+      + '</div>'
+      + '<div class="bc-card-right">'
+      + '<span class="bc-cat-pill ' + catC + '">' + catLabel + '</span>'
+      + '<span class="bdg ' + sCls + '">' + t(sKey) + '</span>'
+      + '</div>'
+      + '</div>'
+      + detail
+      + '</div>';
   }).join('');
-  var obs=OBS_DATA.map(function(o){
-    return '<div class="obs obs-'+o.tp+'">'
-      +(o.tp==='wn'?'⚠️':'ℹ️')
-      +' '+o.msg+'</div>';
+
+  var obs = OBS_DATA.map(function(o){
+    return '<div class="obs obs-' + o.tp + '">'
+      + '<span style="flex-shrink:0">' + (obsIco[o.tp]||'ℹ️') + '</span>'
+      + '<span>' + o.msg[LANG] + '</span>'
+      + '</div>';
   }).join('');
-  return '<div class="pi"><div class="ph">'
-    +'<h2 class="ptitle">'+t('bt')+'</h2>'
-    +'<p class="psub">'+t('bsub')+'</p></div>'
-    +'<div class="sec"><p class="sec-h">'+t('bpipe')+'</p>'
-    +'<div class="pipelist">'+rows+'</div></div>'
-    +'<div class="sec"><p class="sec-h">'+t('bobs')+'</p>'
-    +'<div class="obslist">'+obs+'</div></div>'
-    +'<p class="note"><span class="nd"></span>'+t('demo')+'</p></div>';
+
+  return '<div class="pi">'
+    + '<div class="ph"><h2 class="ptitle">' + t('bt') + '</h2>'
+    + '<p class="psub">' + t('bsub') + '</p></div>'
+    + header
+    + '<div class="sec"><p class="sec-h">' + t('bpipe') + '</p>'
+    + '<div class="bc-grid">' + cards + '</div></div>'
+    + '<div class="sec"><p class="sec-h">' + t('bobs') + '</p>'
+    + '<div class="obslist">' + obs + '</div></div>'
+    + '<p class="note"><span class="nd"></span>' + t('demo') + '</p>'
+    + '</div>';
+}
+
+function botsAfterRender(){
+  var ws = document.getElementById('workspace');
+  ws.querySelectorAll('.bc-card').forEach(function(card){
+    var main = card.querySelector('.bc-card-main');
+    var det  = card.querySelector('.bc-details');
+    if(!main || !det) return;
+    main.addEventListener('click', function(){
+      if(det.open) det.removeAttribute('open');
+      else         det.setAttribute('open','');
+    });
+    main.addEventListener('keydown', function(e){
+      if(e.key==='Enter'||e.key===' '){ e.preventDefault(); main.click(); }
+    });
+  });
 }
 
 /* RECIPE */
@@ -1747,7 +2010,7 @@ function hideYCS(){ var el=document.getElementById('ycs'); if(el) el.classList.r
 /* ══ PAGE MAP ═════════════════════════════════════════════════════════════ */
 var PAGES={
   home:         {render:pageHome,      after:homeAfterRender},
-  bot_center:   {render:pageBots,      after:null},
+  bot_center:   {render:pageBots,      after:botsAfterRender},
   recipe:       {render:pageRecipe,    after:null},
   inventory:    {render:pageInventory, after:null},
   daily_journal:{render:pageJournal,   after:journalAfterRender, rerender:true},
