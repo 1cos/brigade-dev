@@ -1,6 +1,6 @@
 <!-- ── NEW SHELL LAB BANNER ── -->
 <div id="shell-lab-banner" style="position:fixed;top:0;left:0;right:0;z-index:99999;background:linear-gradient(90deg,#0f766e,#0891b2);color:white;font-size:11px;font-weight:800;letter-spacing:0.09em;text-transform:uppercase;text-align:center;padding:5px 16px;font-family:-apple-system,BlinkMacSystemFont,sans-serif;user-select:none;box-shadow:0 1px 6px rgba(8,145,178,0.4);">
-  🎨 NEW SHELL LAB &nbsp;·&nbsp; brigade-dev/shell.html &nbsp;·&nbsp; v008 &nbsp;·&nbsp; Not for kitchen use
+  🎨 NEW SHELL LAB &nbsp;·&nbsp; brigade-dev/shell.html &nbsp;·&nbsp; v008a &nbsp;·&nbsp; Not for kitchen use
 </div>
 <style>
 /* push shell content below banner */
@@ -742,17 +742,15 @@ input,select,textarea{font-family:inherit}
 .jent{
   background:var(--surf-g);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
   border:1px solid var(--bd);border-radius:var(--r2);
-  display:flex;gap:0;overflow:hidden;
+  border-left:3px solid var(--bd);
+  padding:11px 14px;
   margin-bottom:8px;transition:box-shadow .13s,border-color .13s;
   -webkit-tap-highlight-color:transparent
 }
-.jent:hover{box-shadow:var(--sh1);border-color:var(--b2)}
-/* severity bar — left accent */
-.jsv{width:3px;flex-shrink:0;background:var(--bd)}
-.jent.sv-ok  .jsv{background:var(--ok)}
-.jent.sv-wn  .jsv{background:var(--wn)}
-.jent.sv-er  .jsv{background:var(--er)}
-.jent-body{flex:1;padding:11px 14px;min-width:0}
+.jent:hover{box-shadow:var(--sh1)}
+.jent.sv-ok{border-left-color:var(--ok)}
+.jent.sv-wn{border-left-color:var(--wn)}
+.jent.sv-er{border-left-color:var(--er)}
 /* top row: time + cat pill + author */
 .jmeta{display:flex;align-items:center;gap:6px;margin-bottom:5px;flex-wrap:nowrap;overflow:hidden}
 .jtime{font-size:11px;color:var(--txm);font-family:var(--fm);white-space:nowrap;flex-shrink:0}
@@ -1208,7 +1206,7 @@ es:{
 };
 
 /* lang stored in module-scope var + sessionStorage */
-const SHELL_VERSION = 'v008';
+const SHELL_VERSION = 'v008a';
 let LANG = sessionStorage.getItem('ws_lang') || 'it';
 function setLang(l){ LANG=l; sessionStorage.setItem('ws_lang',l); renderAll(); }
 function t(k,p={}){
@@ -2022,8 +2020,6 @@ function jEntryHTML(e){
   var meta=J_CAT_META[e.cat]||{ico:'📝',key:'cservice'};
   var vis=J_VIS_META[e.vis]||'vAll';
   return '<div class="jent sv-'+e.sv+'" data-cat="'+e.cat+'" data-vis="'+e.vis+'">'
-    + '<div class="jsv"></div>'
-    + '<div class="jent-body">'
     + '<div class="jmeta">'
     + '<span class="jtime">'+e.time+'</span>'
     + '<span class="jdot">·</span>'
@@ -2032,7 +2028,6 @@ function jEntryHTML(e){
     + '</div>'
     + '<h4 class="jtit">'+e.title+'</h4>'
     + (e.body ? '<p class="jbod">'+e.body+'</p>' : '')
-    + '</div>'
     + '</div>';
 }
 
