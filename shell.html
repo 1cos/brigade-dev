@@ -5,6 +5,8 @@
 <style>
 /* push shell content below banner */
 #shell-lab-banner ~ * { margin-top: 0; }
+/* Banner height offset: #app handles safe-area via padding-top:var(--sat),
+   body padding-top adds the banner bar height on top */
 body { padding-top: 26px; }
 </style>
 <script>
@@ -45,17 +47,23 @@ setTimeout(function(){
   --r1:8px;--r2:14px;--r3:20px;--rp:999px;
   --ff:-apple-system,BlinkMacSystemFont,'SF Pro Text','Helvetica Neue',Arial,sans-serif;
   --fm:'SF Mono','Fira Code',monospace;
-  --th:56px;--tbh:46px
+  --th:56px;--tbh:46px;
+  --sab:env(safe-area-inset-bottom,0px);
+  --sat:env(safe-area-inset-top,0px)
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;font-family:var(--ff);font-size:15px;color:var(--tx);
   background:var(--bg);-webkit-font-smoothing:antialiased;overscroll-behavior:none}
-button{cursor:pointer;border:none;background:none;font-family:inherit;color:inherit}
+button{cursor:pointer;border:none;background:none;font-family:inherit;color:inherit;
+  -webkit-tap-highlight-color:transparent}
 input,select,textarea{font-family:inherit}
 
 /* ── Shell ────────────────────────────────────────────────────────────────── */
 #app{display:flex;flex-direction:column;height:100dvh;overflow:hidden;
-  background:linear-gradient(148deg,var(--bg) 0%,var(--bg2) 58%,var(--bg3) 100%)}
+  background:linear-gradient(148deg,var(--bg) 0%,var(--bg2) 58%,var(--bg3) 100%);
+  /* Safe area: push content inside notch/Dynamic Island zones */
+  padding-top:var(--sat);
+  padding-bottom:var(--sab)}
 
 /* ── TOPBAR ─────────────────────────────────────────────────────────────── */
 #topbar{
@@ -410,9 +418,11 @@ input,select,textarea{font-family:inherit}
   border-bottom:2px solid transparent;
   border-radius:var(--r1) var(--r1) 0 0;
   transition:background .13s,color .13s,border-color .13s;
-  position:relative
+  position:relative;
+  -webkit-tap-highlight-color:transparent
 }
 .tab:hover{background:rgba(255,255,255,.5);color:var(--tx)}
+.tab:active{background:rgba(255,255,255,.7)}
 
 /* ACTIVE TAB — more glass, stronger signal */
 .tab.on{
@@ -429,30 +439,41 @@ input,select,textarea{font-family:inherit}
 .tab.on .tab-ico{opacity:1}
 .tab-lbl{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0}
 .tab-x{
-  flex-shrink:0;width:18px;height:18px;
+  /* Larger touch target — minimum 28px, visual 18px icon centered */
+  flex-shrink:0;width:28px;height:28px;
   border-radius:50%;font-size:10px;
   color:var(--txm);
   display:flex;align-items:center;justify-content:center;
-  opacity:0;transition:all .13s;margin-left:1px
+  opacity:0;transition:all .13s;margin-left:1px;
+  -webkit-tap-highlight-color:transparent
 }
 .tab:hover .tab-x,.tab.on .tab-x{opacity:.65}
 .tab-x:hover{opacity:1!important;background:var(--er-bg);color:var(--er)}
+/* On mobile: always show close X on active tab (no hover state) */
+@media(max-width:640px){
+  .tab.on .tab-x{opacity:.55}
+  .tab-x:active{opacity:1!important;background:var(--er-bg);color:var(--er)}
+}
 .tab-plus{
   flex-shrink:0;width:42px;height:100%;
   font-size:21px;font-weight:300;color:var(--txm);
   display:flex;align-items:center;justify-content:center;
   border-radius:var(--r1);
-  transition:all .13s;z-index:2;position:relative
+  transition:all .13s;z-index:2;position:relative;
+  -webkit-tap-highlight-color:transparent
 }
 .tab-plus:hover{color:var(--b6);background:rgba(255,255,255,.6)}
+.tab-plus:active{color:var(--b6);background:rgba(255,255,255,.8)}
 
 /* ── WORKSPACE ────────────────────────────────────────────────────────────── */
 #workspace{
   flex:1;overflow-y:auto;
   padding:36px 28px 52px;
-  scroll-behavior:smooth;position:relative
+  scroll-behavior:smooth;position:relative;
+  /* ensure content is never hidden behind bottom nav/home-bar */
+  -webkit-overflow-scrolling:touch
 }
-@media(max-width:640px){#workspace{padding:20px 14px 40px}}
+@media(max-width:640px){#workspace{padding:20px 14px 48px}}
 .pi{width:100%;max-width:1100px;margin:0 auto}
 
 /* ── Shared ───────────────────────────────────────────────────────────────── */
@@ -790,17 +811,21 @@ input,select,textarea{font-family:inherit}
 .t-search-input::placeholder{color:var(--txm)}
 .t-search-clear{
   font-size:11px;color:var(--txm);cursor:pointer;
-  width:17px;height:17px;border-radius:50%;
+  /* Larger touch target on mobile */
+  width:24px;height:24px;border-radius:50%;
   background:var(--bg2);display:none;
   align-items:center;justify-content:center;flex-shrink:0;
-  transition:all .12s
+  transition:all .12s;
+  -webkit-tap-highlight-color:transparent
 }
 .t-search-clear:hover{background:var(--er-bg);color:var(--er)}
+.t-search-clear:active{background:var(--er-bg);color:var(--er)}
 .t-search-clear.vis{display:flex}
 .t-search.focused{
   border-color:var(--b5);
-  box-shadow:0 0 0 3px rgba(59,130,246,.12);
-  max-width:360px
+  box-shadow:0 0 0 3px rgba(59,130,246,.15);
+  max-width:360px;
+  background:var(--surf)
 }
 /* Dropdown */
 .search-drop{
@@ -813,9 +838,11 @@ input,select,textarea{font-family:inherit}
 .search-drop.hi{display:none}
 .search-result{
   display:flex;align-items:center;gap:10px;
-  padding:10px 14px;cursor:pointer;transition:background .1s
+  padding:11px 14px;cursor:pointer;transition:background .1s;
+  -webkit-tap-highlight-color:transparent
 }
 .search-result:hover{background:var(--b0)}
+.search-result:active{background:var(--b1)}
 .search-result+.search-result{border-top:1px solid var(--bd)}
 .sr-ico{font-size:16px;width:22px;text-align:center;flex-shrink:0}
 .sr-body{flex:1;min-width:0}
