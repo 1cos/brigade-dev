@@ -578,7 +578,7 @@ input,select,textarea{font-family:inherit}
 .bc-time-row{font-size:11px;color:var(--txm)}
 .bc-time-val{font-weight:600;color:var(--tx2)}
 
-.bc-grid{display:flex;flex-direction:column;gap:10px;margin-bottom:6px}
+.bc-grid{display:flex;flex-direction:column;gap:8px;margin-bottom:6px}
 
 .bc-card{
   background:var(--surf-g);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
@@ -591,17 +591,17 @@ input,select,textarea{font-family:inherit}
   display:grid;
   grid-template-columns:auto 1fr auto;
   align-items:center;gap:0;
-  padding:14px 16px;cursor:pointer;
+  padding:10px 14px;cursor:pointer;
   -webkit-tap-highlight-color:transparent
 }
 .bc-card-main:hover{background:rgba(239,246,255,.4)}
 
 .bc-card-num{
-  width:28px;height:28px;border-radius:50%;
+  width:26px;height:26px;border-radius:50%;
   background:var(--b1);color:var(--b7);
   font-size:11px;font-weight:700;
   display:flex;align-items:center;justify-content:center;
-  flex-shrink:0;margin-right:12px
+  flex-shrink:0;margin-right:10px
 }
 .bc-card-num.cat-pos{background:var(--b1);color:var(--b7)}
 .bc-card-num.cat-deduction{background:#ede9fe;color:#6d28d9}
@@ -614,7 +614,7 @@ input,select,textarea{font-family:inherit}
 .bc-card-meta{font-size:11px;color:var(--txm);display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .bc-meta-sep{color:var(--bd2)}
 
-.bc-card-right{display:flex;align-items:center;gap:8px;flex-shrink:0;margin-left:10px}
+.bc-card-right{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0;margin-left:10px}
 
 .bc-details{border:none;background:none}
 .bc-details summary{display:none}  /* trigger is bc-card-main via JS */
@@ -647,6 +647,14 @@ input,select,textarea{font-family:inherit}
 .bc-cat-pill.cat-deduction{background:#ede9fe;color:#6d28d9}
 .bc-cat-pill.cat-prep{background:#d1fae5;color:#065f46}
 .bc-cat-pill.cat-ai{background:#fef3c7;color:#92400e}
+.bc-warn-pill{
+  display:inline-flex;align-items:center;gap:3px;
+  font-size:10px;font-weight:700;
+  padding:2px 6px;border-radius:999px;
+  background:var(--wn-bg);color:var(--wn);
+  border:1px solid var(--wn-bd);
+  white-space:nowrap
+}
 /* ── Page placeholder (Sales, future pages not yet implemented) ── */
 .pg-placeholder{display:flex;flex-direction:column;align-items:center;
   justify-content:center;padding:32px 24px 40px;text-align:center;gap:8px}
@@ -1791,8 +1799,13 @@ function botsAfterRender(){
         var time = _toCDT(row.started_at);
         var dur  = _dur(row.started_at, row.finished_at);
         var rows = (row.rows_written||0);
-        var warn = row.warnings_count>0 ? ' · ⚠️ '+row.warnings_count : '';
-        meta.textContent = time + ' · ' + dur + ' · ' + rows + ' ' + t('brows') + warn;
+        var warnPill = row.warnings_count>0
+          ? '<span class="bc-warn-pill">⚠️ '+row.warnings_count+'</span>'
+          : '';
+        meta.innerHTML = '<span>'
+          + time + ' · ' + dur + ' · ' + rows + ' ' + t('brows')
+          + '</span>'
+          + (warnPill ? ' ' + warnPill : '');
       } else if(meta && !row){
         meta.textContent = t('bidle');
       }
