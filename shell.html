@@ -1,6 +1,6 @@
 <!-- ── NEW SHELL LAB BANNER ── -->
 <div id="shell-lab-banner" style="position:fixed;top:0;left:0;right:0;z-index:99999;background:linear-gradient(90deg,#0f766e,#0891b2);color:white;font-size:11px;font-weight:800;letter-spacing:0.09em;text-transform:uppercase;text-align:center;padding:5px 16px;font-family:-apple-system,BlinkMacSystemFont,sans-serif;user-select:none;box-shadow:0 1px 6px rgba(8,145,178,0.4);">
-  🎨 NEW SHELL LAB &nbsp;·&nbsp; brigade-dev/shell.html &nbsp;·&nbsp; Not for kitchen use
+  🎨 NEW SHELL LAB &nbsp;·&nbsp; brigade-dev/shell.html &nbsp;·&nbsp; v007b &nbsp;·&nbsp; Not for kitchen use
 </div>
 <style>
 /* push shell content below banner */
@@ -15,7 +15,7 @@ setTimeout(function(){
   var b=document.getElementById('shell-lab-banner');
   if(!b)return;
   b.style.cssText='position:fixed;top:6px;right:6px;left:auto;z-index:99999;background:#0891b2;color:white;font-size:9px;font-weight:800;letter-spacing:0.09em;text-transform:uppercase;border-radius:8px;padding:4px 9px;cursor:pointer;box-shadow:0 2px 6px rgba(8,145,178,0.5);';
-  b.textContent='🎨 SHELL LAB';
+  b.textContent='🎨 SHELL LAB · ' + SHELL_VERSION;
   b.title='New Shell Lab — tap to dismiss';
   b.onclick=function(){b.style.display='none';};
 },10000);
@@ -1184,6 +1184,7 @@ es:{
 };
 
 /* lang stored in module-scope var + sessionStorage */
+const SHELL_VERSION = 'v007b';
 let LANG = sessionStorage.getItem('ws_lang') || 'it';
 function setLang(l){ LANG=l; sessionStorage.setItem('ws_lang',l); renderAll(); }
 function t(k,p={}){
@@ -1852,7 +1853,8 @@ function botsAfterRender(){
     var noteEl = ws.querySelector('.note');
     if(noteEl){
       noteEl.innerHTML='<span class="bc-live-dot"></span>'
-        +'<span style="font-size:11px;color:var(--ok)">'+t('blive')+'</span>';
+        +'<span style="font-size:11px;color:var(--ok)">'+t('blive')+'</span>'
+        +'<span style="font-size:10px;color:var(--txm);margin-left:8px">'+SHELL_VERSION+'</span>';
     }
   })
   .catch(function(err){
@@ -1862,7 +1864,8 @@ function botsAfterRender(){
     if(noteEl){
       noteEl.innerHTML='<span class="nd"></span>'
         +'<span style="font-size:11px;color:var(--txm)">'
-        +t('blive_fail')+'</span>';
+        +t('blive_fail')+'</span>'
+        +'<span style="font-size:10px;color:var(--txm);margin-left:8px">'+SHELL_VERSION+'</span>';
     }
   });
 }
