@@ -468,12 +468,12 @@ input,select,textarea{font-family:inherit}
 /* ── WORKSPACE ────────────────────────────────────────────────────────────── */
 #workspace{
   flex:1;overflow-y:auto;
-  padding:36px 28px 52px;
+  padding:24px 28px 52px;
   scroll-behavior:smooth;position:relative;
   /* ensure content is never hidden behind bottom nav/home-bar */
   -webkit-overflow-scrolling:touch
 }
-@media(max-width:640px){#workspace{padding:20px 14px 48px}}
+@media(max-width:640px){#workspace{padding:14px 14px 48px}}
 .pi{width:100%;max-width:1100px;margin:0 auto}
 
 /* ── Shared ───────────────────────────────────────────────────────────────── */
@@ -514,7 +514,7 @@ input,select,textarea{font-family:inherit}
 .btns:hover{background:var(--b1);color:var(--b6)}
 
 /* ════ HOME ═══════════════════════════════════════════════════════════════ */
-.greet{margin-bottom:40px}
+.greet{margin-bottom:24px}
 .greet-ey{font-size:11px;font-weight:600;letter-spacing:.1em;
   text-transform:uppercase;color:var(--txm);margin-bottom:9px}
 .greet-h{font-size:33px;font-weight:700;color:var(--b9);
@@ -538,17 +538,17 @@ input,select,textarea{font-family:inherit}
 .hcard:hover{transform:translateY(-3px);box-shadow:var(--sh3);border-color:var(--b4)}
 .hcard:active{transform:translateY(0);box-shadow:var(--sh1)}
 
-.hcard-top{padding:22px 22px 14px;display:flex;align-items:flex-start;justify-content:space-between}
-.hcard-ico{font-size:28px;width:52px;height:52px;
+.hcard-top{padding:16px 18px 10px;display:flex;align-items:flex-start;justify-content:space-between}
+.hcard-ico{font-size:26px;width:46px;height:46px;
   display:flex;align-items:center;justify-content:center;
   background:var(--b0);border:1px solid var(--b1);border-radius:var(--r2)}
 .hcard-arr{font-size:17px;color:var(--txm);transition:transform .15s,color .15s}
 .hcard:hover .hcard-arr{transform:translate(2px,-2px);color:var(--b5)}
-.hcard-body{padding:0 22px 18px;flex:1}
-.hcard-title{font-size:16px;font-weight:700;color:var(--tx);margin-bottom:5px}
-.hcard-desc{font-size:12px;color:var(--txm);line-height:1.58}
+.hcard-body{padding:0 18px 14px;flex:1}
+.hcard-title{font-size:16px;font-weight:700;color:var(--tx);margin-bottom:4px}
+.hcard-desc{font-size:12px;color:var(--txm);line-height:1.5}
 .hcard-foot{
-  border-top:1px solid var(--bd);padding:9px 22px;
+  border-top:1px solid var(--bd);padding:8px 18px;
   font-size:11px;font-weight:500;color:var(--txm);
   display:flex;align-items:center;gap:6px;
   background:rgba(239,246,255,.38)
@@ -560,15 +560,16 @@ input,select,textarea{font-family:inherit}
 .pipelist{display:flex;flex-direction:column;gap:8px}
 /* ── Page placeholder (Sales, future pages not yet implemented) ── */
 .pg-placeholder{display:flex;flex-direction:column;align-items:center;
-  justify-content:center;padding:52px 24px 60px;text-align:center;gap:10px}
-.pgp-ico{font-size:48px;line-height:1;margin-bottom:4px}
-.pgp-title{font-size:22px;font-weight:800;color:var(--tx1);letter-spacing:-.02em}
-.pgp-sub{font-size:13px;color:var(--tx2);margin-bottom:4px}
-.pgp-chips{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:4px 0 12px}
-.pgp-chip{font-size:11px;font-weight:600;padding:4px 10px;border-radius:999px;
-  background:var(--bg2);border:1px solid var(--bd);color:var(--tx2)}
-.pgp-note{font-size:12px;color:var(--tx3,var(--tx2));max-width:280px;
-  line-height:1.55;opacity:.75}
+  justify-content:center;padding:32px 24px 40px;text-align:center;gap:8px}
+.pgp-ico{font-size:44px;line-height:1;margin-bottom:2px}
+.pgp-title{font-size:22px;font-weight:800;color:var(--tx);letter-spacing:-.02em}
+.pgp-sub{font-size:13px;color:var(--tx2);margin-bottom:2px}
+.pgp-chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:6px 0 14px}
+.pgp-chip{font-size:13px;font-weight:600;padding:7px 14px;border-radius:999px;
+  background:var(--bg2);border:1px solid var(--bd2);color:var(--tx2);
+  line-height:1.3}
+.pgp-note{font-size:12px;color:var(--tx2);max-width:300px;
+  line-height:1.55;opacity:.7}
 .pitem{display:flex;align-items:center;gap:12px;
   padding:12px 16px;background:var(--surf-r);
   border:1px solid var(--bd);border-radius:var(--r2)}
