@@ -1,6 +1,6 @@
 <!-- ── NEW SHELL LAB BANNER ── -->
 <div id="shell-lab-banner" style="position:fixed;top:0;left:0;right:0;z-index:99999;background:linear-gradient(90deg,#0f766e,#0891b2);color:white;font-size:11px;font-weight:800;letter-spacing:0.09em;text-transform:uppercase;text-align:center;padding:5px 16px;font-family:-apple-system,BlinkMacSystemFont,sans-serif;user-select:none;box-shadow:0 1px 6px rgba(8,145,178,0.4);">
-  🎨 NEW SHELL LAB &nbsp;·&nbsp; brigade-dev/shell.html &nbsp;·&nbsp; v010b &nbsp;·&nbsp; Not for kitchen use
+  🎨 NEW SHELL LAB &nbsp;·&nbsp; brigade-dev/shell.html &nbsp;·&nbsp; v010c &nbsp;·&nbsp; Not for kitchen use
 </div>
 <style>
 /* push shell content below banner */
@@ -847,6 +847,66 @@ input,select,textarea{font-family:inherit}
   color:var(--txm);font-size:14px;line-height:1.6}
 .r-hist-ico{font-size:30px;margin-bottom:12px}
 
+/* ── Global timer chip (topbar) ── */
+.gtimer-chip{
+  display:flex;align-items:center;gap:5px;
+  padding:5px 12px;border-radius:20px;
+  background:rgba(37,99,235,.10);border:1.5px solid rgba(37,99,235,.25);
+  font-size:12px;color:var(--b6);cursor:pointer;
+  transition:background .15s;white-space:nowrap;
+  -webkit-tap-highlight-color:transparent}
+.gtimer-chip:hover{background:rgba(37,99,235,.18)}
+.gtimer-chip strong{font-weight:800;font-family:var(--fm)}
+
+/* ── Timer panel (floating active-timers list) ── */
+.timer-panel-overlay,.close-guard-overlay,#timer-panel-overlay,#close-guard-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.4);
+  z-index:9000;display:flex;align-items:flex-start;justify-content:flex-end;
+  padding:56px 12px 0}
+#close-guard-overlay{align-items:center;justify-content:center;padding:0}
+.timer-panel{
+  background:var(--surf);border:1px solid var(--bd2);
+  border-radius:var(--r3);min-width:240px;max-width:320px;
+  box-shadow:0 8px 32px rgba(0,0,0,.18);overflow:hidden}
+.tp-hd{display:flex;justify-content:space-between;align-items:center;
+  padding:12px 16px;border-bottom:1px solid var(--bd);
+  font-size:13px;font-weight:700;color:var(--tx)}
+.tp-close{cursor:pointer;color:var(--txm);padding:2px 6px;
+  border-radius:6px;line-height:1;font-size:16px}
+.tp-close:hover{color:var(--tx);background:var(--bd)}
+.tp-row{display:flex;justify-content:space-between;align-items:center;
+  padding:10px 16px;border-bottom:1px solid var(--bd)}
+.tp-row:last-child{border-bottom:none}
+.tp-name{font-size:13px;color:var(--tx);flex:1;margin-right:12px}
+.tp-time{font-size:13px;font-weight:700;font-family:var(--fm);color:var(--txm)}
+.tp-time.running{color:var(--ok)}
+
+/* ── Tab timer badge ── */
+.tab-timer-badge{
+  font-size:10px;font-weight:700;color:var(--b6);
+  background:rgba(37,99,235,.12);border-radius:20px;
+  padding:2px 6px;margin-right:4px;white-space:nowrap}
+
+/* ── Close guard panel ── */
+.close-guard-panel{
+  background:var(--surf);border:1px solid var(--bd2);
+  border-radius:var(--r3);padding:24px 24px 20px;
+  max-width:300px;width:90%;
+  box-shadow:0 8px 32px rgba(0,0,0,.2)}
+.cg-title{font-size:15px;font-weight:700;color:var(--tx);margin-bottom:8px}
+.cg-body{font-size:13px;color:var(--txm);line-height:1.55;margin-bottom:18px}
+.cg-btns{display:flex;flex-direction:column;gap:8px}
+.cg-btn{
+  padding:10px 16px;border-radius:12px;font-size:13px;font-weight:600;
+  border:1.5px solid var(--bd2);color:var(--tx2);background:var(--surf);
+  cursor:pointer;text-align:left;transition:all .15s;
+  -webkit-tap-highlight-color:transparent}
+.cg-keep{border-color:var(--b6);color:var(--b6)}
+.cg-keep:hover{background:rgba(37,99,235,.07)}
+.cg-stop{border-color:var(--er);color:var(--er)}
+.cg-stop:hover{background:rgba(239,68,68,.07)}
+.cg-cancel:hover{background:var(--surf-g)}
+
 /* ── Panel visibility ── */
 .r-panel-hide{display:none}
 
@@ -1170,7 +1230,13 @@ it:{
   r_tab_bom:'BOM', r_tab_proc:'Procedura',
   r_prep_todo:'Da fare', r_prep_active:'In corso', r_prep_done:'Fatto',
   r_timer_lbl:'Timer',
-  r_timer_start:'Avvia timer', r_timer_stop:'Pausa', r_timer_reset:'Ricomincia',
+  r_timer_start:'Avvia', r_timer_stop:'Pausa', r_timer_reset:'Ricomincia', r_timer_resume:'Riprendi',
+  r_timer_panel_title:'Timer attivi',
+  r_close_guard_title:'Timer attivo',
+  r_close_guard_body:'C\'è {n} timer in corso. Cosa vuoi fare?',
+  r_close_guard_keep:'Tieni attivo e chiudi',
+  r_close_guard_stop:'Ferma il timer e chiudi',
+  r_close_guard_cancel:'Annulla',
   r_shelf:'Shelf life', r_last_prod:'Ultima produzione',
   r_last_prod_val:'Ieri · Samantha · 10 pz',
   r_batch_sel:'Batch',
@@ -1275,7 +1341,13 @@ en:{
   r_tab_bom:'BOM', r_tab_proc:'Procedure',
   r_prep_todo:'To do', r_prep_active:'In progress', r_prep_done:'Done',
   r_timer_lbl:'Timer',
-  r_timer_start:'Start timer', r_timer_stop:'Pause', r_timer_reset:'Reset',
+  r_timer_start:'Start', r_timer_stop:'Pause', r_timer_reset:'Reset', r_timer_resume:'Resume',
+  r_timer_panel_title:'Active timers',
+  r_close_guard_title:'Timer active',
+  r_close_guard_body:'There is a timer running. What do you want to do?',
+  r_close_guard_keep:'Keep running and close',
+  r_close_guard_stop:'Stop timer and close',
+  r_close_guard_cancel:'Cancel',
   r_shelf:'Shelf life', r_last_prod:'Last produced',
   r_last_prod_val:'Yesterday · Samantha · 10 pcs',
   r_batch_sel:'Batch',
@@ -1375,7 +1447,13 @@ es:{
   r_tab_bom:'BOM', r_tab_proc:'Procedimiento',
   r_prep_todo:'Pendiente', r_prep_active:'En curso', r_prep_done:'Listo',
   r_timer_lbl:'Timer',
-  r_timer_start:'Iniciar timer', r_timer_stop:'Pausa', r_timer_reset:'Reiniciar',
+  r_timer_start:'Iniciar', r_timer_stop:'Pausa', r_timer_reset:'Reiniciar', r_timer_resume:'Reanudar',
+  r_timer_panel_title:'Timers activos',
+  r_close_guard_title:'Timer activo',
+  r_close_guard_body:'Hay un timer en curso. ¿Qué quieres hacer?',
+  r_close_guard_keep:'Seguir y cerrar',
+  r_close_guard_stop:'Detener timer y cerrar',
+  r_close_guard_cancel:'Cancelar',
   r_shelf:'Vida útil', r_last_prod:'Última producción',
   r_last_prod_val:'Ayer · Samantha · 10 pz',
   r_batch_sel:'Batch',
@@ -1444,7 +1522,7 @@ es:{
 };
 
 /* lang stored in module-scope var + sessionStorage */
-const SHELL_VERSION = 'v010b';
+const SHELL_VERSION = 'v010c';
 /* Recipe state lives in RECIPE object + _driverQty inside recipe JS block */
 let LANG = sessionStorage.getItem('ws_lang') || 'it';
 function setLang(l){ LANG=l; sessionStorage.setItem('ws_lang',l); renderAll(); }
@@ -2170,38 +2248,25 @@ function _patchObservations(ws, latest){
   }).join('');
 }
 
-/* ════ RECIPE v010b — prep-centric workbench ═════════════════════════════════
-   Philosophy:
-   - Samantha prepares 20 vaschette staying entirely in the Prep tab.
-   - 3 tabs only: Ingredienti | Prep | Storico (Procedura tab eliminated).
-   - Each Prep card = action unit: title + ingredient chips + equipment + procedure + timer.
-   - Step ingredients reference BOM keys — no duplicated numbers.
-   - Production Driver scales everything: BOM + chips + procedure text.
-   - Timers: requestAnimationFrame, parallel-capable, fully in-memory.
+/* ════ RECIPE v010c — persistent timers ══════════════════════════════════════
+   Timer persistence architecture:
+   - Each timer stored in localStorage under key 'boh_timer_{stepId}'
+   - Stored fields: stepId, recipeId, label, duration_s, started_at (epoch ms),
+     paused_at (epoch ms | null), remaining_s, status (running|paused|done)
+   - On visibilitychange → visible: reconcile all running timers from real clock
+   - On pageRecipeAfter: re-attach RAF for any running timers
+   - On closeTab intercept: warn if active timers exist
+   - Global chip in topbar: most urgent timer display
+   - Tab badge on recipe workspace tab: ⏱ N count
    ════════════════════════════════════════════════════════════════════════════ */
 
-/* ── Data model ──────────────────────────────────────────────────────────────
-   RECIPE.bom: master ingredient list, keyed for reference from steps.
-   RECIPE.steps: each step has:
-     - title: step name
-     - bom_refs: array of BOM keys used in this step (chips in header)
-     - equip: optional array of equipment strings (chips, different color)
-     - proc: procedure text with {key} placeholders (scale with factor)
-     - proc_vals: {key: {base, u, p?}} — values for placeholder rendering
-                  These reference the same scale logic as BOM rows.
-                  {key} that matches a BOM key uses that item's base value.
-                  Special keys (e.g. {count}, {unit}) use proc_vals directly.
-     - timer_s: optional seconds (null = no timer for this step)
-   ─────────────────────────────────────────────────────────────────────────── */
-
+/* ── Recipe data (unchanged from v010b) ── */
 var RECIPE = {
   name:        'Tiramisu',
   station:     'Pastry',
   driver_unit: 'vaschette',
   driver_base: 10,
   shelf_life:  '24h',
-
-  /* Master BOM: key → label, base quantity per driver_base batch */
   bom: [
     {key:'sav',  label:'Savoiardi',        v:400, u:'g'},
     {key:'mas',  label:'Mascarpone',        v:500, u:'g'},
@@ -2216,170 +2281,397 @@ var RECIPE = {
     {key:'cou',  label:'Berry Coulis',      v:70,  u:'g'},
     {key:'mer',  label:'Meringa italiana',  v:45,  u:'g'}
   ],
-
-  /* Operational steps — each is a self-contained action card */
   steps: [
-    { id:'s1',
-      title:'Monta tuorli + zucchero',
-      bom_refs:['egg','sug'],
-      equip:['Planetaria','Vel. media-alta'],
+    { id:'s1', title:'Monta tuorli + zucchero',
+      bom_refs:['egg','sug'], equip:['Planetaria','Vel. media-alta'],
       proc:'Monta {egg} con {sug} fino a ottenere un composto chiaro e spumoso. '
           +'Il composto è pronto quando "fa il nastro" sollevando la frusta.',
-      proc_vals:{
-        egg:{base:6, u:'pz', p:true},
-        sug:{base:120, u:'g'}
-      },
-      timer_s: 8*60
-    },
-    { id:'s2',
-      title:'Prepara espresso + Kahlúa',
-      bom_refs:['esp','kah'],
-      equip:['Lascia raffreddare'],
+      proc_vals:{ egg:{base:6,u:'pz',p:true}, sug:{base:120,u:'g'} }, timer_s:8*60 },
+    { id:'s2', title:'Prepara espresso + Kahlúa',
+      bom_refs:['esp','kah'], equip:['Lascia raffreddare'],
       proc:'Prepara {esp} di espresso forte. Aggiungi {kah} di Kahlúa. '
           +'Mescola e lascia raffreddare completamente — non inzuppare con espresso caldo.',
-      proc_vals:{
-        esp:{base:300, u:'ml'},
-        kah:{base:60, u:'ml'}
-      },
-      timer_s: 5*60
-    },
-    { id:'s3',
-      title:'Incorpora mascarpone',
-      bom_refs:['mas'],
-      equip:['Marisa'],
+      proc_vals:{ esp:{base:300,u:'ml'}, kah:{base:60,u:'ml'} }, timer_s:5*60 },
+    { id:'s3', title:'Incorpora mascarpone',
+      bom_refs:['mas'], equip:['Marisa'],
       proc:'Incorpora {mas} ai tuorli montati mescolando delicatamente con la marisa. '
           +'Movimenti dal basso verso l\'alto per non smontare il composto.',
-      proc_vals:{
-        mas:{base:500, u:'g'}
-      },
-      timer_s: null
-    },
-    { id:'s4',
-      title:'Monta panna e incorpora',
-      bom_refs:['cre'],
-      equip:['Non montare troppo'],
-      proc:'Monta {cre} semi-ferma — si deve ancora muovere leggermente. '
-          +'Incorpora in due riprese con movimenti ampi. Non lavorare troppo.',
-      proc_vals:{
-        cre:{base:300, u:'ml'}
-      },
-      timer_s: 4*60
-    },
-    { id:'s5',
-      title:'Inzuppa savoiardi',
-      bom_refs:['sav','esp'],
-      equip:['2 sec per lato'],
-      proc:'Inzuppa {sav} nella miscela espresso-Kahlúa: 2 secondi per lato, non di più. '
-          +'I savoiardi devono essere umidi ma non sfatti — reggono la struttura.',
-      proc_vals:{
-        sav:{base:400, u:'g'},
-        esp:{base:300, u:'ml'}
-      },
-      timer_s: null
-    },
-    { id:'s6',
-      title:'Monta e spolverizza',
-      bom_refs:['cac'],
-      equip:['Setaccio'],
-      proc:'Assembla: strato crema → strato savoiardi → strato crema. '
-          +'Riempi {count} vaschette individuali. Spolverizza {cac} sulla superficie.',
-      proc_vals:{
-        count:{base:10, u:'pz', p:true, isDriver:true},
-        cac:{base:30, u:'g'}
-      },
-      timer_s: null
-    },
-    { id:'s7',
-      title:'Riposo in frigo',
-      bom_refs:[],
-      equip:['Frigo 2–4 °C','Min. 4 ore'],
-      proc:'Copri le vaschette con pellicola e metti in frigo. '
-          +'Minimo 4 ore — ideale overnight. '
-          +'Il Tiramisù è pronto quando la crema è compatta al tatto.',
-      proc_vals:{},
-      timer_s: 4*60*60
-    }
+      proc_vals:{ mas:{base:500,u:'g'} }, timer_s:null },
+    { id:'s4', title:'Monta panna e incorpora',
+      bom_refs:['cre'], equip:['Non montare troppo'],
+      proc:'Monta {cre} semi-ferma. Incorpora in due riprese con movimenti ampi.',
+      proc_vals:{ cre:{base:300,u:'ml'} }, timer_s:4*60 },
+    { id:'s5', title:'Inzuppa savoiardi',
+      bom_refs:['sav','esp'], equip:['2 sec per lato'],
+      proc:'Inzuppa {sav} nella miscela espresso-Kahlúa: 2 secondi per lato, non di più.',
+      proc_vals:{ sav:{base:400,u:'g'}, esp:{base:300,u:'ml'} }, timer_s:null },
+    { id:'s6', title:'Monta e spolverizza',
+      bom_refs:['cac'], equip:['Setaccio'],
+      proc:'Assembla gli strati. Riempi {count} vaschette. Spolverizza {cac} sulla superficie.',
+      proc_vals:{ count:{base:10,u:'pz',p:true,isDriver:true}, cac:{base:30,u:'g'} }, timer_s:null },
+    { id:'s7', title:'Riposo in frigo',
+      bom_refs:[], equip:['Frigo 2–4 °C','Min. 4 ore'],
+      proc:'Copri le vaschette con pellicola. Minimo 4 ore — ideale overnight.',
+      proc_vals:{}, timer_s:4*60*60 }
   ]
 };
 
-/* ── State ── */
+/* ── In-memory state ── */
 var _driverQty = RECIPE.driver_base;
 var _recipeTab = 'ing';
-/* Timer state keyed by step id: {running, done, total_s, remaining_s, started_at, raf_id} */
-var _timerState = {};
-/* Expanded cards keyed by step id */
-var _cardOpen = {};
+var _cardOpen  = {};
+var _rafHandles = {}; /* stepId → rafId — for cancellation */
 
-/* ── Quantity formatter ── */
-function _qty(v, u, isPiece){
-  if(isPiece) return Math.round(v) + ' ' + (u||'pz');
-  if(u==='g'  && v>=1000) return (+(v/1000).toFixed(1)) + ' kg';
-  if(u==='ml' && v>=1000) return (+(v/1000).toFixed(1)) + ' L';
-  return (Number.isInteger(Math.round(v*10)/10) ? Math.round(v) : +(v).toFixed(1)) + ' ' + u;
+/* ════════════════════════════════════════════════════════════════════════════
+   TIMER PERSISTENCE LAYER
+   All timer reads/writes go through these functions.
+   localStorage key per step: 'boh_timer_{stepId}'
+   ════════════════════════════════════════════════════════════════════════════ */
+var _TIMER_PFX = 'boh_timer_';
+
+function _timerSave(stepId, ts){
+  try { localStorage.setItem(_TIMER_PFX + stepId, JSON.stringify(ts)); } catch(e){}
+}
+function _timerLoad(stepId){
+  try {
+    var raw = localStorage.getItem(_TIMER_PFX + stepId);
+    return raw ? JSON.parse(raw) : null;
+  } catch(e){ return null; }
+}
+function _timerDelete(stepId){
+  try { localStorage.removeItem(_TIMER_PFX + stepId); } catch(e){}
 }
 
-/* ── Timer formatter: MM:SS or H:MM:SS ── */
+/* Reconcile a running timer against real clock — call after background/suspend */
+function _timerReconcile(stepId){
+  var ts = _timerLoad(stepId);
+  if(!ts || ts.status !== 'running') return ts;
+  var elapsed = (Date.now() - ts.started_at) / 1000;
+  ts.remaining_s = Math.max(0, ts.duration_s - elapsed);
+  if(ts.remaining_s <= 0){
+    ts.remaining_s = 0;
+    ts.status = 'done';
+    _timerSave(stepId, ts);
+  }
+  return ts;
+}
+
+/* Return timer state for a step, reconciled */
+function _ts(stepId){ return _timerReconcile(stepId); }
+
+/* Count active timers (running or paused, not done, across all known steps) */
+function _activeTimerCount(){
+  var n = 0;
+  RECIPE.steps.forEach(function(step){
+    if(!step.timer_s) return;
+    var ts = _timerLoad(step.id);
+    if(ts && (ts.status==='running' || ts.status==='paused')) n++;
+  });
+  return n;
+}
+
+/* Most urgent running timer: lowest remaining_s */
+function _urgentTimer(){
+  var best = null;
+  RECIPE.steps.forEach(function(step){
+    if(!step.timer_s) return;
+    var ts = _timerReconcile(step.id);
+    if(ts && ts.status==='running'){
+      if(!best || ts.remaining_s < best.remaining_s)
+        best = {step:step, ts:ts};
+    }
+  });
+  return best;
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   GLOBAL TIMER CHIP (topbar) + TAB BADGE
+   ════════════════════════════════════════════════════════════════════════════ */
+function _updateGlobalTimerUI(){
+  /* ── Topbar chip ── */
+  var chip = document.getElementById('global-timer-chip');
+  var urgent = _urgentTimer();
+  var activeN = _activeTimerCount();
+
+  if(activeN === 0){
+    if(chip) chip.style.display = 'none';
+  } else {
+    if(!chip){
+      /* Inject chip into topbar t-right — once */
+      var tRight = document.querySelector('.t-right');
+      if(tRight){
+        var el = document.createElement('div');
+        el.id = 'global-timer-chip';
+        el.className = 'gtimer-chip';
+        tRight.insertBefore(el, tRight.firstChild);
+        el.addEventListener('click', function(){ _showTimerPanel(); });
+        chip = el;
+      }
+    }
+    if(chip){
+      chip.style.display = '';
+      if(activeN > 1){
+        chip.innerHTML = '⏱ <strong>'+activeN+'</strong>';
+        chip.title = activeN + ' timer attivi';
+      } else if(urgent){
+        chip.innerHTML = '⏱ <strong>'+_fmtTimer(urgent.ts.remaining_s)+'</strong>';
+        chip.title = urgent.step.title;
+      }
+    }
+  }
+
+  /* ── Tab badge: ⏱ N on recipe workspace tab ── */
+  document.querySelectorAll('.tab').forEach(function(tabEl){
+    var tid = tabEl.dataset.tid;
+    if(!tid) return;
+    var tab = TABS.find(function(x){ return x.id===tid; });
+    if(!tab || tab.type !== 'recipe') return;
+
+    /* Remove existing badge */
+    var existing = tabEl.querySelector('.tab-timer-badge');
+    if(existing) existing.remove();
+
+    if(activeN > 0){
+      var badge = document.createElement('span');
+      badge.className = 'tab-timer-badge';
+      badge.textContent = '⏱ ' + activeN;
+      /* Insert before the ✕ close button */
+      var closeBtn = tabEl.querySelector('.tab-x');
+      if(closeBtn) tabEl.insertBefore(badge, closeBtn);
+      else tabEl.appendChild(badge);
+    }
+  });
+}
+
+/* Small floating panel listing all active timers */
+function _showTimerPanel(){
+  var existing = document.getElementById('timer-panel-overlay');
+  if(existing){ existing.remove(); return; }
+
+  var items = [];
+  RECIPE.steps.forEach(function(step){
+    if(!step.timer_s) return;
+    var ts = _timerReconcile(step.id);
+    if(ts && (ts.status==='running' || ts.status==='paused')){
+      items.push({step:step, ts:ts});
+    }
+  });
+  if(items.length === 0) return;
+
+  var rows = items.map(function(item){
+    var cls = item.ts.status==='running' ? 'running' : '';
+    return '<div class="tp-row">'
+      +'<span class="tp-name">'+item.step.title+'</span>'
+      +'<span class="tp-time '+cls+'">'+_fmtTimer(item.ts.remaining_s)+'</span>'
+      +'</div>';
+  }).join('');
+
+  var ov = document.createElement('div');
+  ov.id = 'timer-panel-overlay';
+  ov.innerHTML = '<div class="timer-panel">'
+    +'<div class="tp-hd"><span>'+t('r_timer_panel_title')+'</span>'
+      +'<span class="tp-close">✕</span></div>'
+    +rows+'</div>';
+  document.body.appendChild(ov);
+
+  ov.querySelector('.tp-close').addEventListener('click', function(){ ov.remove(); });
+  ov.addEventListener('click', function(e){ if(e.target===ov) ov.remove(); });
+}
+
+/* ── Periodic UI refresh for topbar chip (every second when timers running) ── */
+var _globalTimerInterval = null;
+function _startGlobalTick(){
+  if(_globalTimerInterval) return;
+  _globalTimerInterval = setInterval(function(){
+    var active = _activeTimerCount();
+    _updateGlobalTimerUI();
+    if(active === 0){
+      clearInterval(_globalTimerInterval);
+      _globalTimerInterval = null;
+    }
+  }, 1000);
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   visibilitychange: reconcile all running timers when app comes back to foreground
+   ════════════════════════════════════════════════════════════════════════════ */
+(function(){
+  var _visBound = false;
+  function _bindVisibility(){
+    if(_visBound) return;
+    _visBound = true;
+    document.addEventListener('visibilitychange', function(){
+      if(document.visibilityState !== 'visible') return;
+      /* Reconcile all recipe timers from real clock */
+      RECIPE.steps.forEach(function(step){
+        if(!step.timer_s) return;
+        var ts = _timerReconcile(step.id);
+        if(!ts) return;
+        /* Update display if visible */
+        var dispEl = document.getElementById('tdisp-'+step.id);
+        if(dispEl){
+          dispEl.textContent = _fmtTimer(ts.remaining_s);
+          dispEl.className = 'r-timer-display ' + (ts.status==='done'?'done':ts.status==='running'?'running':'');
+        }
+        /* Re-start RAF if still running */
+        if(ts.status === 'running' && !_rafHandles[step.id]){
+          _rafStart(step);
+        }
+        /* Refresh card if done */
+        if(ts.status === 'done'){
+          _refreshCard(step);
+        }
+      });
+      _updateGlobalTimerUI();
+    });
+  }
+  /* Call immediately and also from pageRecipeAfter */
+  window._bindVisibility = _bindVisibility;
+  _bindVisibility();
+})();
+
+/* ════════════════════════════════════════════════════════════════════════════
+   CLOSE TAB INTERCEPT: warn if active timers
+   ════════════════════════════════════════════════════════════════════════════ */
+var _origCloseTab = null;
+function _installCloseTabGuard(){
+  if(_origCloseTab) return; /* already installed */
+  _origCloseTab = closeTab;
+  closeTab = function(id){
+    var tab = TABS.find(function(x){ return x.id===id; });
+    if(!tab || tab.type !== 'recipe'){
+      return _origCloseTab(id);
+    }
+    var activeN = _activeTimerCount();
+    if(activeN === 0) return _origCloseTab(id);
+
+    /* Show inline confirmation */
+    var existing = document.getElementById('close-guard-overlay');
+    if(existing) existing.remove();
+
+    var ov = document.createElement('div');
+    ov.id = 'close-guard-overlay';
+    ov.innerHTML = '<div class="close-guard-panel">'
+      +'<div class="cg-title">'+t('r_close_guard_title')+'</div>'
+      +'<div class="cg-body">'+t('r_close_guard_body',{n:activeN})+'</div>'
+      +'<div class="cg-btns">'
+        +'<button class="cg-btn cg-keep">'+t('r_close_guard_keep')+'</button>'
+        +'<button class="cg-btn cg-stop">'+t('r_close_guard_stop')+'</button>'
+        +'<button class="cg-btn cg-cancel">'+t('r_close_guard_cancel')+'</button>'
+      +'</div></div>';
+    document.body.appendChild(ov);
+
+    ov.querySelector('.cg-keep').addEventListener('click', function(){
+      ov.remove(); _origCloseTab(id);
+    });
+    ov.querySelector('.cg-stop').addEventListener('click', function(){
+      RECIPE.steps.forEach(function(step){
+        if(!step.timer_s) return;
+        var ts = _timerLoad(step.id);
+        if(ts && ts.status==='running'){
+          var raf = _rafHandles[step.id];
+          if(raf){ cancelAnimationFrame(raf); delete _rafHandles[step.id]; }
+          ts.status = 'paused';
+          _timerSave(step.id, ts);
+        }
+      });
+      ov.remove(); _origCloseTab(id);
+    });
+    ov.querySelector('.cg-cancel').addEventListener('click', function(){ ov.remove(); });
+    ov.addEventListener('click', function(e){ if(e.target===ov) ov.remove(); });
+  };
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   RAF TIMER ENGINE
+   ════════════════════════════════════════════════════════════════════════════ */
+function _rafStart(step){
+  if(_rafHandles[step.id]) cancelAnimationFrame(_rafHandles[step.id]);
+  function tick(){
+    var ts = _timerLoad(step.id);
+    if(!ts || ts.status !== 'running'){ delete _rafHandles[step.id]; return; }
+    var elapsed = (Date.now() - ts.started_at) / 1000;
+    var remaining = Math.max(0, ts.duration_s - elapsed);
+
+    /* Update display */
+    var dispEl = document.getElementById('tdisp-'+step.id);
+    if(dispEl) dispEl.textContent = _fmtTimer(remaining);
+
+    if(remaining <= 0){
+      ts.status = 'done'; ts.remaining_s = 0;
+      _timerSave(step.id, ts);
+      delete _rafHandles[step.id];
+      _refreshCard(step);
+      _updateGlobalTimerUI();
+      return;
+    }
+    _rafHandles[step.id] = requestAnimationFrame(tick);
+  }
+  _rafHandles[step.id] = requestAnimationFrame(tick);
+  _startGlobalTick();
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   UTILITY — shared with recipe rendering
+   ════════════════════════════════════════════════════════════════════════════ */
+function _qty(v, u, isPiece){
+  if(isPiece) return Math.round(v)+' '+(u||'pz');
+  if(u==='g'  && v>=1000) return (+(v/1000).toFixed(1))+' kg';
+  if(u==='ml' && v>=1000) return (+(v/1000).toFixed(1))+' L';
+  return (Number.isInteger(Math.round(v*10)/10)?Math.round(v):+(v).toFixed(1))+' '+u;
+}
 function _fmtTimer(s){
   s = Math.max(0, Math.round(s));
   var h=Math.floor(s/3600), m=Math.floor((s%3600)/60), sec=s%60;
   if(h>0) return h+':'+(m<10?'0':'')+m+':'+(sec<10?'0':'')+sec;
   return (m<10?'0':'')+m+':'+(sec<10?'0':'')+sec;
 }
-
-/* ── BOM lookup map (built once) ── */
 function _bomMap(){
   var map={};
   RECIPE.bom.concat(RECIPE.sub_bom).forEach(function(item){ map[item.key]=item; });
   return map;
 }
-
-/* ── Render procedure text: replace {key} with scaled quantity ──
-   Each {key} in proc_vals is resolved:
-   - if isDriver: use _driverQty directly
-   - else: proc_vals[key].base × factor, formatted by unit
-   The rendered value is wrapped in .r-proc-qty for visual highlight. */
 function _renderProc(step, factor){
-  var txt = step.proc;
+  var txt=step.proc;
   Object.keys(step.proc_vals).forEach(function(k){
-    var v = step.proc_vals[k];
-    var scaled = v.isDriver ? _driverQty : v.base * factor;
+    var v=step.proc_vals[k];
+    var scaled = v.isDriver ? _driverQty : v.base*factor;
     var display = _qty(scaled, v.u, v.p);
-    txt = txt.replace(new RegExp('\\{'+k+'\\}','g'),
+    txt=txt.replace(new RegExp('\\{'+k+'\\}','g'),
       '<span class="r-proc-qty">'+display+'</span>');
   });
   return txt;
 }
-
-/* ── Render ingredient chips for a step header ──
-   bom_refs is an array of BOM keys. Each chip shows scaled quantity.
-   equip strings get a secondary "equip" chip style (no quantity). */
 function _renderChips(step, factor){
-  var bmap = _bomMap();
-  var html = '';
+  var bmap=_bomMap(), html='';
   step.bom_refs.forEach(function(k){
-    var item = bmap[k];
-    if(!item) return;
-    var scaled = _qty(item.v*factor, item.u, item.p);
-    html += '<span class="r-chip">'+scaled+' '+item.label+'</span>';
+    var item=bmap[k]; if(!item) return;
+    html+='<span class="r-chip">'+_qty(item.v*factor,item.u,item.p)+' '+item.label+'</span>';
   });
   (step.equip||[]).forEach(function(e){
-    html += '<span class="r-chip equip">'+e+'</span>';
+    html+='<span class="r-chip equip">'+e+'</span>';
   });
   return html;
 }
 
-/* ── Render timer block ── */
+/* ── Timer block HTML ── */
 function _timerBlock(step){
   if(!step.timer_s) return '';
-  var ts = _timerState[step.id]||{};
-  var remaining = ts.remaining_s !== undefined ? ts.remaining_s : step.timer_s;
-  var cls = ts.done ? 'done' : (ts.running ? 'running' : '');
-  var btn = ts.done
+  var ts = _ts(step.id);
+  var remaining = ts ? ts.remaining_s : step.timer_s;
+  var status = ts ? ts.status : 'idle';
+  if(remaining === undefined) remaining = step.timer_s;
+  var cls = status==='done'?'done':status==='running'?'running':'';
+  var btn = status==='done'
     ? '<button class="r-tbtn" data-treset="'+step.id+'">'+t('r_timer_reset')+'</button>'
-    : ts.running
+    : status==='running'
       ? '<button class="r-tbtn danger" data-tstop="'+step.id+'">'+t('r_timer_stop')+'</button>'
-      : '<button class="r-tbtn primary" data-tstart="'+step.id+'" data-tsec="'+step.timer_s+'">'
-        +t('r_timer_start')+'</button>';
+      : status==='paused'
+        ? '<button class="r-tbtn primary" data-tresume="'+step.id+'" data-tsec="'+step.timer_s+'">'
+            +t('r_timer_resume')+'</button>'
+          +'<button class="r-tbtn" data-treset="'+step.id+'">'+t('r_timer_reset')+'</button>'
+        : '<button class="r-tbtn primary" data-tstart="'+step.id+'" data-tsec="'+step.timer_s+'">'
+            +t('r_timer_start')+'</button>';
   return '<div class="r-timer-block" id="tblock-'+step.id+'">'
     +'<div class="r-timer-lbl">'+t('r_timer_lbl')+'</div>'
     +'<div class="r-timer-display '+cls+'" id="tdisp-'+step.id+'">'+_fmtTimer(remaining)+'</div>'
@@ -2387,223 +2679,196 @@ function _timerBlock(step){
     +'</div>';
 }
 
-/* ── Render a single prep card ── */
+/* ── Card render ── */
 function _renderCard(step, factor){
-  var ts    = _timerState[step.id]||{};
-  var state = ts.done ? 'done' : (ts.running ? 'active' : 'todo');
-  var chips = _renderChips(step, factor);
+  var ts = _ts(step.id);
+  var status = ts ? ts.status : 'idle';
+  var state = status==='done'?'done':status==='running'?'active':'todo';
+  var chips = _renderChips(step, factor||(_driverQty/RECIPE.driver_base));
   var isOpen = !!_cardOpen[step.id];
-
-  var badgeTxt = {todo:t('r_prep_todo'), active:t('r_prep_active'), done:t('r_prep_done')};
-
+  var badgeTxt={todo:t('r_prep_todo'),active:t('r_prep_active'),done:t('r_prep_done')};
+  var num = RECIPE.steps.indexOf(step)+1;
   return '<div class="r-pcard '+state+'" id="pcard-'+step.id+'">'
-    /* ── Header: always visible ── */
     +'<div class="r-pcard-hd" data-card="'+step.id+'">'
-      +'<span class="r-pcard-num">'+( RECIPE.steps.indexOf(step)+1 )+'</span>'
+      +'<span class="r-pcard-num">'+num+'</span>'
       +'<div class="r-pcard-main">'
         +'<div class="r-pcard-title">'+step.title+'</div>'
-        +(chips ? '<div class="r-pcard-chips">'+chips+'</div>' : '')
+        +(chips?'<div class="r-pcard-chips">'+chips+'</div>':'')
       +'</div>'
       +'<span class="r-pcard-badge '+state+'">'+badgeTxt[state]+'</span>'
     +'</div>'
-    /* ── Body: expands on tap ── */
     +'<div class="r-pcard-body'+(isOpen?' open':'')+'" id="pbody-'+step.id+'">'
-      +'<p class="r-proc-text">'+_renderProc(step, factor)+'</p>'
+      +'<p class="r-proc-text">'+_renderProc(step, factor||(_driverQty/RECIPE.driver_base))+'</p>'
       +_timerBlock(step)
     +'</div>'
     +'</div>';
 }
 
-/* ── Live DOM updates: BOM + chips + proc texts — no full re-render ── */
-function _updateLive(){
-  var ws = document.getElementById('workspace');
-  if(!ws) return;
-  var fac = _driverQty / RECIPE.driver_base;
-  var bmap = _bomMap();
-
-  /* BOM cells */
-  RECIPE.bom.forEach(function(item){
-    var el = ws.querySelector('[data-bi="'+item.key+'"]');
-    if(el) el.textContent = _qty(item.v*fac, item.u, item.p);
-  });
-  RECIPE.sub_bom.forEach(function(item){
-    var el = ws.querySelector('[data-si="'+item.key+'"]');
-    if(el) el.textContent = _qty(item.v*fac, item.u, item.p);
-  });
-
-  /* Prep card: chips + proc texts */
-  RECIPE.steps.forEach(function(step){
-    /* Re-render chip row */
-    var chipsEl = ws.querySelector('#pcard-'+step.id+' .r-pcard-chips');
-    if(chipsEl) chipsEl.innerHTML = _renderChips(step, fac);
-
-    /* Re-render proc text */
-    var procEl = ws.querySelector('#pbody-'+step.id+' .r-proc-text');
-    if(procEl) procEl.innerHTML = _renderProc(step, fac);
-  });
-
-  /* Subtitle */
-  var sub = ws.querySelector('#r-subtitle');
-  if(sub) sub.textContent = t('r_produces',{n:_driverQty, u:RECIPE.driver_unit});
-}
-
-/* ── Refresh a single card after state change ── */
+/* ── Refresh single card DOM ── */
 function _refreshCard(step){
-  var ws = document.getElementById('workspace');
+  var ws=document.getElementById('workspace');
   if(!ws) return;
-  var fac = _driverQty / RECIPE.driver_base;
-  var ts  = _timerState[step.id]||{};
-  var state = ts.done ? 'done' : (ts.running ? 'active' : 'todo');
-  var badgeTxt = {todo:t('r_prep_todo'), active:t('r_prep_active'), done:t('r_prep_done')};
+  var fac=_driverQty/RECIPE.driver_base;
+  var ts=_ts(step.id);
+  var status=ts?ts.status:'idle';
+  var state=status==='done'?'done':status==='running'?'active':'todo';
+  var badgeTxt={todo:t('r_prep_todo'),active:t('r_prep_active'),done:t('r_prep_done')};
 
-  /* Update card class */
-  var card = ws.querySelector('#pcard-'+step.id);
-  if(card){ card.className = 'r-pcard '+state; }
-
-  /* Update badge */
-  var badge = ws.querySelector('#pcard-'+step.id+' .r-pcard-badge');
+  var card=ws.querySelector('#pcard-'+step.id);
+  if(card) card.className='r-pcard '+state;
+  var badge=ws.querySelector('#pcard-'+step.id+' .r-pcard-badge');
   if(badge){ badge.className='r-pcard-badge '+state; badge.textContent=badgeTxt[state]; }
 
   /* Re-render timer block */
-  var tblock = ws.querySelector('#tblock-'+step.id);
+  var tblock=ws.querySelector('#tblock-'+step.id);
   if(tblock){
-    tblock.outerHTML = _timerBlock(step);
-    /* Re-wire the replaced element */
-    var newBlock = ws.querySelector('#tblock-'+step.id);
-    if(newBlock) _wireTimerBlock(newBlock, step);
+    var newHtml=_timerBlock(step);
+    tblock.outerHTML=newHtml;
+    var nb=ws.querySelector('#tblock-'+step.id);
+    if(nb) _wireTimerBlock(nb,step);
   } else if(step.timer_s){
-    /* Timer block may not exist yet (card was closed at initial render) */
-    var bodyEl = ws.querySelector('#pbody-'+step.id);
+    var bodyEl=ws.querySelector('#pbody-'+step.id);
     if(bodyEl){
-      var procEl = bodyEl.querySelector('.r-proc-text');
-      if(procEl) procEl.insertAdjacentHTML('afterend', _timerBlock(step));
-      var newBlock2 = ws.querySelector('#tblock-'+step.id);
-      if(newBlock2) _wireTimerBlock(newBlock2, step);
+      var procEl=bodyEl.querySelector('.r-proc-text');
+      if(procEl) procEl.insertAdjacentHTML('afterend',_timerBlock(step));
+      var nb2=ws.querySelector('#tblock-'+step.id);
+      if(nb2) _wireTimerBlock(nb2,step);
     }
   }
 }
 
-/* ── Wire timer buttons inside a block ── */
+/* ── Live update: driver change → BOM + chips + proc ── */
+function _updateLive(){
+  var ws=document.getElementById('workspace');
+  if(!ws) return;
+  var fac=_driverQty/RECIPE.driver_base;
+  RECIPE.bom.forEach(function(item){
+    var el=ws.querySelector('[data-bi="'+item.key+'"]');
+    if(el) el.textContent=_qty(item.v*fac,item.u,item.p);
+  });
+  RECIPE.sub_bom.forEach(function(item){
+    var el=ws.querySelector('[data-si="'+item.key+'"]');
+    if(el) el.textContent=_qty(item.v*fac,item.u,item.p);
+  });
+  RECIPE.steps.forEach(function(step){
+    var chipsEl=ws.querySelector('#pcard-'+step.id+' .r-pcard-chips');
+    if(chipsEl) chipsEl.innerHTML=_renderChips(step,fac);
+    var procEl=ws.querySelector('#pbody-'+step.id+' .r-proc-text');
+    if(procEl) procEl.innerHTML=_renderProc(step,fac);
+  });
+  var sub=ws.querySelector('#r-subtitle');
+  if(sub) sub.textContent=t('r_produces',{n:_driverQty,u:RECIPE.driver_unit});
+}
+
+/* ── Wire timer block buttons ── */
 function _wireTimerBlock(container, step){
-  var startBtn = container.querySelector('[data-tstart]');
-  var stopBtn  = container.querySelector('[data-tstop]');
-  var resetBtn = container.querySelector('[data-treset]');
+  var startBtn  = container.querySelector('[data-tstart]');
+  var resumeBtn = container.querySelector('[data-tresume]');
+  var stopBtn   = container.querySelector('[data-tstop]');
+  var resetBtn  = container.querySelector('[data-treset]');
 
-  if(startBtn) startBtn.addEventListener('click', function(e){
-    e.stopPropagation();
-    var ts = _timerState[step.id]||{};
-    ts.total_s = step.timer_s;
-    if(ts.remaining_s === undefined) ts.remaining_s = step.timer_s;
-    ts.running = true; ts.done = false;
-    ts.started_at = Date.now() - ((step.timer_s - ts.remaining_s)*1000);
-    _timerState[step.id] = ts;
-    _refreshCard(step);
-    _rafTick(step);
-  });
-
-  if(stopBtn) stopBtn.addEventListener('click', function(e){
-    e.stopPropagation();
-    var ts = _timerState[step.id]||{};
-    if(ts.raf_id) cancelAnimationFrame(ts.raf_id);
-    ts.running = false;
-    _timerState[step.id] = ts;
-    _refreshCard(step);
-  });
-
-  if(resetBtn) resetBtn.addEventListener('click', function(e){
-    e.stopPropagation();
-    var ts = _timerState[step.id]||{};
-    if(ts.raf_id) cancelAnimationFrame(ts.raf_id);
-    _timerState[step.id] = {total_s:step.timer_s, remaining_s:step.timer_s,
-      running:false, done:false};
-    _refreshCard(step);
-  });
-}
-
-/* ── RAF timer tick ── */
-function _rafTick(step){
-  var ts = _timerState[step.id];
-  if(!ts||!ts.running) return;
-  var elapsed   = (Date.now() - ts.started_at) / 1000;
-  var remaining = Math.max(0, ts.total_s - elapsed);
-  ts.remaining_s = remaining;
-
-  var dispEl = document.getElementById('tdisp-'+step.id);
-  if(dispEl) dispEl.textContent = _fmtTimer(remaining);
-
-  if(remaining <= 0){
-    ts.running = false; ts.done = true;
-    _timerState[step.id] = ts;
-    _refreshCard(step);
-    return;
+  if(startBtn||resumeBtn){
+    var btn = startBtn||resumeBtn;
+    btn.addEventListener('click', function(e){
+      e.stopPropagation();
+      var ts = _timerLoad(step.id)||{};
+      var remaining = (ts.remaining_s !== undefined) ? ts.remaining_s : step.timer_s;
+      var newTs = {
+        stepId:     step.id,
+        label:      step.title,
+        duration_s: step.timer_s,
+        started_at: Date.now() - ((step.timer_s - remaining)*1000),
+        paused_at:  null,
+        remaining_s:remaining,
+        status:     'running'
+      };
+      _timerSave(step.id, newTs);
+      _rafStart(step);
+      _refreshCard(step);
+      _updateGlobalTimerUI();
+    });
   }
-  ts.raf_id = requestAnimationFrame(function(){ _rafTick(step); });
+  if(stopBtn){
+    stopBtn.addEventListener('click', function(e){
+      e.stopPropagation();
+      var ts=_timerLoad(step.id)||{};
+      /* Calculate current remaining before pausing */
+      var elapsed=(Date.now()-ts.started_at)/1000;
+      ts.remaining_s=Math.max(0,ts.duration_s-elapsed);
+      ts.status='paused'; ts.paused_at=Date.now();
+      _timerSave(step.id,ts);
+      if(_rafHandles[step.id]){ cancelAnimationFrame(_rafHandles[step.id]); delete _rafHandles[step.id]; }
+      _refreshCard(step);
+      _updateGlobalTimerUI();
+    });
+  }
+  if(resetBtn){
+    resetBtn.addEventListener('click', function(e){
+      e.stopPropagation();
+      if(_rafHandles[step.id]){ cancelAnimationFrame(_rafHandles[step.id]); delete _rafHandles[step.id]; }
+      _timerDelete(step.id);
+      _refreshCard(step);
+      _updateGlobalTimerUI();
+    });
+  }
 }
 
-/* ── Render full page ── */
+/* ════════════════════════════════════════════════════════════════════════════
+   PAGE RENDER
+   ════════════════════════════════════════════════════════════════════════════ */
 function pageRecipe(){
-  var fac = _driverQty / RECIPE.driver_base;
+  var fac=_driverQty/RECIPE.driver_base;
 
-  /* Driver block */
-  var driver = '<div class="r-driver">'
+  var driver='<div class="r-driver">'
     +'<div class="r-driver-lbl">'+t('r_driver_lbl')+'</div>'
     +'<div class="r-driver-row">'
       +'<span class="r-driver-num" id="r-driver-num">'+_driverQty+'</span>'
-      +'<input class="r-driver-input" id="r-driver-input" type="number" '
-        +'min="1" step="1" value="'+_driverQty+'" style="display:none">'
+      +'<input class="r-driver-input" id="r-driver-input" type="number" min="1" step="1" '
+        +'value="'+_driverQty+'" style="display:none">'
       +'<span class="r-driver-unit">'+RECIPE.driver_unit+'</span>'
     +'</div></div>';
 
-  /* Meta strip */
-  var meta = '<div class="r-meta">'
+  var meta='<div class="r-meta">'
     +'<div class="r-meta-item"><div class="r-meta-lbl">'+t('r_shelf')+'</div>'
       +'<div class="r-meta-val">'+RECIPE.shelf_life+'</div></div>'
     +'<div class="r-meta-item"><div class="r-meta-lbl">'+t('r_last_prod')+'</div>'
       +'<div class="r-meta-val">'+t('r_last_prod_val')+'</div></div>'
     +'</div>';
 
-  /* Tab bar: 3 tabs */
-  var tabDefs = [
-    {k:'ing',  lbl:t('r_tab_ing')},
-    {k:'prep', lbl:t('r_tab_prep')},
-    {k:'hist', lbl:t('r_tab_hist')}
-  ];
-  var tabBar = '<div class="r-tabs">'
+  var tabDefs=[{k:'ing',lbl:t('r_tab_ing')},{k:'prep',lbl:t('r_tab_prep')},{k:'hist',lbl:t('r_tab_hist')}];
+  var tabBar='<div class="r-tabs">'
     +tabDefs.map(function(td){
       return '<div class="r-tab'+(td.k===_recipeTab?' active':'')+'" data-rtab="'+td.k+'">'+td.lbl+'</div>';
     }).join('')+'</div>';
 
-  /* ── Ingredienti panel (BOM) ── */
-  var bomRows = RECIPE.bom.map(function(item){
+  /* Ingredienti panel */
+  var bomRows=RECIPE.bom.map(function(item){
     return '<div class="r-brow"><span class="r-bitem">'+item.label+'</span>'
       +'<span class="r-bqty" data-bi="'+item.key+'">'+_qty(item.v*fac,item.u,item.p)+'</span></div>';
   }).join('');
-  var subRows = RECIPE.sub_bom.map(function(item){
+  var subRows=RECIPE.sub_bom.map(function(item){
     return '<div class="r-brow"><span class="r-bitem">'+item.label+'</span>'
       +'<span class="r-bqty" data-si="'+item.key+'">'+_qty(item.v*fac,item.u,item.p)+'</span></div>';
   }).join('');
-  var ingPanel = '<div id="rp-ing" class="r-panel'+(
+  var ingPanel='<div id="rp-ing" class="r-panel'+(
     _recipeTab==='ing'?'':' r-panel-hide')+'">'
     +(can('view_bom')
       ? '<div class="r-bom">'+bomRows
           +'<div class="r-sub-toggle" id="r-sub-toggle">'
             +'<svg width="12" height="12" viewBox="0 0 12 12" fill="none">'
               +'<path d="M4 2l4 4-4 4" stroke="currentColor" stroke-width="1.8" '
-               +'stroke-linecap="round" stroke-linejoin="round"/></svg> '
-            +t('r_sub_title')+'</div>'
-          +'<div class="r-sub-body" id="r-sub-body">'+subRows+'</div>'
+               +'stroke-linecap="round" stroke-linejoin="round"/></svg> '+t('r_sub_title')
+          +'</div><div class="r-sub-body" id="r-sub-body">'+subRows+'</div>'
         +'</div>'
       : '<p style="font-size:14px;color:var(--txm);padding:12px 0">'+t('r_bom_na')+'</p>'
     )+'</div>';
 
-  /* ── Prep panel ── */
-  var cards = RECIPE.steps.map(function(step){ return _renderCard(step, fac); }).join('');
-  var prepPanel = '<div id="rp-prep" class="r-panel'+(
+  var cards=RECIPE.steps.map(function(step){ return _renderCard(step,fac); }).join('');
+  var prepPanel='<div id="rp-prep" class="r-panel'+(
     _recipeTab==='prep'?'':' r-panel-hide')+'">'
     +'<div class="r-prep-list">'+cards+'</div></div>';
 
-  /* ── Storico panel ── */
-  var histPanel = '<div id="rp-hist" class="r-panel'+(
+  var histPanel='<div id="rp-hist" class="r-panel'+(
     _recipeTab==='hist'?'':' r-panel-hide')+'">'
     +'<div class="r-hist"><div class="r-hist-ico">📅</div>'
     +'<p>'+t('r_hist_placeholder')+'</p></div></div>';
@@ -2615,90 +2880,90 @@ function pageRecipe(){
     +'</div>'
     +'<p class="psub" id="r-subtitle">'+t('r_produces',{n:_driverQty,u:RECIPE.driver_unit})+'</p>'
     +'</div>'
-    +driver+meta+tabBar
-    +ingPanel+prepPanel+histPanel
+    +driver+meta+tabBar+ingPanel+prepPanel+histPanel
     +'<p class="note"><span class="nd"></span>'+t('rnote')+'</p>'
     +'</div>';
 }
 
 function pageRecipeAfter(){
-  var ws = document.getElementById('workspace');
+  var ws=document.getElementById('workspace');
   if(!ws) return;
 
-  /* ── Production Driver: tap number → edit inline ── */
-  var numEl   = ws.querySelector('#r-driver-num');
-  var inputEl = ws.querySelector('#r-driver-input');
+  /* Install close guard and visibility handler */
+  _installCloseTabGuard();
+  window._bindVisibility && window._bindVisibility();
 
+  /* Driver */
+  var numEl=ws.querySelector('#r-driver-num');
+  var inputEl=ws.querySelector('#r-driver-input');
   function _commit(){
-    var raw = parseFloat(inputEl.value);
-    if(raw && raw>0) _driverQty = Math.round(raw*10)/10;
-    inputEl.style.display='none';
-    numEl.textContent=_driverQty; numEl.style.display='';
+    var raw=parseFloat(inputEl.value);
+    if(raw&&raw>0) _driverQty=Math.round(raw*10)/10;
+    inputEl.style.display='none'; numEl.textContent=_driverQty; numEl.style.display='';
     _updateLive();
   }
   function _startEdit(){
     numEl.style.display='none'; inputEl.style.display='';
     inputEl.value=_driverQty; inputEl.focus(); inputEl.select();
   }
-  if(numEl)   numEl.addEventListener('click', _startEdit);
+  if(numEl) numEl.addEventListener('click',_startEdit);
   if(inputEl){
-    inputEl.addEventListener('input', function(){
+    inputEl.addEventListener('input',function(){
       var raw=parseFloat(inputEl.value);
       if(raw&&raw>0){ _driverQty=Math.round(raw*10)/10; _updateLive(); }
     });
-    inputEl.addEventListener('keydown', function(e){
+    inputEl.addEventListener('keydown',function(e){
       if(e.key==='Enter'||e.key==='Tab'){ e.preventDefault(); _commit(); }
       if(e.key==='Escape'){ inputEl.value=_driverQty; _commit(); }
     });
-    inputEl.addEventListener('blur', _commit);
+    inputEl.addEventListener('blur',_commit);
   }
 
-  /* ── Tab switching ── */
+  /* Tabs */
   ws.querySelectorAll('.r-tab').forEach(function(tab){
-    tab.addEventListener('click', function(){
+    tab.addEventListener('click',function(){
       var key=tab.dataset.rtab;
       if(key===_recipeTab) return;
       _recipeTab=key;
-      ws.querySelectorAll('.r-tab').forEach(function(t){
-        t.classList.toggle('active', t.dataset.rtab===key);
-      });
+      ws.querySelectorAll('.r-tab').forEach(function(t){ t.classList.toggle('active',t.dataset.rtab===key); });
       ws.querySelectorAll('.r-panel').forEach(function(p){ p.classList.add('r-panel-hide'); });
       var target=ws.querySelector('#rp-'+key);
       if(target) target.classList.remove('r-panel-hide');
     });
   });
 
-  /* ── Sub-recipe toggle ── */
-  var subToggle=ws.querySelector('#r-sub-toggle');
-  var subBody=ws.querySelector('#r-sub-body');
+  /* Sub-recipe toggle */
+  var subToggle=ws.querySelector('#r-sub-toggle'), subBody=ws.querySelector('#r-sub-body');
   if(subToggle&&subBody){
-    subToggle.addEventListener('click', function(){
-      subToggle.classList.toggle('open');
-      subBody.classList.toggle('open');
+    subToggle.addEventListener('click',function(){
+      subToggle.classList.toggle('open'); subBody.classList.toggle('open');
     });
   }
 
-  /* ── Prep card: expand/collapse on header tap ── */
+  /* Card expand/collapse */
   ws.querySelectorAll('[data-card]').forEach(function(hd){
-    hd.addEventListener('click', function(){
-      var sid  = hd.dataset.card;
-      var body = ws.querySelector('#pbody-'+sid);
+    hd.addEventListener('click',function(){
+      var sid=hd.dataset.card;
+      var body=ws.querySelector('#pbody-'+sid);
       if(!body) return;
-      var isOpen = body.classList.contains('open');
-      body.classList.toggle('open', !isOpen);
-      _cardOpen[sid] = !isOpen;
+      var isOpen=body.classList.contains('open');
+      body.classList.toggle('open',!isOpen);
+      _cardOpen[sid]=!isOpen;
     });
   });
 
-  /* ── Wire all existing timer blocks ── */
+  /* Wire timer blocks + restart any running RAF */
   RECIPE.steps.forEach(function(step){
     var tblock=ws.querySelector('#tblock-'+step.id);
-    if(tblock) _wireTimerBlock(tblock, step);
-
-    /* Re-start RAF for any timers already running (e.g. after tab switch) */
-    var ts=_timerState[step.id];
-    if(ts&&ts.running&&!ts.raf_id) _rafTick(step);
+    if(tblock) _wireTimerBlock(tblock,step);
+    /* Reconcile and restart RAF for running timers */
+    var ts=_timerReconcile(step.id);
+    if(ts&&ts.status==='running'&&!_rafHandles[step.id]) _rafStart(step);
   });
+
+  /* Update global UI */
+  _updateGlobalTimerUI();
+  if(_activeTimerCount()>0) _startGlobalTick();
 }
 
 /* INVENTORY */
