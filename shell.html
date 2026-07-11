@@ -1,6 +1,6 @@
 <!-- ── NEW SHELL LAB BANNER ── -->
 <div id="shell-lab-banner" style="position:fixed;top:0;left:0;right:0;z-index:99999;background:linear-gradient(90deg,#0f766e,#0891b2);color:white;font-size:11px;font-weight:800;letter-spacing:0.09em;text-transform:uppercase;text-align:center;padding:5px 16px;font-family:-apple-system,BlinkMacSystemFont,sans-serif;user-select:none;box-shadow:0 1px 6px rgba(8,145,178,0.4);">
-  🎨 NEW SHELL LAB &nbsp;·&nbsp; brigade-dev/shell.html &nbsp;·&nbsp; v011 &nbsp;·&nbsp; Not for kitchen use
+  🎨 NEW SHELL LAB &nbsp;·&nbsp; brigade-dev/shell.html &nbsp;·&nbsp; v011a &nbsp;·&nbsp; Not for kitchen use
 </div>
 <style>
 /* push shell content below banner */
@@ -841,72 +841,74 @@ input,select,textarea{font-family:inherit}
 .r-tbtn.primary{background:var(--b6);border-color:var(--b6);color:#fff}
 .r-tbtn.danger{border-color:var(--er);color:var(--er)}
 
-/* ── Storico v011 ── */
+/* ── Storico v011a — Recipe as living memory ── */
 .r-hist{padding:4px 0 32px}
 .r-hist-empty{
   padding:40px 16px;text-align:center;
   color:var(--txm);font-size:14px;line-height:1.6}
 .r-hist-empty-ico{font-size:30px;margin-bottom:12px}
+/* section label */
+.r-hsec{
+  font-size:11px;font-weight:700;color:var(--txm);
+  text-transform:uppercase;letter-spacing:.06em;
+  padding:0 2px 10px;margin-top:4px}
 /* entry card */
 .r-hentry{
   border:1px solid var(--bd);border-radius:var(--r2);
   overflow:hidden;margin-bottom:12px;background:var(--surf)}
-.r-hentry.rh-warn{border-color:rgba(251,146,60,.45)}
+.r-hentry.rh-great{border-left:3px solid #22c55e}
+.r-hentry.rh-problem{border-left:3px solid #f97316}
+.r-hentry.rh-note{border-left:3px solid var(--b6)}
 /* header row: date + person */
 .r-hhead{
   display:flex;align-items:center;gap:8px;
-  padding:10px 14px 8px;
+  padding:10px 14px 9px;
   border-bottom:1px solid var(--bd)}
-.r-hdate{
-  font-size:13px;font-weight:700;color:var(--tx);flex:1}
+.r-hdate{font-size:13px;font-weight:700;color:var(--tx);flex:1}
 .r-hperson{
   font-size:12px;font-weight:600;color:var(--b6);
   background:rgba(37,99,235,.09);border-radius:10px;
   padding:3px 9px}
-/* stat chips row */
-.r-hstats{
-  display:flex;flex-wrap:wrap;gap:0;
-  border-bottom:1px solid var(--bd)}
+/* stat row */
+.r-hstats{display:flex;flex-wrap:wrap;gap:0}
 .r-hstat{
-  flex:1;min-width:90px;
+  flex:1;min-width:80px;
   padding:9px 14px;border-right:1px solid var(--bd)}
 .r-hstat:last-child{border-right:none}
+.r-hstats.rh-has-below{border-bottom:1px solid var(--bd)}
 .r-hstat-lbl{
   font-size:10px;font-weight:700;color:var(--txm);
   text-transform:uppercase;letter-spacing:.05em;margin-bottom:2px}
-.r-hstat-val{
-  font-size:15px;font-weight:700;color:var(--tx)}
+.r-hstat-val{font-size:15px;font-weight:700;color:var(--tx)}
 .r-hstat-val.rh-zero{color:var(--txm);font-weight:500}
 .r-hstat-val.rh-warn{color:#ea580c}
-/* scarto chip */
-.r-hscarto{
-  display:inline-flex;align-items:center;gap:4px;
-  background:rgba(251,146,60,.12);border-radius:8px;
-  padding:2px 8px;font-size:12px;font-weight:600;color:#c2410c}
-/* delta vs batch atteso */
-.r-hdelta{
-  font-size:11px;font-weight:600;
-  padding:2px 6px;border-radius:6px;margin-left:4px;vertical-align:middle}
-.r-hdelta.rh-under{background:rgba(251,146,60,.12);color:#c2410c}
-.r-hdelta.rh-over{background:rgba(34,197,94,.12);color:#15803d}
-.r-hdelta.rh-ok{display:none}
-/* note row */
-.r-hnote{
-  display:flex;align-items:flex-start;gap:8px;
-  padding:9px 14px;
-  font-size:13px;color:var(--tx2);line-height:1.45}
-.r-hnote-ico{font-size:14px;flex-shrink:0;margin-top:1px}
-/* diff vs precedente */
-.r-hcompare{
-  padding:8px 14px;
-  border-top:1px solid var(--bd);
-  font-size:12px;color:var(--txm);line-height:1.4}
-.r-hcompare strong{color:var(--tx2)}
-/* section header */
-.r-hsec{
-  font-size:11px;font-weight:700;color:var(--txm);
-  text-transform:uppercase;letter-spacing:.06em;
-  padding:0 2px 8px;margin-top:4px}
+/* observation block */
+.r-hobs{padding:11px 14px;border-bottom:1px solid var(--bd)}
+.r-hobs:last-child{border-bottom:none}
+.r-hobs-lbl{
+  display:flex;align-items:center;gap:5px;
+  font-size:10px;font-weight:700;color:var(--txm);
+  text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px}
+.r-hobs-txt{font-size:14px;color:var(--tx);line-height:1.5;font-weight:500}
+/* decision block */
+.r-hdec{padding:11px 14px;border-bottom:1px solid var(--bd)}
+.r-hdec:last-child{border-bottom:none}
+.r-hdec-lbl{
+  display:flex;align-items:center;gap:5px;
+  font-size:10px;font-weight:700;color:var(--txm);
+  text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px}
+.r-hdec-txt{font-size:14px;color:var(--tx);line-height:1.5;font-weight:500}
+/* decision status row */
+.r-hstatus{
+  display:flex;align-items:flex-start;gap:7px;
+  padding:9px 14px;font-size:12px;font-weight:600}
+.r-hstatus.rh-pending{color:#92400e;background:rgba(251,191,36,.10)}
+.r-hstatus.rh-approved{color:#15803d;background:rgba(34,197,94,.08)}
+.r-hstatus.rh-rejected{color:#b91c1c;background:rgba(239,68,68,.07)}
+.rh-status-ico{font-size:14px;flex-shrink:0;margin-top:1px}
+.r-hstatus-body{flex:1;line-height:1.4}
+.r-hstatus-sub{
+  font-size:11px;font-weight:400;opacity:.75;margin-top:2px}
 
 /* ── Global timer chip (topbar) ── */
 .gtimer-chip{
@@ -1407,9 +1409,16 @@ it:{
   r_hist_placeholder:'Storico disponibile nella versione connessa al DB.',
   rh_lbl_qty:'Quantità', rh_lbl_dur:'Durata', rh_lbl_waste:'Scarto',
   rh_no_waste:'—', rh_unit_min:'{n} min',
-  rh_note_lbl:'Nota operativa',
-  rh_compare_up:'+{n} vs precedente', rh_compare_dn:'−{n} vs precedente', rh_compare_eq:'Stesso qty del precedente',
-  rh_delta_under:'−{n}', rh_delta_over:'+{n}',
+  rh_obs_lbl:'Osservazione',
+  rh_obs_great:'★★★★★ Risultato ottimo',
+  rh_obs_problem:'⚠ Problema',
+  rh_obs_note:'📝 Nota',
+  rh_dec_lbl:'Decisione proposta',
+  rh_status_pending:'⏳ In attesa approvazione Chef',
+  rh_status_approved:'✓ Approvato',
+  rh_status_approved_by:'da {n}',
+  rh_status_rejected:'✕ Non approvato',
+  rh_status_rejected_reason:'Motivo: {n}',
   rh_empty:'Nessuna produzione registrata.',
   rh_sec_recent:'Produzioni recenti',
   r_sub_title:'Ingredienti derivati',
@@ -1529,9 +1538,16 @@ en:{
   r_hist_placeholder:'History available in the DB-connected version.',
   rh_lbl_qty:'Quantity', rh_lbl_dur:'Duration', rh_lbl_waste:'Waste',
   rh_no_waste:'—', rh_unit_min:'{n} min',
-  rh_note_lbl:'Operational note',
-  rh_compare_up:'+{n} vs previous', rh_compare_dn:'−{n} vs previous', rh_compare_eq:'Same qty as previous',
-  rh_delta_under:'−{n}', rh_delta_over:'+{n}',
+  rh_obs_lbl:'Observation',
+  rh_obs_great:'★★★★★ Great result',
+  rh_obs_problem:'⚠ Problem',
+  rh_obs_note:'📝 Note',
+  rh_dec_lbl:'Proposed change',
+  rh_status_pending:'⏳ Awaiting Chef approval',
+  rh_status_approved:'✓ Approved',
+  rh_status_approved_by:'by {n}',
+  rh_status_rejected:'✕ Not approved',
+  rh_status_rejected_reason:'Reason: {n}',
   rh_empty:'No production runs recorded.',
   rh_sec_recent:'Recent productions',
   r_sub_title:'Derived ingredients',
@@ -1646,9 +1662,16 @@ es:{
   r_hist_placeholder:'Historial disponible en la versión conectada a DB.',
   rh_lbl_qty:'Cantidad', rh_lbl_dur:'Duración', rh_lbl_waste:'Descarte',
   rh_no_waste:'—', rh_unit_min:'{n} min',
-  rh_note_lbl:'Nota operativa',
-  rh_compare_up:'+{n} vs anterior', rh_compare_dn:'−{n} vs anterior', rh_compare_eq:'Misma cantidad que la anterior',
-  rh_delta_under:'−{n}', rh_delta_over:'+{n}',
+  rh_obs_lbl:'Observación',
+  rh_obs_great:'★★★★★ Resultado excelente',
+  rh_obs_problem:'⚠ Problema',
+  rh_obs_note:'📝 Nota',
+  rh_dec_lbl:'Cambio propuesto',
+  rh_status_pending:'⏳ Esperando aprobación Chef',
+  rh_status_approved:'✓ Aprobado',
+  rh_status_approved_by:'por {n}',
+  rh_status_rejected:'✕ No aprobado',
+  rh_status_rejected_reason:'Motivo: {n}',
   rh_empty:'Sin producciones registradas.',
   rh_sec_recent:'Producciones recientes',
   r_sub_title:'Ingredientes derivados',
@@ -1700,7 +1723,7 @@ es:{
 };
 
 /* lang stored in module-scope var + sessionStorage */
-const SHELL_VERSION = 'v011';
+const SHELL_VERSION = 'v011a';
 /* Recipe state lives in RECIPE object + _driverQty inside recipe JS block */
 let LANG = sessionStorage.getItem('ws_lang') || 'it';
 function setLang(l){ LANG=l; sessionStorage.setItem('ws_lang',l); renderAll(); }
@@ -2499,44 +2522,121 @@ var RECIPE = {
   ]
 };
 
-/* ── Storico v011 — mock production history ── */
-/* Schema: {date_label, person, qty, qty_unit, dur_min, waste, waste_unit, note, expected_qty} */
-/* expected_qty = what driver said; null = unknown / not tracked */
+/* ── Storico v011a — Recipe as living memory ──────────────────────────────────
+   Data schema (ready for DB connection):
+   {
+     date_label:  {it, en, es} | string
+     person:      string
+     qty:         number
+     qty_unit:    string
+     dur_min:     number | null
+     waste:       number        (0 = none)
+     waste_unit:  string
+     observation: {
+       tag:  'great' | 'problem' | 'note' | null
+       text: {it, en, es} | string
+     } | null
+     decision: {
+       text:             {it, en, es} | string
+       status:           'pending' | 'approved' | 'rejected'
+       resolved_by:      string | null     (person name)
+       resolved_date:    {it, en, es} | string | null
+       rejection_reason: {it, en, es} | string | null
+     } | null
+   }
+   Chef AI hook: scan for observation.tag='problem' + decision.status='pending'
+   → surface as actionable insight without waiting for user prompt.
+   ─────────────────────────────────────────────────────────────────────────── */
 var RECIPE_HISTORY = [
   {
     date_label: {it:'Ieri', en:'Yesterday', es:'Ayer'},
     person:     'Samantha',
-    qty:        20,
-    qty_unit:   'vaschette',
+    qty:        20, qty_unit:'vaschette',
     dur_min:    42,
-    waste:      0,
-    waste_unit: 'vaschette',
-    note:       null,
-    expected_qty: 20
+    waste:      0,  waste_unit:'vaschette',
+    observation: null,
+    decision:    null
   },
   {
     date_label: {it:'8 luglio', en:'Jul 8', es:'8 jul'},
     person:     'Samantha',
-    qty:        18,
-    qty_unit:   'vaschette',
+    qty:        18, qty_unit:'vaschette',
     dur_min:    47,
-    waste:      2,
-    waste_unit: 'vaschette',
-    note:       {it:'Crema troppo morbida — ridurre Heavy Cream a 260ml', en:'Cream too soft — reduce Heavy Cream to 260ml', es:'Crema demasiado blanda — reducir Heavy Cream a 260ml'},
-    expected_qty: 20
+    waste:      2,  waste_unit:'vaschette',
+    observation: {
+      tag: 'problem',
+      text: {
+        it: 'Crema troppo morbida — si smontava durante l\'assemblaggio.',
+        en: 'Cream too soft — collapsed during assembly.',
+        es: 'Crema demasiado blanda — se deshacía durante el montaje.'
+      }
+    },
+    decision: {
+      text: {
+        it: 'Ridurre Heavy Cream a 260 ml. Montare più soda.',
+        en: 'Reduce Heavy Cream to 260 ml. Whip firmer.',
+        es: 'Reducir Heavy Cream a 260 ml. Montar más firme.'
+      },
+      status:          'approved',
+      resolved_by:     'Max',
+      resolved_date:   {it:'12 luglio', en:'Jul 12', es:'12 jul'},
+      rejection_reason: null
+    }
   },
   {
     date_label: {it:'5 luglio', en:'Jul 5', es:'5 jul'},
     person:     'Todd',
-    qty:        10,
-    qty_unit:   'vaschette',
+    qty:        10, qty_unit:'vaschette',
     dur_min:    38,
-    waste:      0,
-    waste_unit: 'vaschette',
-    note:       {it:'Finitura cacao aggiunta al servizio su richiesta di Max', en:'Cocoa dusting added at service per Max', es:'Cacao añadido en servicio según Max'},
-    expected_qty: 10
+    waste:      0,  waste_unit:'vaschette',
+    observation: {
+      tag: 'great',
+      text: {
+        it: 'Risultato ottimo. Consistenza perfetta, proporzioni bilanciate.',
+        en: 'Great result. Perfect consistency, balanced proportions.',
+        es: 'Resultado excelente. Consistencia perfecta, proporciones equilibradas.'
+      }
+    },
+    decision: null
+  },
+  {
+    date_label: {it:'28 giugno', en:'Jun 28', es:'28 jun'},
+    person:     'Samantha',
+    qty:        10, qty_unit:'vaschette',
+    dur_min:    51,
+    waste:      0,  waste_unit:'vaschette',
+    observation: {
+      tag: 'note',
+      text: {
+        it: 'Finitura cacao aggiunta al servizio su richiesta di Max.',
+        en: 'Cocoa dusting added at service per Max.',
+        es: 'Cacao añadido en servicio a petición de Max.'
+      }
+    },
+    decision: {
+      text: {
+        it: 'Aggiungere cacao finale come step standard nella ricetta.',
+        en: 'Add cocoa finish as standard step in the recipe.',
+        es: 'Añadir cacao final como paso estándar en la receta.'
+      },
+      status:          'rejected',
+      resolved_by:     'Max',
+      resolved_date:   {it:'1 luglio', en:'Jul 1', es:'1 jul'},
+      rejection_reason: {
+        it: 'Il cacao finale è già nello step 6. Era solo una variazione di servizio.',
+        en: 'Cocoa finish is already in step 6. That was just a service variation.',
+        es: 'El cacao final ya está en el paso 6. Fue solo una variación de servicio.'
+      }
+    }
   }
 ];
+
+/* helper: resolve multilingual string or plain string */
+function _rhl(val){
+  if(!val) return '';
+  if(typeof val === 'object') return val[LANG] || val.it || '';
+  return val;
+}
 
 function _renderHist(){
   if(!RECIPE_HISTORY || RECIPE_HISTORY.length === 0){
@@ -2545,84 +2645,98 @@ function _renderHist(){
       +'<p>'+t('rh_empty')+'</p>'
       +'</div>';
   }
-  var rows = RECIPE_HISTORY.map(function(run, idx){
-    /* date label — supports {it,en,es} or plain string */
-    var dlbl = (run.date_label && typeof run.date_label === 'object')
-      ? (run.date_label[LANG] || run.date_label.it || '')
-      : (run.date_label || '');
 
-    /* delta vs expected */
-    var deltaHtml = '';
-    if(run.expected_qty != null && run.qty !== run.expected_qty){
-      var diff = run.qty - run.expected_qty;
-      var cls  = diff < 0 ? 'rh-under' : 'rh-over';
-      var key  = diff < 0 ? 'rh_delta_under' : 'rh_delta_over';
-      deltaHtml = '<span class="r-hdelta '+cls+'">'+t(key,{n:Math.abs(diff)})+'</span>';
+  var rows = RECIPE_HISTORY.map(function(run){
+    var dlbl = _rhl(run.date_label);
+
+    /* waste */
+    var wasteVal   = (!run.waste || run.waste === 0) ? t('rh_no_waste') : run.waste+' '+run.waste_unit;
+    var wasteClass = (!run.waste || run.waste === 0) ? 'rh-zero' : 'rh-warn';
+
+    /* entry border class from observation tag */
+    var entryMod = run.observation && run.observation.tag ? ' rh-'+run.observation.tag : '';
+
+    /* stat row — border-bottom only if obs or decision follows */
+    var hasBelow = !!(run.observation || run.decision);
+    var statsClass = 'r-hstats' + (hasBelow ? ' rh-has-below' : '');
+
+    /* observation block */
+    var obsHtml = '';
+    if(run.observation){
+      var obsTagKey = run.observation.tag === 'great'   ? 'rh_obs_great'
+                    : run.observation.tag === 'problem' ? 'rh_obs_problem'
+                    : 'rh_obs_note';
+      var obsHasBelow = !!run.decision;
+      obsHtml = '<div class="r-hobs'+(obsHasBelow?'':' last-block')+'">'
+        +'<div class="r-hobs-lbl">'+t(obsTagKey)+'</div>'
+        +'<div class="r-hobs-txt">'+_rhl(run.observation.text)+'</div>'
+        +'</div>';
     }
 
-    /* waste display */
-    var wasteVal, wasteClass;
-    if(!run.waste || run.waste === 0){
-      wasteVal  = t('rh_no_waste');
-      wasteClass = 'rh-zero';
-    } else {
-      wasteVal  = run.waste + ' ' + run.waste_unit;
-      wasteClass = 'rh-warn';
-    }
-
-    /* note — supports {it,en,es} or plain string */
-    var noteHtml = '';
-    if(run.note){
-      var ntxt = (run.note && typeof run.note === 'object')
-        ? (run.note[LANG] || run.note.it || '')
-        : run.note;
-      if(ntxt){
-        noteHtml = '<div class="r-hnote">'
-          +'<span class="r-hnote-ico">📝</span>'
-          +'<span>'+ntxt+'</span>'
+    /* decision block */
+    var decHtml = '';
+    if(run.decision){
+      var st = run.decision.status || 'pending';
+      /* decision text row */
+      decHtml = '<div class="r-hdec">'
+        +'<div class="r-hdec-lbl">💡 '+t('rh_dec_lbl')+'</div>'
+        +'<div class="r-hdec-txt">'+_rhl(run.decision.text)+'</div>'
+        +'</div>';
+      /* status row */
+      var statusHtml = '';
+      if(st === 'pending'){
+        statusHtml = '<div class="r-hstatus rh-pending">'
+          +'<span class="rh-status-ico">⏳</span>'
+          +'<div class="r-hstatus-body">'+t('rh_status_pending')+'</div>'
+          +'</div>';
+      } else if(st === 'approved'){
+        var approvedBy = run.decision.resolved_by
+          ? ' · '+t('rh_status_approved_by',{n:run.decision.resolved_by})
+            +(run.decision.resolved_date ? ' · '+_rhl(run.decision.resolved_date) : '')
+          : '';
+        statusHtml = '<div class="r-hstatus rh-approved">'
+          +'<span class="rh-status-ico">✓</span>'
+          +'<div class="r-hstatus-body">'+t('rh_status_approved')+approvedBy+'</div>'
+          +'</div>';
+      } else if(st === 'rejected'){
+        var rejBy = run.decision.resolved_by
+          ? run.decision.resolved_by+(run.decision.resolved_date?' · '+_rhl(run.decision.resolved_date):'')
+          : '';
+        var rejReason = run.decision.rejection_reason
+          ? '<div class="r-hstatus-sub">'+t('rh_status_rejected_reason',{n:_rhl(run.decision.rejection_reason)})+'</div>'
+          : '';
+        statusHtml = '<div class="r-hstatus rh-rejected">'
+          +'<span class="rh-status-ico">✕</span>'
+          +'<div class="r-hstatus-body">'
+            +t('rh_status_rejected')+(rejBy?' · '+rejBy:'')
+            +rejReason
+          +'</div>'
           +'</div>';
       }
+      decHtml += statusHtml;
     }
 
-    /* compare vs previous run */
-    var compareHtml = '';
-    if(idx < RECIPE_HISTORY.length - 1){
-      var prev = RECIPE_HISTORY[idx + 1];
-      var ddiff = run.qty - prev.qty;
-      var ckey = ddiff > 0 ? 'rh_compare_up' : ddiff < 0 ? 'rh_compare_dn' : 'rh_compare_eq';
-      compareHtml = '<div class="r-hcompare"><strong>'
-        + t(ckey, {n: Math.abs(ddiff)})
-        +'</strong></div>';
-    }
-
-    /* warn border if waste > 0 */
-    var entryClass = 'r-hentry' + (run.waste > 0 ? ' rh-warn' : '');
-
-    return '<div class="'+entryClass+'">'
-      /* header */
+    return '<div class="r-hentry'+entryMod+'">'
       +'<div class="r-hhead">'
         +'<span class="r-hdate">'+dlbl+'</span>'
         +'<span class="r-hperson">'+run.person+'</span>'
       +'</div>'
-      /* stat row */
-      +'<div class="r-hstats">'
+      +'<div class="'+statsClass+'">'
         +'<div class="r-hstat">'
           +'<div class="r-hstat-lbl">'+t('rh_lbl_qty')+'</div>'
-          +'<div class="r-hstat-val">'+run.qty+' '+run.qty_unit+deltaHtml+'</div>'
+          +'<div class="r-hstat-val">'+run.qty+' '+run.qty_unit+'</div>'
         +'</div>'
         +'<div class="r-hstat">'
           +'<div class="r-hstat-lbl">'+t('rh_lbl_dur')+'</div>'
-          +'<div class="r-hstat-val">'+t('rh_unit_min',{n:run.dur_min})+'</div>'
+          +'<div class="r-hstat-val">'+(run.dur_min ? t('rh_unit_min',{n:run.dur_min}) : t('rh_no_waste'))+'</div>'
         +'</div>'
         +'<div class="r-hstat">'
           +'<div class="r-hstat-lbl">'+t('rh_lbl_waste')+'</div>'
           +'<div class="r-hstat-val '+wasteClass+'">'+wasteVal+'</div>'
         +'</div>'
       +'</div>'
-      /* note */
-      + noteHtml
-      /* compare vs prev */
-      + compareHtml
+      +obsHtml
+      +decHtml
       +'</div>';
   }).join('');
 
