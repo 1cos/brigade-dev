@@ -1,6 +1,6 @@
 <!-- ── NEW SHELL LAB BANNER ── -->
 <div id="shell-lab-banner" style="position:fixed;top:0;left:0;right:0;z-index:99999;background:linear-gradient(90deg,#0f766e,#0891b2);color:white;font-size:11px;font-weight:800;letter-spacing:0.09em;text-transform:uppercase;text-align:center;padding:5px 16px;font-family:-apple-system,BlinkMacSystemFont,sans-serif;user-select:none;box-shadow:0 1px 6px rgba(8,145,178,0.4);">
-  🎨 NEW SHELL LAB &nbsp;·&nbsp; brigade-dev/shell.html &nbsp;·&nbsp; v012 &nbsp;·&nbsp; Not for kitchen use
+  🎨 NEW SHELL LAB &nbsp;·&nbsp; brigade-dev/shell.html &nbsp;·&nbsp; v012a &nbsp;·&nbsp; Not for kitchen use
 </div>
 <style>
 /* push shell content below banner */
@@ -910,55 +910,83 @@ input,select,textarea{font-family:inherit}
 .r-hstatus-sub{
   font-size:11px;font-weight:400;opacity:.75;margin-top:2px}
 
-/* ══ KITCHEN PAGE v012 ══════════════════════════════════════════════════════ */
+/* ══ KITCHEN PAGE v012a ═════════════════════════════════════════════════════ */
 .kp-wrap{padding:0 0 40px}
 /* page header */
 .kp-header{padding:16px 0 10px}
 .kp-title{font-size:22px;font-weight:800;color:var(--tx);margin-bottom:2px}
 .kp-sub{font-size:13px;color:var(--txm);line-height:1.4}
-/* operational context box */
-.kp-ctx{
+
+/* ── 1. Focus layer ── */
+.kp-focus{
   border:1px solid var(--bd);border-radius:var(--r2);
-  background:var(--surf);padding:12px 14px;margin-bottom:16px}
-.kp-ctx-title{
+  background:var(--surf);overflow:hidden;margin-bottom:16px}
+.kp-focus-head{
+  padding:11px 14px 9px;border-bottom:1px solid var(--bd)}
+.kp-focus-label{
   font-size:10px;font-weight:700;color:var(--txm);
-  text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px}
-.kp-ctx-body{font-size:13px;color:var(--tx2);line-height:1.6}
-.kp-ctx-row{display:flex;align-items:baseline;gap:6px;margin-bottom:3px}
-.kp-ctx-row:last-child{margin-bottom:0}
-.kp-ctx-dot{
-  width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:3px}
-.kp-ctx-dot.c-blocked{background:#f97316}
-.kp-ctx-dot.c-ready{background:#22c55e}
-.kp-ctx-dot.c-idle{background:var(--txm)}
-/* stations grid */
-.kp-grid{display:flex;flex-direction:column;gap:12px;margin-bottom:16px}
-/* station card */
-.kp-scard{
+  text-transform:uppercase;letter-spacing:.06em}
+.kp-focus-count{
+  font-size:14px;font-weight:700;color:var(--tx);margin-top:2px}
+.kp-focus-items{padding:10px 14px 12px;display:flex;flex-direction:column;gap:10px}
+.kp-fitem{display:flex;align-items:flex-start;gap:10px}
+.kp-fitem-dot{
+  width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:5px}
+.kp-fitem-dot.fi-ready{background:#22c55e}
+.kp-fitem-dot.fi-in_progress{background:#2563eb}
+.kp-fitem-dot.fi-unblocked{background:#f97316}
+.kp-fitem-body{flex:1}
+.kp-fitem-text{font-size:14px;font-weight:600;color:var(--tx);line-height:1.35}
+.kp-fitem-station{font-size:11px;color:var(--txm);margin-top:2px}
+.kp-fitem-actions{margin-top:6px;display:flex;gap:7px}
+/* no focus items */
+.kp-focus-empty{padding:14px;font-size:13px;color:var(--txm)}
+
+/* ── 2. Station accordion ── */
+.kp-sec-lbl{
+  font-size:10px;font-weight:700;color:var(--txm);
+  text-transform:uppercase;letter-spacing:.06em;
+  padding:0 2px 8px;margin-top:4px}
+.kp-accordion{display:flex;flex-direction:column;gap:8px;margin-bottom:16px}
+/* station row — collapsed (default) */
+.kp-srow{
   border:1px solid var(--bd);border-radius:var(--r2);
-  background:var(--surf);overflow:hidden}
-.kp-scard.ks-blocked{border-left:3px solid #f97316}
-.kp-scard.ks-ready{border-left:3px solid #22c55e}
-.kp-scard.ks-in_progress{border-left:3px solid #2563eb}
-.kp-scard.ks-done{border-left:3px solid var(--txm)}
-.kp-scard.ks-idle{border-left:3px solid var(--bd)}
-/* station header */
-.kp-shead{
+  background:var(--surf);overflow:hidden;cursor:pointer}
+/* idle stations: muted */
+.kp-srow.ks-idle{opacity:.55}
+/* left accent only on non-idle */
+.kp-srow.ks-blocked{border-left:3px solid #f97316}
+.kp-srow.ks-ready{border-left:3px solid #22c55e}
+.kp-srow.ks-in_progress{border-left:3px solid #2563eb}
+.kp-srow.ks-done{border-left:3px solid var(--txm)}
+/* collapsed header */
+.kp-srow-head{
   display:flex;align-items:center;gap:10px;
-  padding:11px 14px;border-bottom:1px solid var(--bd)}
-.kp-sico{font-size:18px;flex-shrink:0}
-.kp-sinfo{flex:1}
-.kp-sname{font-size:14px;font-weight:700;color:var(--tx)}
-.kp-sowner{font-size:12px;color:var(--txm);margin-top:1px}
-.kp-sstatus{
-  font-size:11px;font-weight:700;padding:3px 9px;border-radius:10px;flex-shrink:0}
-.kp-sstatus.ks-blocked{color:#c2410c;background:rgba(249,115,22,.12)}
-.kp-sstatus.ks-ready{color:#15803d;background:rgba(34,197,94,.12)}
-.kp-sstatus.ks-in_progress{color:#1d4ed8;background:rgba(37,99,235,.10)}
-.kp-sstatus.ks-done{color:var(--txm);background:var(--surface-2,rgba(0,0,0,.04))}
-.kp-sstatus.ks-idle{color:var(--txm);background:var(--surface-2,rgba(0,0,0,.04))}
-/* missions list */
-.kp-missions{padding:10px 14px 12px;display:flex;flex-direction:column;gap:8px}
+  padding:11px 14px;user-select:none}
+.kp-srow-ico{font-size:17px;flex-shrink:0}
+.kp-srow-info{flex:1}
+.kp-srow-name{font-size:14px;font-weight:700;color:var(--tx)}
+.kp-srow-owner{font-size:11px;color:var(--txm);margin-top:1px}
+.kp-srow-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
+/* mission count badge */
+.kp-sbadge{
+  font-size:11px;font-weight:700;min-width:20px;height:20px;
+  border-radius:10px;display:flex;align-items:center;justify-content:center;
+  padding:0 6px}
+.kp-sbadge.sb-blocked{background:rgba(249,115,22,.15);color:#c2410c}
+.kp-sbadge.sb-ready{background:rgba(34,197,94,.15);color:#15803d}
+.kp-sbadge.sb-in_progress{background:rgba(37,99,235,.12);color:#1d4ed8}
+.kp-sbadge.sb-done{background:rgba(0,0,0,.06);color:var(--txm)}
+.kp-sbadge.sb-idle{display:none}
+/* chevron */
+.kp-srow-chev{font-size:12px;color:var(--txm);transition:transform .2s}
+.kp-srow.kp-expanded .kp-srow-chev{transform:rotate(180deg)}
+/* expanded missions panel */
+.kp-srow-missions{
+  display:none;border-top:1px solid var(--bd);
+  padding:10px 14px 12px;flex-direction:column;gap:8px}
+.kp-srow.kp-expanded .kp-srow-missions{display:flex}
+/* mission item inside accordion */
 .kp-mission{display:flex;align-items:flex-start;gap:10px}
 .kp-m-status{
   font-size:11px;font-weight:700;flex-shrink:0;min-width:72px;
@@ -972,37 +1000,43 @@ input,select,textarea{font-family:inherit}
 .kp-m-text.ms-done{text-decoration:line-through;color:var(--txm);font-weight:400}
 .kp-m-text.ms-blocked{color:var(--txm)}
 .kp-m-reason{font-size:12px;color:var(--txm);margin-top:2px}
-/* action buttons inside missions */
 .kp-m-actions{margin-top:7px;display:flex;gap:7px;flex-wrap:wrap}
+
+/* ── 3. Relay chip ── */
+.kp-relay-chip{
+  display:flex;align-items:center;gap:8px;
+  border:1px solid var(--bd);border-radius:var(--r2);
+  background:var(--surf);padding:11px 14px;
+  cursor:pointer;user-select:none;margin-bottom:0}
+.kp-relay-chip-ico{font-size:16px;flex-shrink:0}
+.kp-relay-chip-label{font-size:13px;font-weight:600;color:var(--tx);flex:1}
+.kp-relay-chip-badge{
+  font-size:11px;font-weight:700;
+  background:rgba(37,99,235,.12);color:var(--b6);
+  border-radius:8px;padding:3px 8px}
+.kp-relay-chip-chev{font-size:12px;color:var(--txm);transition:transform .2s}
+/* relay expanded */
+.kp-relay-open .kp-relay-chip-chev{transform:rotate(180deg)}
+.kp-relay-log{
+  display:none;border:1px solid var(--bd);border-top:none;
+  border-radius:0 0 var(--r2) var(--r2);
+  background:var(--surf);padding:10px 14px 12px;
+  flex-direction:column;gap:8px}
+.kp-relay-open + .kp-relay-log{display:flex}
+.kp-relay-empty{font-size:13px;color:var(--txm)}
+.kp-rmsg{display:flex;align-items:flex-start;gap:8px;font-size:13px;color:var(--tx);line-height:1.4}
+.kp-rmsg-ico{font-size:14px;flex-shrink:0;margin-top:1px}
+.kp-rmsg-body{flex:1}
+.kp-rmsg-time{font-size:11px;color:var(--txm);margin-top:2px}
+
+/* shared button style */
 .kp-btn{
   border:none;border-radius:8px;padding:7px 14px;
-  font-size:13px;font-weight:700;cursor:pointer;
-  transition:opacity .15s}
+  font-size:13px;font-weight:700;cursor:pointer;transition:opacity .15s}
 .kp-btn:active{opacity:.7}
 .kp-btn-primary{background:var(--b6);color:#fff}
 .kp-btn-success{background:#16a34a;color:#fff}
 .kp-btn-muted{background:var(--surface-2,rgba(0,0,0,.07));color:var(--tx2)}
-/* Chef AI Relay */
-.kp-relay{
-  border:1px solid var(--bd);border-radius:var(--r2);
-  background:var(--surf);overflow:hidden}
-.kp-relay-head{
-  display:flex;align-items:center;gap:7px;
-  padding:10px 14px;border-bottom:1px solid var(--bd)}
-.kp-relay-ico{font-size:16px}
-.kp-relay-title{font-size:12px;font-weight:700;color:var(--tx);flex:1}
-.kp-relay-badge{
-  font-size:10px;font-weight:700;
-  background:rgba(37,99,235,.12);color:var(--b6);
-  border-radius:8px;padding:2px 7px}
-.kp-relay-msgs{padding:10px 14px 12px;display:flex;flex-direction:column;gap:7px}
-.kp-relay-empty{font-size:13px;color:var(--txm);padding:8px 0}
-.kp-rmsg{
-  display:flex;align-items:flex-start;gap:8px;
-  font-size:13px;color:var(--tx);line-height:1.4}
-.kp-rmsg-ico{font-size:14px;flex-shrink:0;margin-top:1px}
-.kp-rmsg-body{flex:1}
-.kp-rmsg-time{font-size:11px;color:var(--txm);margin-top:2px}
 
 /* ── Global timer chip (topbar) ── */
 .gtimer-chip{
@@ -1557,6 +1591,14 @@ it:{
   kp_mission_ready:'Pronta',
   kp_mission_ip:'In corso…',
   kp_mission_done:'✓ Completata',
+  kp_focus_label:'Adesso',
+  kp_focus_count_one:'{n} cosa richiede attenzione',
+  kp_focus_count_many:'{n} cose richiedono attenzione',
+  kp_focus_empty:'Tutto a posto. Nessuna azione urgente.',
+  kp_sec_stations:'Le mie stazioni',
+  kp_relay_chip:'Chef AI',
+  kp_relay_chip_n:'{n} aggiornamenti',
+  kp_relay_chip_0:'Nessun aggiornamento',
   cai_greeting:'Ciao! Sono Chef AI. Come posso aiutarti?',
   cai_placeholder:'Chiedi qualcosa...',
   cai_thinking:'Chef AI sta pensando...',
@@ -1696,6 +1738,14 @@ en:{
   kp_mission_ready:'Ready',
   kp_mission_ip:'In progress…',
   kp_mission_done:'✓ Done',
+  kp_focus_label:'Right now',
+  kp_focus_count_one:'{n} thing needs attention',
+  kp_focus_count_many:'{n} things need attention',
+  kp_focus_empty:'All clear. No urgent actions.',
+  kp_sec_stations:'My stations',
+  kp_relay_chip:'Chef AI',
+  kp_relay_chip_n:'{n} updates',
+  kp_relay_chip_0:'No updates',
   cai_greeting:'Hey! I\'m Chef AI. How can I help?',
   cai_placeholder:'Ask something...',
   cai_thinking:'Chef AI is thinking...',
@@ -1834,6 +1884,14 @@ es:{
   kp_mission_ready:'Lista',
   kp_mission_ip:'En curso…',
   kp_mission_done:'✓ Completada',
+  kp_focus_label:'Ahora',
+  kp_focus_count_one:'{n} cosa requiere atención',
+  kp_focus_count_many:'{n} cosas requieren atención',
+  kp_focus_empty:'Todo en orden. Sin acciones urgentes.',
+  kp_sec_stations:'Mis estaciones',
+  kp_relay_chip:'Chef AI',
+  kp_relay_chip_n:'{n} actualizaciones',
+  kp_relay_chip_0:'Sin actualizaciones',
   cai_greeting:'¡Hola! Soy Chef AI. ¿Cómo puedo ayudarte?',
   cai_placeholder:'Pregunta algo...',
   cai_thinking:'Chef AI está pensando...',
@@ -1860,7 +1918,7 @@ es:{
 };
 
 /* lang stored in module-scope var + sessionStorage */
-const SHELL_VERSION = 'v012';
+const SHELL_VERSION = 'v012a';
 /* Recipe state lives in RECIPE object + _driverQty inside recipe JS block */
 let LANG = sessionStorage.getItem('ws_lang') || 'it';
 function setLang(l){ LANG=l; sessionStorage.setItem('ws_lang',l); renderAll(); }
@@ -4415,14 +4473,6 @@ function _kEvt(evt){
   kitchenAfterRender();
 }
 
-/* ── Station status label ── */
-function _kStatusLabel(st){
-  var map={
-    blocked:'kp_blocked', ready:'kp_ready',
-    in_progress:'kp_in_progress', done:'kp_done', idle:'kp_idle'};
-  return t(map[st]||'kp_idle');
-}
-
 /* ── Mission status label ── */
 function _kMLabel(st){
   var map={
@@ -4431,14 +4481,86 @@ function _kMLabel(st){
   return t(map[st]||'kp_mission_ready');
 }
 
-/* ── Render one station card ── */
-function _kStation(s){
-  var lbl = _kl(s.label);
-  var statusLbl = _kStatusLabel(s.status);
+/* ── UI-only state (not part of KS event model) ── */
+var _kExpandedStation = null;   /* accordion: id of currently open station */
+var _kRelayOpen       = false;  /* relay chip: expanded or not */
 
+/* ── Focus layer: collect all actionable missions across all stations ── */
+function _kFocusItems(){
+  var items = [];
+  var order = ['ricezione','processazione','salse','forno'];
+  order.forEach(function(sid){
+    var s = KS.stations[sid];
+    s.missions.forEach(function(m){
+      if(m.status === 'ready' || m.status === 'in_progress'){
+        items.push({mission:m, station:s});
+      }
+    });
+  });
+  return items;
+}
+
+/* ── Render Focus layer ── */
+function _kRenderFocus(){
+  var items = _kFocusItems();
+  var headLabel = t('kp_focus_label');
+
+  if(items.length === 0){
+    return '<div class="kp-focus">'
+      +'<div class="kp-focus-head">'
+        +'<div class="kp-focus-label">'+headLabel+'</div>'
+      +'</div>'
+      +'<div class="kp-focus-empty">'+t('kp_focus_empty')+'</div>'
+      +'</div>';
+  }
+
+  var countKey = items.length === 1 ? 'kp_focus_count_one' : 'kp_focus_count_many';
+  var itemsHtml = items.slice(0,3).map(function(fi){
+    var m = fi.mission, s = fi.station;
+    var dotCls = m.status === 'in_progress' ? 'fi-in_progress' : 'fi-ready';
+    var actHtml = '';
+    if(m.actions && m.actions.length){
+      actHtml = '<div class="kp-fitem-actions">'
+        +m.actions.map(function(a){
+          return '<button class="kp-btn '+a.cls+'" data-kevt="'+a.evt+'">'+t(a.label)+'</button>';
+        }).join('')
+        +'</div>';
+    }
+    return '<div class="kp-fitem">'
+      +'<div class="kp-fitem-dot '+dotCls+'"></div>'
+      +'<div class="kp-fitem-body">'
+        +'<div class="kp-fitem-text">'+_kl(m.text)+'</div>'
+        +'<div class="kp-fitem-station">'+s.icon+' '+_kl(s.label)+' · '+s.owner+'</div>'
+        +actHtml
+      +'</div>'
+      +'</div>';
+  }).join('');
+
+  return '<div class="kp-focus">'
+    +'<div class="kp-focus-head">'
+      +'<div class="kp-focus-label">'+headLabel+'</div>'
+      +'<div class="kp-focus-count">'+t(countKey,{n:items.length})+'</div>'
+    +'</div>'
+    +'<div class="kp-focus-items">'+itemsHtml+'</div>'
+    +'</div>';
+}
+
+/* ── Render accordion station row ── */
+function _kStationRow(s){
+  var expanded = (_kExpandedStation === s.id);
+
+  /* badge: count non-done missions */
+  var active = s.missions.filter(function(m){ return m.status !== 'done'; });
+  var badgeHtml = '';
+  if(active.length > 0 && s.status !== 'idle' && s.status !== 'done'){
+    var bCls = 'sb-'+s.status;
+    badgeHtml = '<span class="kp-sbadge '+bCls+'">'+active.length+'</span>';
+  }
+
+  /* missions panel (shown when expanded) */
   var missionsHtml = s.missions.map(function(m){
-    var mstLbl = _kMLabel(m.status);
-    var mstCls = 'ms-'+m.status;
+    var mstLbl  = _kMLabel(m.status);
+    var mstCls  = 'ms-'+m.status;
     var textCls = m.status==='done'?' ms-done':m.status==='blocked'?' ms-blocked':'';
     var reasonHtml = (m.blockReason && m.status==='blocked')
       ? '<div class="kp-m-reason">'+_kl(m.blockReason)+'</div>' : '';
@@ -4447,96 +4569,73 @@ function _kStation(s){
       actHtml = '<div class="kp-m-actions">'
         +m.actions.map(function(a){
           return '<button class="kp-btn '+a.cls+'" data-kevt="'+a.evt+'">'+t(a.label)+'</button>';
-        }).join('')
-        +'</div>';
+        }).join('')+'</div>';
     }
     return '<div class="kp-mission">'
       +'<div class="kp-m-status '+mstCls+'">'+mstLbl+'</div>'
       +'<div class="kp-m-body">'
         +'<div class="kp-m-text'+textCls+'">'+_kl(m.text)+'</div>'
-        +reasonHtml
-        +actHtml
+        +reasonHtml+actHtml
       +'</div>'
       +'</div>';
   }).join('');
 
-  return '<div class="kp-scard ks-'+s.status+'">'
-    +'<div class="kp-shead">'
-      +'<div class="kp-sico">'+s.icon+'</div>'
-      +'<div class="kp-sinfo">'
-        +'<div class="kp-sname">'+lbl+'</div>'
-        +'<div class="kp-sowner">'+s.owner+'</div>'
+  return '<div class="kp-srow ks-'+s.status+(expanded?' kp-expanded':'')+'" data-ksrow="'+s.id+'">'
+    +'<div class="kp-srow-head">'
+      +'<div class="kp-srow-ico">'+s.icon+'</div>'
+      +'<div class="kp-srow-info">'
+        +'<div class="kp-srow-name">'+_kl(s.label)+'</div>'
+        +'<div class="kp-srow-owner">'+s.owner+'</div>'
       +'</div>'
-      +'<div class="kp-sstatus ks-'+s.status+'">'+statusLbl+'</div>'
+      +'<div class="kp-srow-right">'
+        +badgeHtml
+        +'<span class="kp-srow-chev">▾</span>'
+      +'</div>'
     +'</div>'
-    +'<div class="kp-missions">'+missionsHtml+'</div>'
+    +'<div class="kp-srow-missions">'+missionsHtml+'</div>'
     +'</div>';
 }
 
-/* ── Render relay panel ── */
-function _kRelay(){
-  var msgs = KS.relay;
-  var inner = msgs.length === 0
-    ? '<div class="kp-relay-empty">'+t('kp_relay_empty')+'</div>'
-    : msgs.slice().reverse().map(function(m){
-        return '<div class="kp-rmsg">'
-          +'<span class="kp-rmsg-ico">'+m.ico+'</span>'
-          +'<div class="kp-rmsg-body">'
-            +'<div>'+_kl(m.msg)+'</div>'
-            +'<div class="kp-rmsg-time">'+m.time+'</div>'
-          +'</div>'
-          +'</div>';
-      }).join('');
+/* ── Render relay chip + log ── */
+function _kRenderRelay(){
+  var msgs   = KS.relay;
+  var chipLbl = t('kp_relay_chip');
+  var chipSub = msgs.length > 0 ? t('kp_relay_chip_n',{n:msgs.length}) : t('kp_relay_chip_0');
+  var badgeHtml = msgs.length > 0
+    ? '<span class="kp-relay-chip-badge">'+msgs.length+'</span>' : '';
 
-  var badge = msgs.length > 0
-    ? '<span class="kp-relay-badge">'+msgs.length+'</span>' : '';
+  var logHtml = '';
+  if(_kRelayOpen){
+    var inner = msgs.length === 0
+      ? '<div class="kp-relay-empty">'+t('kp_relay_empty')+'</div>'
+      : msgs.slice().reverse().map(function(m){
+          return '<div class="kp-rmsg">'
+            +'<span class="kp-rmsg-ico">'+m.ico+'</span>'
+            +'<div class="kp-rmsg-body">'
+              +'<div>'+_kl(m.msg)+'</div>'
+              +'<div class="kp-rmsg-time">'+m.time+'</div>'
+            +'</div>'
+            +'</div>';
+        }).join('');
+    logHtml = '<div class="kp-relay-log" id="kp-relay-log">'+inner+'</div>';
+  }
 
-  return '<div class="kp-relay">'
-    +'<div class="kp-relay-head">'
-      +'<span class="kp-relay-ico">🤖</span>'
-      +'<span class="kp-relay-title">'+t('kp_relay_title')+'</span>'
-      +badge
+  return '<div class="kp-relay-chip'+(_kRelayOpen?' kp-relay-open':'')+'" id="kp-relay-chip">'
+      +'<span class="kp-relay-chip-ico">🤖</span>'
+      +'<span class="kp-relay-chip-label">'+chipLbl+' · '+chipSub+'</span>'
+      +badgeHtml
+      +'<span class="kp-relay-chip-chev">▾</span>'
     +'</div>'
-    +'<div class="kp-relay-msgs">'+inner+'</div>'
-    +'</div>';
-}
-
-/* ── Operational context block ── */
-function _kCtx(){
-  var rows = [
-    {dot:'c-ready',   text:{it:'Salse: nessun impatto.',en:'Sauces: no impact.',es:'Salsas: sin impacto.'}},
-    {dot:'c-blocked', text:{it:'Forno: Salmon Cakes bloccate.',en:'Oven: Salmon Cakes blocked.',es:'Horno: Salmon Cakes bloqueadas.'}},
-    {dot:'c-blocked', text:{it:'Processazione: in attesa salmone.',en:'Processing: waiting for salmon.',es:'Procesado: esperando salmón.'}},
-  ];
-  /* update context dots based on live state */
-  if(KS.stations.forno.status !== 'blocked'){
-    rows[1].dot = 'c-ready';
-    rows[1].text = {it:'Forno: Salmon Cakes pronte.',en:'Oven: Salmon Cakes ready.',es:'Horno: Salmon Cakes listas.'};
-  }
-  if(KS.stations.processazione.status !== 'blocked'){
-    rows[2].dot = 'c-ready';
-    rows[2].text = {it:'Processazione: salmone disponibile.',en:'Processing: salmon available.',es:'Procesado: salmón disponible.'};
-  }
-  var rowsHtml = rows.map(function(r){
-    return '<div class="kp-ctx-row">'
-      +'<div class="kp-ctx-dot '+r.dot+'"></div>'
-      +'<span>'+_kl(r.text)+'</span>'
-      +'</div>';
-  }).join('');
-  return '<div class="kp-ctx">'
-    +'<div class="kp-ctx-title">'+t('kp_ctx_title')+'</div>'
-    +'<div class="kp-ctx-body">'+rowsHtml+'</div>'
-    +'</div>';
+    +logHtml;
 }
 
 /* ── Page render ── */
 function pageKitchen(){
-  /* init state once per page open; rerender:true means this runs on each tab switch too */
-  if(!KS) KS = _kitchenInitState();
+  if(!KS){ KS = _kitchenInitState(); _kExpandedStation = null; _kRelayOpen = false; }
 
-  var stationOrder = ['ricezione','processazione','salse','forno'];
-  var stationsHtml = stationOrder.map(function(id){
-    return _kStation(KS.stations[id]);
+  var order = ['ricezione','processazione','salse','forno'];
+  var stationsHtml = order.map(function(id){
+    return _kStationRow(KS.stations[id]);
   }).join('');
 
   return '<div class="pi kp-wrap">'
@@ -4544,18 +4643,47 @@ function pageKitchen(){
       +'<div class="kp-title">'+t('kp_title')+'</div>'
       +'<div class="kp-sub">'+t('kp_sub')+'</div>'
     +'</div>'
-    +_kCtx()
-    +'<div class="kp-grid">'+stationsHtml+'</div>'
-    +_kRelay()
+    +_kRenderFocus()
+    +'<div class="kp-sec-lbl">'+t('kp_sec_stations')+'</div>'
+    +'<div class="kp-accordion" id="kp-accordion">'+stationsHtml+'</div>'
+    +_kRenderRelay()
     +'</div>';
 }
 
 function kitchenAfterRender(){
   var ws = document.getElementById('workspace');
   if(!ws) return;
-  /* event delegation — all kitchen buttons */
+
+  /* accordion toggle — tap anywhere on the row header */
+  ws.querySelectorAll('[data-ksrow]').forEach(function(row){
+    var head = row.querySelector('.kp-srow-head');
+    if(!head) return;
+    head.addEventListener('click', function(e){
+      /* don't toggle if a button was tapped */
+      if(e.target.closest('.kp-btn')) return;
+      var sid = row.dataset.ksrow;
+      _kExpandedStation = (_kExpandedStation === sid) ? null : sid;
+      var ws2 = document.getElementById('workspace');
+      if(ws2) ws2.innerHTML = pageKitchen();
+      kitchenAfterRender();
+    });
+  });
+
+  /* relay chip toggle */
+  var chip = document.getElementById('kp-relay-chip');
+  if(chip){
+    chip.addEventListener('click', function(){
+      _kRelayOpen = !_kRelayOpen;
+      var ws2 = document.getElementById('workspace');
+      if(ws2) ws2.innerHTML = pageKitchen();
+      kitchenAfterRender();
+    });
+  }
+
+  /* event buttons (focus layer + accordion missions) */
   ws.querySelectorAll('[data-kevt]').forEach(function(btn){
-    btn.addEventListener('click', function(){
+    btn.addEventListener('click', function(e){
+      e.stopPropagation(); /* don't trigger accordion toggle */
       var evt = btn.dataset.kevt;
       if(evt) _kEvt(evt);
     });
