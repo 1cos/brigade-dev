@@ -1,6 +1,6 @@
 <!-- ── NEW SHELL LAB BANNER ── -->
 <div id="shell-lab-banner" style="position:fixed;top:0;left:0;right:0;z-index:99999;background:linear-gradient(90deg,#0f766e,#0891b2);color:white;font-size:11px;font-weight:800;letter-spacing:0.09em;text-transform:uppercase;text-align:center;padding:5px 16px;font-family:-apple-system,BlinkMacSystemFont,sans-serif;user-select:none;box-shadow:0 1px 6px rgba(8,145,178,0.4);">
-  🎨 NEW SHELL LAB &nbsp;·&nbsp; brigade-dev/shell.html &nbsp;·&nbsp; v013b &nbsp;·&nbsp; Not for kitchen use
+  🎨 NEW SHELL LAB &nbsp;·&nbsp; brigade-dev/shell.html &nbsp;·&nbsp; v014 &nbsp;·&nbsp; Not for kitchen use
 </div>
 <style>
 /* push shell content below banner */
@@ -910,7 +910,7 @@ input,select,textarea{font-family:inherit}
 .r-hstatus-sub{
   font-size:11px;font-weight:400;opacity:.75;margin-top:2px}
 
-/* ══ KITCHEN PAGE v013b ═════════════════════════════════════════════════════ */
+/* ══ KITCHEN PAGE v014 ═════════════════════════════════════════════════════ */
 .kp-wrap{padding:0 0 40px}
 /* page header */
 .kp-header{padding:16px 0 10px}
@@ -1634,6 +1634,132 @@ input,select,textarea{font-family:inherit}
 .kp-rmsg-who{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--txm)}
 .kp-rmsg-text{font-size:13px;color:var(--tx);line-height:1.4}
 .kp-rmsg-time{font-size:10px;color:var(--txm);margin-top:1px}
+
+/* ══ PREP CARD GALLERY v014 ════════════════════════════════════════════════ */
+
+.pg-wrap{padding-bottom:48px}
+.pg-header{padding:16px 0 6px}
+.pg-title{font-size:22px;font-weight:800;color:var(--tx);margin-bottom:3px}
+.pg-sub{font-size:13px;color:var(--txm);line-height:1.4;margin-bottom:4px}
+.pg-note-tag{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.06em;
+  text-transform:uppercase;background:var(--bg2);color:var(--txm);
+  border-radius:4px;padding:2px 7px;margin-bottom:16px}
+
+/* ── 4-component label bar ── */
+.pg-comp-bar{
+  display:flex;gap:6px;flex-wrap:wrap;margin-bottom:20px;padding:12px 14px;
+  background:var(--bg2);border-radius:var(--r2)}
+.pg-comp-bar-title{
+  width:100%;font-size:10px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.07em;color:var(--txm);margin-bottom:6px}
+.pg-comp-pill{
+  font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;
+  border:1.5px solid var(--bd);background:var(--surf);color:var(--tx)}
+.pg-comp-pill.pa{border-color:#2563eb;color:#2563eb}
+.pg-comp-pill.pb{border-color:#7c3aed;color:#7c3aed}
+.pg-comp-pill.pc{border-color:#0891b2;color:#0891b2}
+.pg-comp-pill.pd{border-color:#d97706;color:#d97706}
+
+/* ── Diff callout (PRODUCI vs PREPARA) ── */
+.pg-diff{
+  border-left:3px solid #2563eb;background:var(--bg2);
+  border-radius:0 var(--r1) var(--r1) 0;
+  padding:10px 14px;margin:0 0 20px;font-size:13px;
+  color:var(--tx);line-height:1.5}
+
+/* ── Section separator ── */
+.pg-section{margin-bottom:28px}
+.pg-section-comp{
+  font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;
+  color:var(--txm);margin-bottom:8px;padding:0 2px}
+
+/* ── Family card ── */
+.pg-card{
+  border:1px solid var(--bd);border-radius:var(--r2);
+  background:var(--surf);overflow:hidden;margin-bottom:10px}
+
+/* Family header stripe */
+.pg-card-head{
+  display:flex;align-items:center;gap:12px;
+  padding:14px 16px 12px}
+.pg-card-ico{font-size:26px;line-height:1;flex-shrink:0}
+.pg-card-fam{flex:1}
+.pg-card-fam-name{
+  font-size:15px;font-weight:800;color:var(--tx);
+  text-transform:uppercase;letter-spacing:.04em;line-height:1.1}
+.pg-card-fam-sub{font-size:12px;color:var(--txm);margin-top:2px;line-height:1.3}
+.pg-card-comp-badge{
+  font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;
+  border:1.5px solid;flex-shrink:0}
+.pg-card-comp-badge.pa{border-color:#2563eb;color:#2563eb}
+.pg-card-comp-badge.pb{border-color:#7c3aed;color:#7c3aed}
+.pg-card-comp-badge.pc{border-color:#0891b2;color:#0891b2}
+.pg-card-comp-badge.pd{border-color:#d97706;color:#d97706}
+
+/* Divider */
+.pg-card-div{height:1px;background:var(--bd);margin:0 16px}
+
+/* Card body */
+.pg-card-body{padding:12px 16px 14px;display:flex;flex-direction:column;gap:8px}
+
+/* Example block — looks like a real mission preview */
+.pg-example{
+  background:var(--bg);border-radius:var(--r1);padding:10px 13px;
+  border:1px solid var(--bd)}
+.pg-ex-name{font-size:17px;font-weight:700;color:var(--tx);margin-bottom:2px}
+.pg-ex-detail{font-size:13px;color:var(--txm);line-height:1.35}
+.pg-ex-status{
+  display:inline-block;font-size:11px;font-weight:800;letter-spacing:.03em;
+  margin-top:6px;padding:3px 8px;border-radius:4px}
+.pg-ex-status.s-do-now{background:#dcfce7;color:#15803d}
+.pg-ex-status.s-to-do{background:#f1f5f9;color:#475569}
+.pg-ex-status.s-blocked{background:#fff7ed;color:#c2410c}
+.pg-ex-status.s-check{background:#e0f2fe;color:#0369a1}
+.pg-ex-status.s-setup{background:#fef3c7;color:#92400e}
+
+/* Meta row: opens recipe, primary action */
+.pg-meta{display:flex;flex-direction:column;gap:5px}
+.pg-meta-row{display:flex;align-items:baseline;gap:6px;font-size:12px}
+.pg-meta-lbl{font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--txm);flex-shrink:0;width:110px}
+.pg-meta-val{color:var(--tx);line-height:1.35}
+.pg-meta-val.recipe-yes{color:#2563eb;font-weight:600}
+.pg-meta-val.recipe-no{color:var(--txm)}
+
+/* Action button mock */
+.pg-card-action{padding:0 16px 14px}
+.pg-act-btn{
+  display:block;width:100%;padding:11px;border-radius:var(--r1);
+  font-size:14px;font-weight:700;text-align:center;border:none;cursor:pointer;
+  -webkit-tap-highlight-color:transparent}
+.pg-act-btn.primary{background:#2563eb;color:#fff}
+.pg-act-btn.success{background:#16a34a;color:#fff}
+.pg-act-btn.neutral{background:var(--bg2);color:var(--tx);border:1.5px solid var(--bd)}
+.pg-act-btn.warn{background:#d97706;color:#fff}
+
+/* Not-contains chips */
+.pg-notcontains{display:flex;flex-wrap:wrap;gap:5px;padding:0 16px 14px}
+.pg-nc-chip{
+  font-size:10px;color:var(--txm);background:var(--bg);
+  border:1px solid var(--bd);border-radius:4px;padding:2px 7px;
+  text-decoration:line-through;opacity:.7}
+
+/* ── Summary table ── */
+.pg-table-wrap{overflow-x:auto;margin-top:24px;margin-bottom:8px;border-radius:var(--r1);border:1px solid var(--bd)}
+.pg-table{width:100%;border-collapse:collapse;font-size:12px}
+.pg-table th{
+  background:var(--bg2);font-size:10px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.06em;color:var(--txm);padding:8px 12px;text-align:left;
+  border-bottom:1px solid var(--bd)}
+.pg-table td{
+  padding:9px 12px;border-bottom:1px solid var(--bd);color:var(--tx);vertical-align:top}
+.pg-table tr:last-child td{border-bottom:none}
+.pg-table tr:hover td{background:var(--bg)}
+.pg-td-fam{font-weight:700}
+.pg-td-comp{font-weight:600}
+.pg-td-comp.pa{color:#2563eb}
+.pg-td-comp.pb{color:#7c3aed}
+.pg-td-comp.pc{color:#0891b2}
+.pg-td-comp.pd{color:#d97706}
 </style>
 </head>
 <body>
@@ -1804,6 +1930,41 @@ it:{
   sv_lbl_done:'COMPLETATA',
   sv_lbl_watch:'⚠ CONTROLLA',
   sv_msgs_title:'Messaggi per te',
+  tpg:'Gallery Prep',
+  ch_pg:'Gallery Prep', cd_pg:'7 famiglie · 4 componenti · catalogo missioni', cs_pg:'v014',
+  pg_title:'Prep Card Gallery',
+  pg_sub:'7 famiglie operative. 4 componenti. Catalogo visivo.',
+  pg_note:'Dati mock — nessuna query DB',
+  pg_component:'Componente',
+  pg_opens_recipe:'Apre ricetta',
+  pg_not_contains:'Non contiene',
+  pg_action:'Azione principale',
+  pg_example:'Esempio reale',
+  pg_family:'Famiglia',
+  pg_yes:'Sì', pg_no:'No',
+  pg_fam_produci:'PRODUCI',       pg_fam_produci_sub:'Quantità, ricetta, batch, storico',
+  pg_fam_processa:'PROCESSA',     pg_fam_processa_sub:'Input → output, trasformazione materia prima',
+  pg_fam_prepara:'PREPARA',       pg_fam_prepara_sub:'Lavorazione semplice per la linea, no ricetta',
+  pg_fam_controlla:'CONTROLLA',   pg_fam_controlla_sub:'Verifica stock — c\'è? è sufficiente?',
+  pg_fam_rifornisci:'RIFORNISCI', pg_fam_rifornisci_sub:'Riempio quello che manca',
+  pg_fam_setup:'SETUP STAZIONE',  pg_fam_setup_sub:'La postazione è pronta?',
+  pg_fam_pulisci:'PULISCI',       pg_fam_pulisci_sub:'Lascio la cucina pronta',
+  pg_diff_produci_prepara:'PRODUCI crea stock tramite ricetta scalabile. PREPARA esegue una lavorazione semplice per la linea senza vera ricetta.',
+  pg_comp_a:'Componente A — Card Ricetta',
+  pg_comp_b:'Componente B — Card Processo',
+  pg_comp_c:'Componente C — Card Verifica',
+  pg_comp_d:'Componente D — Card Setup',
+  pg_table_family:'Famiglia UX',
+  pg_table_engine:'Motore tecnico',
+  pg_table_component:'Componente UI',
+  pg_table_dedicated:'Card dedicata?',
+  pg_btn_produci:'Apri ricetta',
+  pg_btn_processa:'Inizia processazione',
+  pg_btn_prepara:'Inizia',
+  pg_btn_controlla:'Controlla',
+  pg_btn_rifornisci:'Rifornisci',
+  pg_btn_setup:'Attiva',
+  pg_btn_pulisci:'Fatto',
   kp_btn_recipe:'Apri ricetta',
   cai_greeting:'Ciao! Sono Chef AI. Come posso aiutarti?',
   cai_placeholder:'Chiedi qualcosa...',
@@ -1976,6 +2137,41 @@ en:{
   sv_lbl_done:'DONE',
   sv_lbl_watch:'⚠ CHECK',
   sv_msgs_title:'Messages for you',
+  tpg:'Prep Gallery',
+  ch_pg:'Prep Gallery', cd_pg:'7 families · 4 components · mission catalog', cs_pg:'v014',
+  pg_title:'Prep Card Gallery',
+  pg_sub:'7 operational families. 4 components. Visual catalog.',
+  pg_note:'Mock data — no DB query',
+  pg_component:'Component',
+  pg_opens_recipe:'Opens recipe',
+  pg_not_contains:'Does not contain',
+  pg_action:'Primary action',
+  pg_example:'Real example',
+  pg_family:'Family',
+  pg_yes:'Yes', pg_no:'No',
+  pg_fam_produci:'PRODUCE',       pg_fam_produci_sub:'Quantity, recipe, batch, history',
+  pg_fam_processa:'PROCESS',      pg_fam_processa_sub:'Input → output, raw material transformation',
+  pg_fam_prepara:'PREP',          pg_fam_prepara_sub:'Simple line prep, no scalable recipe',
+  pg_fam_controlla:'CHECK',       pg_fam_controlla_sub:'Stock check — is it there? is it enough?',
+  pg_fam_rifornisci:'REFILL',     pg_fam_rifornisci_sub:'Refill what is missing',
+  pg_fam_setup:'STATION SETUP',   pg_fam_setup_sub:'Is the station ready?',
+  pg_fam_pulisci:'CLEAN',         pg_fam_pulisci_sub:'Leave the kitchen ready',
+  pg_diff_produci_prepara:'PRODUCE creates stock via a scalable recipe. PREP executes simple line work with no real recipe.',
+  pg_comp_a:'Component A — Recipe Card',
+  pg_comp_b:'Component B — Process Card',
+  pg_comp_c:'Component C — Check Card',
+  pg_comp_d:'Component D — Setup Card',
+  pg_table_family:'UX Family',
+  pg_table_engine:'Technical engine',
+  pg_table_component:'UI Component',
+  pg_table_dedicated:'Dedicated card?',
+  pg_btn_produci:'Open recipe',
+  pg_btn_processa:'Start processing',
+  pg_btn_prepara:'Start',
+  pg_btn_controlla:'Check',
+  pg_btn_rifornisci:'Refill',
+  pg_btn_setup:'Activate',
+  pg_btn_pulisci:'Done',
   kp_btn_recipe:'Open recipe',
   cai_greeting:'Hey! I\'m Chef AI. How can I help?',
   cai_placeholder:'Ask something...',
@@ -2147,6 +2343,41 @@ es:{
   sv_lbl_done:'COMPLETADA',
   sv_lbl_watch:'⚠ REVISAR',
   sv_msgs_title:'Mensajes para ti',
+  tpg:'Galería Prep',
+  ch_pg:'Galería Prep', cd_pg:'7 familias · 4 componentes · catálogo misiones', cs_pg:'v014',
+  pg_title:'Galería Prep Cards',
+  pg_sub:'7 familias operativas. 4 componentes. Catálogo visual.',
+  pg_note:'Datos mock — sin consulta DB',
+  pg_component:'Componente',
+  pg_opens_recipe:'Abre receta',
+  pg_not_contains:'No contiene',
+  pg_action:'Acción principal',
+  pg_example:'Ejemplo real',
+  pg_family:'Familia',
+  pg_yes:'Sí', pg_no:'No',
+  pg_fam_produci:'PRODUCIR',      pg_fam_produci_sub:'Cantidad, receta, lote, historial',
+  pg_fam_processa:'PROCESAR',     pg_fam_processa_sub:'Entrada → salida, transformación materia prima',
+  pg_fam_prepara:'PREPARAR',      pg_fam_prepara_sub:'Preparación simple para la línea, sin receta',
+  pg_fam_controlla:'VERIFICAR',   pg_fam_controlla_sub:'Control de stock — ¿hay? ¿es suficiente?',
+  pg_fam_rifornisci:'REPONER',    pg_fam_rifornisci_sub:'Repongo lo que falta',
+  pg_fam_setup:'PREPARAR ESTACIÓN', pg_fam_setup_sub:'¿Está lista la estación?',
+  pg_fam_pulisci:'LIMPIAR',       pg_fam_pulisci_sub:'Dejo la cocina lista',
+  pg_diff_produci_prepara:'PRODUCIR crea stock vía receta escalable. PREPARAR ejecuta trabajo simple de línea sin receta real.',
+  pg_comp_a:'Componente A — Tarjeta Receta',
+  pg_comp_b:'Componente B — Tarjeta Proceso',
+  pg_comp_c:'Componente C — Tarjeta Verificación',
+  pg_comp_d:'Componente D — Tarjeta Setup',
+  pg_table_family:'Familia UX',
+  pg_table_engine:'Motor técnico',
+  pg_table_component:'Componente UI',
+  pg_table_dedicated:'¿Tarjeta dedicada?',
+  pg_btn_produci:'Abrir receta',
+  pg_btn_processa:'Iniciar procesado',
+  pg_btn_prepara:'Iniciar',
+  pg_btn_controlla:'Verificar',
+  pg_btn_rifornisci:'Reponer',
+  pg_btn_setup:'Activar',
+  pg_btn_pulisci:'Hecho',
   kp_btn_recipe:'Abrir receta',
   cai_greeting:'¡Hola! Soy Chef AI. ¿Cómo puedo ayudarte?',
   cai_placeholder:'Pregunta algo...',
@@ -2174,7 +2405,7 @@ es:{
 };
 
 /* lang stored in module-scope var + sessionStorage */
-const SHELL_VERSION = 'v013b';
+const SHELL_VERSION = 'v014';
 /* Recipe state lives in RECIPE object + _driverQty inside recipe JS block */
 let LANG = sessionStorage.getItem('ws_lang') || 'it';
 function setLang(l){ LANG=l; sessionStorage.setItem('ws_lang',l); renderAll(); }
@@ -2214,6 +2445,7 @@ function _tabKey(type, params){
   if(type==='bot_center')   return 'bot_center';
   if(type==='daily_journal') return 'daily_journal';
   if(type==='kitchen')      return 'kitchen';
+  if(type==='prep_gallery')  return 'prep_gallery';
   /* entity types: keyed by id or name */
   return type + ':' + (params.id || params.name || '');
 }
@@ -2301,6 +2533,7 @@ function _tabTitle(type, p){
   if(type==='recipe')        return t('tr',{n:p.name||''});
   if(type==='inventory')     return t('ti',{n:p.name||''});
   if(type==='pos')           return t('tp');
+  if(type==='prep_gallery')  return t('tpg');
   return type;
 }
 
@@ -2558,6 +2791,7 @@ function pageHome(){
     {key:'ve',type:'pos',          perm:'see_sales',     ico:'📊', sd:'s-in', p:{}},
     {key:'re',type:'recipe',       perm:'see_recipes',   ico:'📋', sd:'s-ok', p:{id:'tiramisu',name:'Tiramisu'}},
     {key:'ki',type:'kitchen',      perm:'see_kitchen',   ico:'👨‍🍳', sd:'s-wn', p:{}},
+    {key:'pg',type:'prep_gallery',  perm:'see_kitchen',   ico:'🗂️',  sd:'s-ok', p:{}},
   ].filter(function(c){ return can(c.perm); });
 
   var cardHTML = cards.map(function(c){
@@ -5334,6 +5568,377 @@ function kitchenAfterRender(){
 }
 
 
+
+/* ══════════════════════════════════════════════════════════════════════════
+ * PREP CARD GALLERY — v014
+ * Catalogo visivo delle 7 famiglie operative.
+ * 4 componenti condivisi. Zero DB. Zero produzione.
+ * ══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Mock data — one card per family ── */
+var PG_FAMILIES = [
+
+  /* ── A: PRODUCI ── Recipe Card component ── */
+  {
+    id:'produci',
+    ico:'🍲',
+    fam_key:'pg_fam_produci',
+    famsub_key:'pg_fam_produci_sub',
+    comp:'A', comp_key:'pg_comp_a',
+    opens_recipe: true,
+    example:{
+      name:'Arrabbiata',
+      station:'Saucier · Cole',
+      detail:'2 batch · 45 min · Stock: 1.2 kg → 4 kg',
+      status_cls:'s-do-now',
+      status_key:'sv_lbl_fai_ora'
+    },
+    action_key:'pg_btn_produci',
+    action_cls:'primary',
+    meta:[
+      {lbl:'pg_action',   val:'pg_btn_produci', recipe:false},
+      {lbl:'pg_opens_recipe', val:'pg_yes', recipe:true}
+    ],
+    not_contains:['checklist','refill','attrezzatura','pulizia']
+  },
+
+  /* ── B: PROCESSA ── Process Card component ── */
+  {
+    id:'processa',
+    ico:'🔪',
+    fam_key:'pg_fam_processa',
+    famsub_key:'pg_fam_processa_sub',
+    comp:'B', comp_key:'pg_comp_b',
+    opens_recipe: false,
+    example:{
+      name:'Filetta Salmone',
+      station:'Processing · Tela',
+      detail:'2 salmoni interi → 8 filetti · 20 min',
+      status_cls:'s-to-do',
+      status_key:'sv_lbl_da_fare'
+    },
+    action_key:'pg_btn_processa',
+    action_cls:'success',
+    meta:[
+      {lbl:'pg_action',   val:'pg_btn_processa', recipe:false},
+      {lbl:'pg_opens_recipe', val:'pg_no', recipe:false}
+    ],
+    not_contains:['ricetta scalabile','batch','storico produzione','timer cottura']
+  },
+
+  /* ── B: PREPARA — shares Process Card, different question ── */
+  {
+    id:'prepara',
+    ico:'🥬',
+    fam_key:'pg_fam_prepara',
+    famsub_key:'pg_fam_prepara_sub',
+    comp:'B', comp_key:'pg_comp_b',
+    opens_recipe: false,
+    example:{
+      name:'Chop Romaine',
+      station:'Salad · —',
+      detail:'2 bag · 25 min · Per la linea',
+      status_cls:'s-to-do',
+      status_key:'sv_lbl_da_fare'
+    },
+    action_key:'pg_btn_prepara',
+    action_cls:'success',
+    meta:[
+      {lbl:'pg_action',   val:'pg_btn_prepara', recipe:false},
+      {lbl:'pg_opens_recipe', val:'pg_no', recipe:false}
+    ],
+    not_contains:['ricetta scalabile','batch di produzione','storico','timer cottura'],
+    diff_note: true  /* show PRODUCI vs PREPARA callout */
+  },
+
+  /* ── C: CONTROLLA — Check Card component ── */
+  {
+    id:'controlla',
+    ico:'✅',
+    fam_key:'pg_fam_controlla',
+    famsub_key:'pg_fam_controlla_sub',
+    comp:'C', comp_key:'pg_comp_c',
+    opens_recipe: false,
+    example:{
+      name:'Check Caesar',
+      station:'Salad · —',
+      detail:'Verifica: c\'è? è sufficiente per il servizio?',
+      status_cls:'s-check',
+      status_key:'sv_lbl_da_fare'
+    },
+    action_key:'pg_btn_controlla',
+    action_cls:'neutral',
+    meta:[
+      {lbl:'pg_action',       val:'pg_btn_controlla', recipe:false},
+      {lbl:'pg_opens_recipe', val:'pg_no', recipe:false}
+    ],
+    not_contains:['batch','timer','ricetta','produzione']
+  },
+
+  /* ── C: RIFORNISCI — shares Check Card, different action ── */
+  {
+    id:'rifornisci',
+    ico:'🔄',
+    fam_key:'pg_fam_rifornisci',
+    famsub_key:'pg_fam_rifornisci_sub',
+    comp:'C', comp_key:'pg_comp_c',
+    opens_recipe: false,
+    example:{
+      name:'Refill Pepper',
+      station:'Saucier · Cole',
+      detail:'Grinder vuoto — rifornisci dal bulk in magazzino',
+      status_cls:'s-check',
+      status_key:'sv_lbl_da_fare'
+    },
+    action_key:'pg_btn_rifornisci',
+    action_cls:'neutral',
+    meta:[
+      {lbl:'pg_action',       val:'pg_btn_rifornisci', recipe:false},
+      {lbl:'pg_opens_recipe', val:'pg_no', recipe:false}
+    ],
+    not_contains:['ricetta','timer','batch','produzione'],
+    vs_note: 'controlla'  /* visual note: same component, different action */
+  },
+
+  /* ── D: SETUP STAZIONE — Setup Card component ── */
+  {
+    id:'setup',
+    ico:'⚙️',
+    fam_key:'pg_fam_setup',
+    famsub_key:'pg_fam_setup_sub',
+    comp:'D', comp_key:'pg_comp_d',
+    opens_recipe: false,
+    example:{
+      name:'Setup Sous Vide',
+      station:'Oven · Rachel',
+      detail:'Temperatura: 55°C · Vasca pronta?',
+      status_cls:'s-setup',
+      status_key:'sv_lbl_da_fare'
+    },
+    action_key:'pg_btn_setup',
+    action_cls:'warn',
+    meta:[
+      {lbl:'pg_action',       val:'pg_btn_setup', recipe:false},
+      {lbl:'pg_opens_recipe', val:'pg_no', recipe:false}
+    ],
+    not_contains:['stock','batch','timer cottura','ricetta']
+  },
+
+  /* ── D: PULISCI — shares Setup Card ── */
+  {
+    id:'pulisci',
+    ico:'🧹',
+    fam_key:'pg_fam_pulisci',
+    famsub_key:'pg_fam_pulisci_sub',
+    comp:'D', comp_key:'pg_comp_d',
+    opens_recipe: false,
+    example:{
+      name:'Clean Plating Station',
+      station:'Forno · Rachel',
+      detail:'Post-servizio · Sanifica superfici',
+      status_cls:'s-setup',
+      status_key:'sv_lbl_da_fare'
+    },
+    action_key:'pg_btn_pulisci',
+    action_cls:'neutral',
+    meta:[
+      {lbl:'pg_action',       val:'pg_btn_pulisci', recipe:false},
+      {lbl:'pg_opens_recipe', val:'pg_no', recipe:false}
+    ],
+    not_contains:['stock','batch','ricetta','timer produzione']
+  }
+];
+
+/* ── Summary table data ── */
+var PG_TABLE = [
+  {fam:'pg_fam_produci',    eng:'Quantitative Prep',           comp:'A', cls:'pa', dedicated:true},
+  {fam:'pg_fam_processa',   eng:'Operational Action',          comp:'B', cls:'pb', dedicated:true},
+  {fam:'pg_fam_prepara',    eng:'Operational Action',          comp:'B', cls:'pb', dedicated:false},
+  {fam:'pg_fam_controlla',  eng:'Stock Check',                 comp:'C', cls:'pc', dedicated:true},
+  {fam:'pg_fam_rifornisci', eng:'Station Setup / Refill',      comp:'C', cls:'pc', dedicated:false},
+  {fam:'pg_fam_setup',      eng:'Station Setup / Activation',  comp:'D', cls:'pd', dedicated:true},
+  {fam:'pg_fam_pulisci',    eng:'Station Setup / Cleaning',    comp:'D', cls:'pd', dedicated:false},
+];
+
+/* ── Render one family card ── */
+function _pgCard(f){
+  /* Head stripe */
+  var head = '<div class="pg-card-head">'
+    +'<div class="pg-card-ico">'+f.ico+'</div>'
+    +'<div class="pg-card-fam">'
+      +'<div class="pg-card-fam-name">'+t(f.fam_key)+'</div>'
+      +'<div class="pg-card-fam-sub">'+t(f.famsub_key)+'</div>'
+    +'</div>'
+    +'<div class="pg-card-comp-badge p'+f.comp.toLowerCase()+'">'+t(f.comp_key)+'</div>'
+    +'</div>';
+
+  /* PRODUCI vs PREPARA diff callout */
+  var diffHtml = '';
+  if(f.diff_note){
+    diffHtml = '<div class="pg-diff">'+t('pg_diff_produci_prepara')+'</div>';
+  }
+
+  /* VS note for RIFORNISCI vs CONTROLLA */
+  var vsHtml = '';
+  if(f.vs_note){
+    var vsName = t('pg_fam_'+f.vs_note);
+    vsHtml = '<div class="pg-diff" style="border-color:#0891b2;margin:0 16px 12px">'
+      + (LANG==='it'
+          ? 'Stesso componente di '+vsName+' — ma l\'azione è diversa: <strong>'+t('pg_btn_rifornisci')+'</strong> vs <strong>'+t('pg_btn_controlla')+'</strong>.'
+          : LANG==='es'
+          ? 'Mismo componente que '+vsName+' — pero la acción es diferente: <strong>'+t('pg_btn_rifornisci')+'</strong> vs <strong>'+t('pg_btn_controlla')+'</strong>.'
+          : 'Same component as '+vsName+' — but the primary action differs: <strong>'+t('pg_btn_rifornisci')+'</strong> vs <strong>'+t('pg_btn_controlla')+'</strong>.')
+      +'</div>';
+  }
+
+  /* Example preview */
+  var ex = f.example;
+  var exHtml = '<div class="pg-card-body">'
+    +'<div class="pg-example">'
+      +'<div class="pg-ex-name">'+ex.name+'</div>'
+      +'<div class="pg-ex-detail">'+ex.station+' · '+ex.detail+'</div>'
+      +'<div class="pg-ex-status '+ex.status_cls+'">'+t(ex.status_key)+'</div>'
+    +'</div>';
+
+  /* Meta rows */
+  var metaHtml = '<div class="pg-meta">'
+    +f.meta.map(function(m){
+      var valStr = t(m.val);
+      var valCls = m.recipe ? 'pg-meta-val recipe-yes' : (m.val==='pg_no'?'pg-meta-val recipe-no':'pg-meta-val');
+      return '<div class="pg-meta-row">'
+        +'<span class="pg-meta-lbl">'+t(m.lbl)+'</span>'
+        +'<span class="'+valCls+'">'+valStr+'</span>'
+        +'</div>';
+    }).join('')
+    +'</div>';
+
+  exHtml += metaHtml + '</div>';
+
+  /* Action button */
+  var actHtml = '<div class="pg-card-action">'
+    +'<button class="pg-act-btn '+f.action_cls+'" onclick="void(0)">'+t(f.action_key)+'</button>'
+    +'</div>';
+
+  /* Not-contains chips */
+  var ncHtml = '<div class="pg-notcontains">'
+    +f.not_contains.map(function(nc){
+      return '<span class="pg-nc-chip">'+nc+'</span>';
+    }).join('')
+    +'</div>';
+
+  return '<div class="pg-card">'
+    +head
+    +'<div class="pg-card-div"></div>'
+    +diffHtml
+    +exHtml
+    +vsHtml
+    +actHtml
+    +ncHtml
+    +'</div>';
+}
+
+/* ── Render summary table ── */
+function _pgTable(){
+  var rows = PG_TABLE.map(function(r){
+    var ded = r.dedicated
+      ? '<span style="color:#15803d;font-weight:700">'+t('pg_yes')+'</span>'
+      : '<span style="color:var(--txm)">'+t('pg_no')+' — condivide '+r.comp+'</span>';
+    return '<tr>'
+      +'<td class="pg-td-fam">'+r.ico_skip+t(r.fam)+'</td>'
+      +'<td style="font-size:11px;color:var(--txm)">'+r.eng+'</td>'
+      +'<td class="pg-td-comp '+r.cls+'">'+t('pg_comp_'+r.comp.toLowerCase())+'</td>'
+      +'<td>'+ded+'</td>'
+      +'</tr>';
+  }).join('');
+
+  // Add icons to fam cells after the fact by matching order
+  var ICOS=['🍲','🔪','🥬','✅','🔄','⚙️','🧹'];
+  PG_TABLE.forEach(function(r,i){ r.ico_skip = ICOS[i]+' '; });
+  // Re-render with icons
+  rows = PG_TABLE.map(function(r){
+    var ded = r.dedicated
+      ? '<span style="color:#15803d;font-weight:700">'+t('pg_yes')+'</span>'
+      : '<span style="color:var(--txm)">No — '+t('pg_comp_'+r.comp.toLowerCase())+'</span>';
+    return '<tr>'
+      +'<td class="pg-td-fam">'+r.ico_skip+t(r.fam)+'</td>'
+      +'<td style="font-size:11px;color:var(--txm)">'+r.eng+'</td>'
+      +'<td class="pg-td-comp '+r.cls+'">'+t('pg_comp_'+r.comp.toLowerCase())+'</td>'
+      +'<td>'+ded+'</td>'
+      +'</tr>';
+  }).join('');
+
+  return '<div class="pg-table-wrap"><table class="pg-table">'
+    +'<thead><tr>'
+      +'<th>'+t('pg_table_family')+'</th>'
+      +'<th>'+t('pg_table_engine')+'</th>'
+      +'<th>'+t('pg_table_component')+'</th>'
+      +'<th>'+t('pg_table_dedicated')+'</th>'
+    +'</tr></thead>'
+    +'<tbody>'+rows+'</tbody>'
+    +'</table></div>';
+}
+
+/* ── Component legend bar ── */
+function _pgCompBar(){
+  var comps=[
+    {cls:'pa',key:'pg_comp_a'},
+    {cls:'pb',key:'pg_comp_b'},
+    {cls:'pc',key:'pg_comp_c'},
+    {cls:'pd',key:'pg_comp_d'}
+  ];
+  return '<div class="pg-comp-bar">'
+    +'<div class="pg-comp-bar-title">'+t('pg_component')+' (4 totali)</div>'
+    +comps.map(function(c){
+      return '<span class="pg-comp-pill '+c.cls+'">'+t(c.key)+'</span>';
+    }).join('')
+    +'</div>';
+}
+
+/* ── Section header: group by component ── */
+function _pgSectionHead(compKey){
+  return '<div class="pg-section-comp">'+t(compKey)+'</div>';
+}
+
+/* ── Page render ── */
+function pagePrepGallery(){
+  /* Group families by component */
+  var sections = [
+    {comp:'A', compKey:'pg_comp_a', families:['produci']},
+    {comp:'B', compKey:'pg_comp_b', families:['processa','prepara']},
+    {comp:'C', compKey:'pg_comp_c', families:['controlla','rifornisci']},
+    {comp:'D', compKey:'pg_comp_d', families:['setup','pulisci']}
+  ];
+
+  var familyMap = {};
+  PG_FAMILIES.forEach(function(f){ familyMap[f.id]=f; });
+
+  var sectionsHtml = sections.map(function(sec){
+    var cardsHtml = sec.families.map(function(fid){
+      return familyMap[fid] ? _pgCard(familyMap[fid]) : '';
+    }).join('');
+    return '<div class="pg-section">'
+      +_pgSectionHead(sec.compKey)
+      +cardsHtml
+      +'</div>';
+  }).join('');
+
+  return '<div class="pi pg-wrap">'
+    +'<div class="pg-header">'
+      +'<div class="pg-title">'+t('pg_title')+'</div>'
+      +'<div class="pg-sub">'+t('pg_sub')+'</div>'
+      +'<span class="pg-note-tag">'+t('pg_note')+'</span>'
+    +'</div>'
+    +_pgCompBar()
+    +sectionsHtml
+    +_pgTable()
+    +'</div>';
+}
+
+function prepGalleryAfterRender(){
+  /* buttons in gallery are mock — no real events, just visual */
+}
+
+
 var PAGES={
   home:         {render:pageHome,      after:homeAfterRender},
   bot_center:   {render:pageBots,      after:botsAfterRender},
@@ -5341,7 +5946,8 @@ var PAGES={
   inventory:    {render:pageInventory, after:null},
   daily_journal:{render:pageJournal,   after:journalAfterRender, rerender:true},
   pos:          {render:pageSales,     after:null},
-  kitchen:      {render:pageKitchen,   after:kitchenAfterRender, rerender:true}
+  kitchen:      {render:pageKitchen,   after:kitchenAfterRender, rerender:true},
+  prep_gallery: {render:pagePrepGallery, after:prepGalleryAfterRender}
 };
 
 /* ══ SHELL RENDERERS ══════════════════════════════════════════════════════ */
