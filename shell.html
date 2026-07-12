@@ -1,6 +1,6 @@
 <!-- ── NEW SHELL LAB BANNER ── -->
 <div id="shell-lab-banner" style="position:fixed;top:0;left:0;right:0;z-index:99999;background:linear-gradient(90deg,#0f766e,#0891b2);color:white;font-size:11px;font-weight:800;letter-spacing:0.09em;text-transform:uppercase;text-align:center;padding:5px 16px;font-family:-apple-system,BlinkMacSystemFont,sans-serif;user-select:none;box-shadow:0 1px 6px rgba(8,145,178,0.4);">
-  🎨 NEW SHELL LAB &nbsp;·&nbsp; brigade-dev/shell.html &nbsp;·&nbsp; v013 &nbsp;·&nbsp; Not for kitchen use
+  🎨 NEW SHELL LAB &nbsp;·&nbsp; brigade-dev/shell.html &nbsp;·&nbsp; v013a &nbsp;·&nbsp; Not for kitchen use
 </div>
 <style>
 /* push shell content below banner */
@@ -910,7 +910,7 @@ input,select,textarea{font-family:inherit}
 .r-hstatus-sub{
   font-size:11px;font-weight:400;opacity:.75;margin-top:2px}
 
-/* ══ KITCHEN PAGE v013 ═════════════════════════════════════════════════════ */
+/* ══ KITCHEN PAGE v013a ═════════════════════════════════════════════════════ */
 .kp-wrap{padding:0 0 40px}
 /* page header */
 .kp-header{padding:16px 0 10px}
@@ -959,6 +959,15 @@ input,select,textarea{font-family:inherit}
 .kp-srow.ks-ready{border-left:3px solid #22c55e}
 .kp-srow.ks-in_progress{border-left:3px solid #2563eb}
 .kp-srow.ks-done{border-left:3px solid var(--txm)}
+/* v013a — new status CSS aliases */
+.kp-srow.ks-ready_to_start{border-left:3px solid #22c55e}
+.kp-srow.ks-ready_for_service{border-left:3px solid #22c55e}
+.kp-srow.ks-watch{border-left:3px solid #d97706}
+.kp-sbadge.sb-ready_to_start{background:#22c55e;color:#fff}
+.kp-sbadge.sb-ready_for_service{background:#22c55e;color:#fff}
+.kp-sbadge.sb-in_progress{background:#2563eb;color:#fff}
+.kp-sbadge.sb-watch{background:#d97706;color:#fff}
+
 /* ══ KITCHEN v013 — mission detail CSS ══════════════════════════════════════ */
 .kp-virt-badge{display:inline-block;font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--txm);border:1px solid var(--bd);border-radius:4px;padding:1px 5px;margin-left:6px;vertical-align:middle;opacity:.75}
 .kp-m-head{display:flex;align-items:center;gap:6px;margin-bottom:4px;flex-wrap:wrap}
@@ -974,6 +983,83 @@ input,select,textarea{font-family:inherit}
 .kp-m-stock-lbl{font-weight:700;text-transform:uppercase;letter-spacing:.04em;font-size:9px}
 .kp-fitem-dot.fi-blocked{background:#f97316}
 .kp-fitem-reason{font-size:11px;color:var(--txm);margin-top:2px;line-height:1.35}
+/* ══ KITCHEN v013a — Station View CSS ═══════════════════════════════════════ */
+
+/* View toggle */
+.kp-view-toggle{
+  display:flex;gap:6px;padding:12px 0 4px;
+}
+.kp-vt-btn{
+  flex:1;padding:9px 12px;border-radius:var(--r1);border:1.5px solid var(--bd);
+  background:var(--surf);color:var(--txm);font-size:13px;font-weight:600;
+  cursor:pointer;transition:all .15s;-webkit-tap-highlight-color:transparent;
+}
+.kp-vt-btn.kp-vt-active{
+  background:var(--b6,#2563eb);border-color:var(--b6,#2563eb);color:#fff;
+}
+
+/* Station View header */
+.sv-wrap{padding-bottom:48px}
+.sv-header{
+  display:flex;align-items:center;gap:14px;
+  padding:16px 0 12px;border-bottom:1px solid var(--bd);margin-bottom:14px;
+}
+.sv-station-ico{font-size:32px;line-height:1}
+.sv-station-name{font-size:20px;font-weight:800;color:var(--tx);line-height:1.2}
+.sv-station-owner{font-size:13px;color:var(--txm);margin-top:2px}
+
+/* Incoming relay for station */
+.sv-relay{
+  background:var(--bg2,#dbeafe);border-radius:var(--r1);
+  padding:10px 14px;margin-bottom:14px;display:flex;flex-direction:column;gap:8px;
+}
+.sv-relay-msg{display:flex;align-items:flex-start;gap:10px}
+.sv-relay-ico{font-size:16px;flex-shrink:0;margin-top:1px}
+.sv-relay-body{flex:1}
+.sv-relay-text{font-size:13px;color:var(--tx);line-height:1.4;font-weight:500}
+.sv-relay-time{font-size:10px;color:var(--txm);margin-top:2px}
+
+/* Mission cards — Station View */
+.sv-missions{display:flex;flex-direction:column;gap:10px}
+.sv-mission{
+  border:1px solid var(--bd);border-radius:var(--r2);
+  background:var(--surf);padding:14px 16px;
+}
+.sv-m-blocked{border-left:3px solid #f97316;opacity:.85}
+.sv-m-done{opacity:.4}
+.sv-m-rfs{border-left:3px solid #22c55e}
+
+.sv-m-head{
+  display:flex;justify-content:space-between;align-items:flex-start;
+  gap:10px;margin-bottom:6px;
+}
+.sv-m-name{font-size:17px;font-weight:700;color:var(--tx);line-height:1.2;flex:1}
+.sv-m-done-txt{color:var(--txm)}
+.sv-m-status{font-size:11px;font-weight:700;flex-shrink:0;margin-top:2px}
+
+/* reason in station view */
+.sv-mission-reason{font-size:13px;color:var(--txm);margin-bottom:6px;line-height:1.4}
+.sv-reason-blocked{color:#d97706;font-weight:500}
+
+/* batch in station view — plain language */
+.sv-mission-batch{
+  font-size:14px;font-weight:700;color:var(--b6,#2563eb);
+  margin-bottom:8px;
+}
+
+/* action button in station view — full width */
+.sv-mission-actions{margin-top:8px}
+.sv-btn{width:100%;justify-content:center;padding:12px;font-size:15px}
+
+/* status colours reused from chef view */
+.ms-ready{color:#15803d}
+.ms-blocked{color:#c2410c}
+.ms-in_progress{color:#1d4ed8}
+.ms-rfs{color:#15803d}
+.ms-done{color:var(--txm)}
+.ms-done-txt{color:var(--txm)}
+.ms-watch{color:#92400e}
+
 /* collapsed header */
 .kp-srow-head{
   display:flex;align-items:center;gap:10px;
@@ -1597,7 +1683,7 @@ it:{
   cai_ctx_bots:'Bot Center — pipeline', cai_ctx_journal:'Diario operativo',
   cai_ctx_recipe:'Ricetta', cai_ctx_inv:'Dispensa', cai_ctx_kitchen:'Cucina — stazioni live',
   tk:'Cucina',
-  ch_ki:'Cucina', cd_ki:'7 stazioni · missioni · flusso', cs_ki:'v013 · 7 stazioni',
+  ch_ki:'Cucina', cd_ki:'Chef View · Station View · EVT chain', cs_ki:'v013a',
   /* kitchen page */
   kp_title:'Cucina', kp_sub:'La cucina cambia attenzione, non struttura.',
   kp_ctx_title:'Contesto operativo',
@@ -1623,6 +1709,18 @@ it:{
   kp_stock:'Stock',
   kp_virtual_flow:'Flusso virtuale',
   kp_owner_tbd:'Proprietario TBD',
+  kp_st_blocked:'⛔ Bloccata',
+  kp_st_ready_to_start:'Da iniziare',
+  kp_st_in_progress:'In corso…',
+  kp_st_ready_for_service:'Pronta per il servizio',
+  kp_st_done:'✓ Completata',
+  kp_st_watch:'Da controllare',
+  kp_view_chef:'Vista Chef',
+  kp_view_station:'Vista Stazione',
+  kp_make:'Fai',
+  kp_phase_morning:'Mattina',
+  kp_phase_lunch:'Pranzo',
+  kp_phase_evening:'Servizio',
   kp_btn_recipe:'Apri ricetta',
   cai_greeting:'Ciao! Sono Chef AI. Come posso aiutarti?',
   cai_placeholder:'Chiedi qualcosa...',
@@ -1750,7 +1848,7 @@ en:{
   cai_ctx_bots:'Bot Center — pipeline', cai_ctx_journal:'Operations Journal',
   cai_ctx_recipe:'Recipe', cai_ctx_inv:'Pantry', cai_ctx_kitchen:'Kitchen — live stations',
   tk:'Kitchen',
-  ch_ki:'Kitchen', cd_ki:'7 stations · missions · block flow', cs_ki:'v013 · 7 stations',
+  ch_ki:'Kitchen', cd_ki:'Chef View · Station View · EVT chain', cs_ki:'v013a',
   kp_title:'Kitchen', kp_sub:'The kitchen shifts attention, not structure.',
   kp_ctx_title:'Operational context',
   kp_relay_title:'Chef AI Relay',
@@ -1775,6 +1873,18 @@ en:{
   kp_stock:'Stock',
   kp_virtual_flow:'Virtual flow',
   kp_owner_tbd:'Owner TBD',
+  kp_st_blocked:'⛔ Blocked',
+  kp_st_ready_to_start:'To start',
+  kp_st_in_progress:'In progress…',
+  kp_st_ready_for_service:'Ready for service',
+  kp_st_done:'✓ Done',
+  kp_st_watch:'Watch',
+  kp_view_chef:'Chef View',
+  kp_view_station:'Station View',
+  kp_make:'Make',
+  kp_phase_morning:'Morning',
+  kp_phase_lunch:'Lunch',
+  kp_phase_evening:'Service',
   kp_btn_recipe:'Open recipe',
   cai_greeting:'Hey! I\'m Chef AI. How can I help?',
   cai_placeholder:'Ask something...',
@@ -1901,7 +2011,7 @@ es:{
   cai_ctx_bots:'Centro Bot — pipeline', cai_ctx_journal:'Diario de operaciones',
   cai_ctx_recipe:'Receta', cai_ctx_inv:'Despensa', cai_ctx_kitchen:'Cocina — estaciones en vivo',
   tk:'Cocina',
-  ch_ki:'Cocina', cd_ki:'7 estaciones · misiones · flujo', cs_ki:'v013 · 7 estaciones',
+  ch_ki:'Cocina', cd_ki:'Chef View · Station View · flujo EVT', cs_ki:'v013a',
   kp_title:'Cocina', kp_sub:'La cocina cambia atención, no estructura.',
   kp_ctx_title:'Contexto operativo',
   kp_relay_title:'Chef AI Relay',
@@ -1926,6 +2036,18 @@ es:{
   kp_stock:'Stock',
   kp_virtual_flow:'Flujo virtual',
   kp_owner_tbd:'Propietario TBD',
+  kp_st_blocked:'⛔ Bloqueada',
+  kp_st_ready_to_start:'Para iniciar',
+  kp_st_in_progress:'En curso…',
+  kp_st_ready_for_service:'Lista para servicio',
+  kp_st_done:'✓ Completada',
+  kp_st_watch:'Revisar',
+  kp_view_chef:'Vista Chef',
+  kp_view_station:'Vista Estación',
+  kp_make:'Hacer',
+  kp_phase_morning:'Mañana',
+  kp_phase_lunch:'Almuerzo',
+  kp_phase_evening:'Servicio',
   kp_btn_recipe:'Abrir receta',
   cai_greeting:'¡Hola! Soy Chef AI. ¿Cómo puedo ayudarte?',
   cai_placeholder:'Pregunta algo...',
@@ -1953,7 +2075,7 @@ es:{
 };
 
 /* lang stored in module-scope var + sessionStorage */
-const SHELL_VERSION = 'v013';
+const SHELL_VERSION = 'v013a';
 /* Recipe state lives in RECIPE object + _driverQty inside recipe JS block */
 let LANG = sessionStorage.getItem('ws_lang') || 'it';
 function setLang(l){ LANG=l; sessionStorage.setItem('ws_lang',l); renderAll(); }
@@ -4349,142 +4471,120 @@ function hideYCS(){ var el=document.getElementById('ycs'); if(el) el.classList.r
    ══════════════════════════════════════════════════════════════════════════ */
 
 /* ── Initial state factory (returns fresh state on each page open) ── */
+/* ── View mode: 'chef' | 'station' ── */
+var _KV = 'chef';          /* KV = Kitchen View */
+var _KV_STATION = 'forno'; /* which station in Station View */
+
 function _kitchenInitState(){
   /*
-   * v013 — new Prep Mission model
-   * Each mission carries: production_mode, storage_method, freezable,
-   * real_shelf_life, minimum_batch, preferred_batch, operational_criticality,
-   * status, reason_today, blocked_by, estimated_duration, assigned_person,
-   * current_stock, suggested_qty
+   * v013a — same Prep Mission model as v013.
+   * State labels now explicit:
+   *   'blocked'          → ⛔ Bloccata
+   *   'ready_to_start'   → Da iniziare   (has actions)
+   *   'in_progress'      → In corso…
+   *   'ready_for_service'→ Pronta per il servizio
+   *   'done'             → ✓ Completata
+   *   'watch'            → Da controllare
    *
-   * Each station carries: station_kind ('REAL' | 'VIRTUAL_FLOW')
-   * VIRTUAL_FLOW = operational concept, not a station record in the DB.
+   * station_kind: 'REAL' | 'VIRTUAL_FLOW'
    */
   return {
-    relay: [],
+    relay: [],          /* full relay — all events */
+    relay_forno: [],    /* filtered relay — only forno-relevant messages */
     stations: {
 
-      /* ── 1. RECEIVING — VIRTUAL_FLOW ──────────────────────────────────── */
+      /* ── 1. RECEIVING — VIRTUAL_FLOW ───────────────────────────────── */
       ricezione: {
         id:'ricezione', icon:'📦', station_kind:'VIRTUAL_FLOW',
         label:{it:'Ricevimento',en:'Receiving',es:'Recepción'},
         owner:'Tela',
-        status:'ready',
-        missions:[
-          {
-            id:'ric1',
-            name:{it:'Consegna Frugé',en:'Frugé delivery',es:'Entrega Frugé'},
-            production_mode:'ON_DEMAND',
-            storage_method:'FRIDGE',
-            freezable:true,
-            real_shelf_life:null,
-            minimum_batch:{qty:null,unit:null},
-            preferred_batch:{qty:null,unit:null},
-            operational_criticality:'HIGH',
-            status:'ready',
-            reason_today:{it:'Salmone fresco in arrivo — necessario per Salmon Cakes',
-                          en:'Fresh salmon arriving — needed for Salmon Cakes',
-                          es:'Salmón fresco llegando — necesario para Salmon Cakes'},
-            blocked_by:null,
-            depends_on_station:null,
-            estimated_duration:15,
-            assigned_person:'Tela',
-            current_stock:null,
-            suggested_qty:null,
-            actions:[{id:'act_fruge',label:'kp_btn_receive',cls:'kp-btn-success',evt:'EVT_FRUGE_RECEIVED'}]
-          }
-        ]
+        status:'ready_to_start',
+        missions:[{
+          id:'ric1',
+          name:{it:'Consegna Frugé',en:'Frugé delivery',es:'Entrega Frugé'},
+          production_mode:'ON_DEMAND', storage_method:'FRIDGE', freezable:true,
+          real_shelf_life:null,
+          minimum_batch:{qty:null,unit:null}, preferred_batch:{qty:null,unit:null},
+          operational_criticality:'HIGH',
+          status:'ready_to_start',
+          reason_today:{it:'Salmone fresco in arrivo — necessario per Salmon Cakes',
+                        en:'Fresh salmon arriving — needed for Salmon Cakes',
+                        es:'Salmón fresco llegando — necesario para Salmon Cakes'},
+          blocked_by:null, depends_on_station:null,
+          estimated_duration:15, assigned_person:'Tela',
+          current_stock:null, suggested_qty:null,
+          actions:[{id:'act_fruge',label:'kp_btn_receive',cls:'kp-btn-success',evt:'EVT_FRUGE_RECEIVED'}]
+        }]
       },
 
-      /* ── 2. PROCESSING — VIRTUAL_FLOW ─────────────────────────────────── */
+      /* ── 2. PROCESSING — VIRTUAL_FLOW ──────────────────────────────── */
       processazione: {
         id:'processazione', icon:'🐟', station_kind:'VIRTUAL_FLOW',
         label:{it:'Processazione',en:'Processing',es:'Procesado'},
         owner:'Tela',
         status:'blocked',
-        missions:[
-          {
-            id:'proc1',
-            name:{it:'Processa salmone',en:'Process salmon',es:'Procesar salmón'},
-            production_mode:'ON_DEMAND',
-            storage_method:'FRIDGE',
-            freezable:true,
-            real_shelf_life:2,
-            minimum_batch:{qty:null,unit:null},
-            preferred_batch:{qty:null,unit:null},
-            operational_criticality:'HIGH',
-            status:'blocked',
-            reason_today:{it:'Il salmone deve essere processato prima di passare al Forno',
-                          en:'Salmon must be processed before moving to Oven',
-                          es:'El salmón debe procesarse antes de pasar al Horno'},
-            blocked_by:'ric1',
-            depends_on_station:'ricezione',
-            estimated_duration:20,
-            assigned_person:'Tela',
-            current_stock:null,
-            suggested_qty:null,
-            actions:[{id:'act_proc_start',label:'kp_btn_start',cls:'kp-btn-primary',evt:'EVT_PROC_START'}]
-          }
-        ]
+        missions:[{
+          id:'proc1',
+          name:{it:'Processa salmone',en:'Process salmon',es:'Procesar salmón'},
+          production_mode:'ON_DEMAND', storage_method:'FRIDGE', freezable:true,
+          real_shelf_life:2,
+          minimum_batch:{qty:null,unit:null}, preferred_batch:{qty:null,unit:null},
+          operational_criticality:'HIGH',
+          status:'blocked',
+          reason_today:{it:'In attesa della consegna Frugé',
+                        en:'Waiting for Frugé delivery',
+                        es:'Esperando entrega de Frugé'},
+          blocked_by:'ric1', depends_on_station:'ricezione',
+          estimated_duration:20, assigned_person:'Tela',
+          current_stock:null, suggested_qty:null,
+          actions:[{id:'act_proc_start',label:'kp_btn_start',cls:'kp-btn-primary',evt:'EVT_PROC_START'}]
+        }]
       },
 
-      /* ── 3. SAUCIER — REAL ────────────────────────────────────────────── */
+      /* ── 3. SAUCIER — REAL ─────────────────────────────────────────── */
       saucier: {
         id:'saucier', icon:'🥫', station_kind:'REAL',
         label:{it:'Saucier',en:'Saucier',es:'Salsero'},
         owner:'Cole',
-        status:'ready',
+        status:'ready_to_start',
         missions:[
           {
             id:'sau1',
             name:{it:'Arrabbiata',en:'Arrabbiata',es:'Arrabbiata'},
-            production_mode:'STOCK',
-            storage_method:'FRIDGE',
-            freezable:false,
+            production_mode:'STOCK', storage_method:'FRIDGE', freezable:false,
             real_shelf_life:7,
-            minimum_batch:{qty:1,unit:'batch'},
-            preferred_batch:{qty:2,unit:'batch'},
+            minimum_batch:{qty:1,unit:'batch'}, preferred_batch:{qty:2,unit:'batch'},
             operational_criticality:'HIGH',
-            status:'ready',
+            status:'ready_to_start',
             reason_today:{it:'Stock insufficiente per il servizio previsto stasera',
                           en:'Insufficient stock for tonight\'s projected service',
-                          es:'Stock insuficiente para el servicio proyectado esta noche'},
-            blocked_by:null,
-            depends_on_station:null,
-            estimated_duration:45,
-            assigned_person:'Cole',
-            current_stock:{qty:1.2,unit:'kg'},
-            suggested_qty:{qty:2,unit:'batch'},
+                          es:'Stock insuficiente para el servicio de esta noche'},
+            blocked_by:null, depends_on_station:null,
+            estimated_duration:45, assigned_person:'Cole',
+            current_stock:{qty:1.2,unit:'kg'}, suggested_qty:{qty:2,unit:'batch'},
             recipe_id:'arrabbiata',
             actions:[{id:'act_sau1_open',label:'kp_btn_recipe',cls:'kp-btn-ghost',evt:'EVT_OPEN_ARRABBIATA'}]
           },
           {
             id:'sau2',
             name:{it:'Demi-glace',en:'Demi-glace',es:'Demi-glace'},
-            production_mode:'STOCK',
-            storage_method:'FRIDGE',
-            freezable:true,
+            production_mode:'STOCK', storage_method:'FRIDGE', freezable:true,
             real_shelf_life:5,
-            minimum_batch:{qty:1,unit:'batch'},
-            preferred_batch:{qty:1,unit:'batch'},
+            minimum_batch:{qty:1,unit:'batch'}, preferred_batch:{qty:1,unit:'batch'},
             operational_criticality:'MEDIUM',
-            status:'ready',
+            status:'ready_to_start',
             reason_today:{it:'Riduzione pianificata — 4 ore di cottura',
                           en:'Planned reduction — 4-hour cook',
                           es:'Reducción planificada — cocción 4 horas'},
-            blocked_by:null,
-            depends_on_station:null,
-            estimated_duration:240,
-            assigned_person:'Cole',
-            current_stock:{qty:0.8,unit:'kg'},
-            suggested_qty:{qty:1,unit:'batch'},
-            recipe_id:null,
-            actions:[]
+            blocked_by:null, depends_on_station:null,
+            estimated_duration:240, assigned_person:'Cole',
+            current_stock:{qty:0.8,unit:'kg'}, suggested_qty:{qty:1,unit:'batch'},
+            recipe_id:null, actions:[]
           }
         ]
       },
 
-      /* ── 4. OVEN — REAL ────────────────────────────────────────────────── */
+      /* ── 4. OVEN — REAL ────────────────────────────────────────────── */
       forno: {
         id:'forno', icon:'🔥', station_kind:'REAL',
         label:{it:'Forno',en:'Oven',es:'Horno'},
@@ -4494,182 +4594,137 @@ function _kitchenInitState(){
           {
             id:'forno1',
             name:{it:'Salmon Cakes',en:'Salmon Cakes',es:'Salmon Cakes'},
-            production_mode:'DAILY',
-            storage_method:'FRIDGE',
-            freezable:false,
+            production_mode:'DAILY', storage_method:'FRIDGE', freezable:false,
             real_shelf_life:2,
-            minimum_batch:{qty:13,unit:'pz'},
-            preferred_batch:{qty:39,unit:'pz'},
+            minimum_batch:{qty:13,unit:'pz'}, preferred_batch:{qty:39,unit:'pz'},
             operational_criticality:'HIGH',
-            status:'blocked',
-            reason_today:{it:'Alta richiesta — media 15 pz/giorno, stock a 0',
-                          en:'High demand — avg 15 pz/day, stock at 0',
-                          es:'Alta demanda — media 15 pz/día, stock en 0'},
-            blocked_by:'proc1',
-            depends_on_station:'processazione',
-            estimated_duration:40,
-            assigned_person:'Rachel',
-            current_stock:{qty:0,unit:'pz'},
-            suggested_qty:{qty:39,unit:'pz'},
+            status:'blocked',  /* BLOCKED — no action button */
+            reason_today:{it:'In attesa del salmone processato',
+                          en:'Waiting for salmon to be processed',
+                          es:'Esperando salmón procesado'},
+            blocked_by:'proc1', depends_on_station:'processazione',
+            estimated_duration:40, assigned_person:'Rachel',
+            current_stock:{qty:0,unit:'pz'}, suggested_qty:{qty:39,unit:'pz'},
             recipe_id:'salmon_cakes',
-            actions:[{id:'act_forno1_start',label:'kp_btn_start',cls:'kp-btn-primary',evt:'EVT_FORNO_START'}]
+            actions:[]  /* no action while blocked */
           },
           {
             id:'forno2',
             name:{it:'Croutons',en:'Croutons',es:'Crutones'},
-            production_mode:'DAILY',
-            storage_method:'DRY',
-            freezable:false,
+            production_mode:'DAILY', storage_method:'DRY', freezable:false,
             real_shelf_life:3,
-            minimum_batch:{qty:500,unit:'g'},
-            preferred_batch:{qty:1000,unit:'g'},
+            minimum_batch:{qty:500,unit:'g'}, preferred_batch:{qty:1000,unit:'g'},
             operational_criticality:'LOW',
-            status:'ready',
+            status:'ready_to_start',
             reason_today:{it:'Routine giornaliera — pane di ieri da tostare',
                           en:'Daily routine — yesterday\'s bread to toast',
                           es:'Rutina diaria — pan de ayer para tostar'},
-            blocked_by:null,
-            depends_on_station:null,
-            estimated_duration:20,
-            assigned_person:'Rachel',
-            current_stock:{qty:0,unit:'g'},
-            suggested_qty:{qty:1000,unit:'g'},
-            recipe_id:null,
-            actions:[]
+            blocked_by:null, depends_on_station:null,
+            estimated_duration:20, assigned_person:'Rachel',
+            current_stock:{qty:0,unit:'g'}, suggested_qty:{qty:1000,unit:'g'},
+            recipe_id:null, actions:[]
           },
           {
             id:'forno3',
             name:{it:'Chicken Parmesan',en:'Chicken Parmesan',es:'Chicken Parmesan'},
-            production_mode:'DAILY',
-            storage_method:'FRIDGE',
-            freezable:false,
+            production_mode:'DAILY', storage_method:'FRIDGE', freezable:false,
             real_shelf_life:2,
-            minimum_batch:{qty:6,unit:'pz'},
-            preferred_batch:{qty:12,unit:'pz'},
+            minimum_batch:{qty:6,unit:'pz'}, preferred_batch:{qty:12,unit:'pz'},
             operational_criticality:'MEDIUM',
-            status:'ready',
-            reason_today:{it:'Stock a 0 — 6 vendite medie al giorno',
+            status:'ready_to_start',
+            reason_today:{it:'Stock a 0 — media 6 al giorno',
                           en:'Stock at 0 — avg 6 per day',
                           es:'Stock en 0 — promedio 6 por día'},
-            blocked_by:null,
-            depends_on_station:null,
-            estimated_duration:35,
-            assigned_person:'Rachel',
-            current_stock:{qty:0,unit:'pz'},
-            suggested_qty:{qty:12,unit:'pz'},
-            recipe_id:null,
-            actions:[]
+            blocked_by:null, depends_on_station:null,
+            estimated_duration:35, assigned_person:'Rachel',
+            current_stock:{qty:0,unit:'pz'}, suggested_qty:{qty:12,unit:'pz'},
+            recipe_id:null, actions:[]
           }
         ]
       },
 
-      /* ── 5. SALAD — REAL ───────────────────────────────────────────────── */
+      /* ── 5. SALAD — REAL ───────────────────────────────────────────── */
       insalata: {
         id:'insalata', icon:'🥗', station_kind:'REAL',
         label:{it:'Insalata',en:'Salad',es:'Ensalada'},
-        owner:null,   /* assigned_person: null — confermato da Max */
+        owner:null,
         status:'in_progress',
-        missions:[
-          {
-            id:'sal1',
-            name:{it:'Chop Romaine',en:'Chop Romaine',es:'Cortar Romaine'},
-            production_mode:'DAILY',
-            storage_method:'FRIDGE',
-            freezable:false,
-            real_shelf_life:2,
-            minimum_batch:{qty:1,unit:'bag'},
-            preferred_batch:{qty:2,unit:'bag'},
-            operational_criticality:'HIGH',
-            status:'in_progress',
-            reason_today:{it:'Prep giornaliera — deve essere pronta per il servizio',
-                          en:'Daily prep — must be ready before service',
-                          es:'Prep diaria — debe estar lista antes del servicio'},
-            blocked_by:null,
-            depends_on_station:null,
-            estimated_duration:25,
-            assigned_person:null,  /* Salad station owner TBD */
-            current_stock:{qty:0,unit:'g'},
-            suggested_qty:{qty:2,unit:'bag'},
-            recipe_id:null,
-            actions:[{id:'act_sal1_done',label:'kp_btn_complete',cls:'kp-btn-success',evt:'EVT_ROMAINE_DONE'}]
-          }
-        ]
+        missions:[{
+          id:'sal1',
+          name:{it:'Chop Romaine',en:'Chop Romaine',es:'Cortar Romaine'},
+          production_mode:'DAILY', storage_method:'FRIDGE', freezable:false,
+          real_shelf_life:2,
+          minimum_batch:{qty:1,unit:'bag'}, preferred_batch:{qty:2,unit:'bag'},
+          operational_criticality:'HIGH',
+          status:'in_progress',
+          reason_today:{it:'Prep giornaliera — deve essere pronta per il servizio',
+                        en:'Daily prep — must be ready before service',
+                        es:'Prep diaria — debe estar lista antes del servicio'},
+          blocked_by:null, depends_on_station:null,
+          estimated_duration:25, assigned_person:null,
+          current_stock:{qty:0,unit:'g'}, suggested_qty:{qty:2,unit:'bag'},
+          recipe_id:null,
+          actions:[{id:'act_sal1_done',label:'kp_btn_complete',cls:'kp-btn-success',evt:'EVT_ROMAINE_DONE'}]
+        }]
       },
 
-      /* ── 6. PASTRY — REAL ──────────────────────────────────────────────── */
+      /* ── 6. PASTRY — REAL ──────────────────────────────────────────── */
       pasticceria: {
         id:'pasticceria', icon:'🍮', station_kind:'REAL',
         label:{it:'Pasticceria',en:'Pastry',es:'Pastelería'},
         owner:'Samantha',
-        status:'ready',
-        missions:[
-          {
-            id:'pas1',
-            name:{it:'Tiramisu',en:'Tiramisu',es:'Tiramisú'},
-            production_mode:'STOCK',
-            storage_method:'FRIDGE',
-            freezable:false,
-            real_shelf_life:4,
-            minimum_batch:{qty:10,unit:'pz'},
-            preferred_batch:{qty:20,unit:'pz'},
-            operational_criticality:'HIGH',
-            status:'ready',
-            reason_today:{it:'Stock: 8 pz — sotto soglia di copertura per il weekend',
-                          en:'Stock: 8 pz — below coverage threshold for the weekend',
-                          es:'Stock: 8 pz — bajo umbral de cobertura para el fin de semana'},
-            blocked_by:null,
-            depends_on_station:null,
-            estimated_duration:60,
-            assigned_person:'Samantha',
-            current_stock:{qty:8,unit:'pz'},
-            suggested_qty:{qty:20,unit:'pz'},
-            recipe_id:'tiramisu',
-            actions:[{id:'act_pas1_open',label:'kp_btn_recipe',cls:'kp-btn-ghost',evt:'EVT_OPEN_TIRAMISU'}]
-          }
-        ]
+        status:'ready_to_start',
+        missions:[{
+          id:'pas1',
+          name:{it:'Tiramisu',en:'Tiramisu',es:'Tiramisú'},
+          production_mode:'STOCK', storage_method:'FRIDGE', freezable:false,
+          real_shelf_life:4,
+          minimum_batch:{qty:10,unit:'pz'}, preferred_batch:{qty:20,unit:'pz'},
+          operational_criticality:'HIGH',
+          status:'ready_to_start',
+          reason_today:{it:'Stock: 8 pz — sotto soglia per il weekend',
+                        en:'Stock: 8 pz — below threshold for the weekend',
+                        es:'Stock: 8 pz — bajo umbral para el fin de semana'},
+          blocked_by:null, depends_on_station:null,
+          estimated_duration:60, assigned_person:'Samantha',
+          current_stock:{qty:8,unit:'pz'}, suggested_qty:{qty:20,unit:'pz'},
+          recipe_id:'tiramisu',
+          actions:[{id:'act_pas1_open',label:'kp_btn_recipe',cls:'kp-btn-ghost',evt:'EVT_OPEN_TIRAMISU'}]
+        }]
       },
 
-      /* ── 7. FRESH PASTA — REAL ─────────────────────────────────────────── */
+      /* ── 7. FRESH PASTA — REAL ─────────────────────────────────────── */
       pasta_fresca: {
         id:'pasta_fresca', icon:'🍝', station_kind:'REAL',
         label:{it:'Pasta Fresca',en:'Fresh Pasta',es:'Pasta Fresca'},
         owner:'Todd',
-        status:'ready',
-        missions:[
-          {
-            id:'pfr1',
-            name:{it:'Maccheroni',en:'Maccheroni',es:'Maccheroni'},
-            production_mode:'DAILY',
-            storage_method:'FRIDGE',
-            freezable:false,
-            real_shelf_life:1,
-            minimum_batch:{qty:500,unit:'g'},
-            preferred_batch:{qty:1000,unit:'g'},
-            operational_criticality:'MEDIUM',
-            status:'ready',
-            reason_today:{it:'Produzione giornaliera — Todd lun–mer',
-                          en:'Daily production — Todd Mon–Wed',
-                          es:'Producción diaria — Todd lun–mié'},
-            blocked_by:null,
-            depends_on_station:null,
-            estimated_duration:50,
-            assigned_person:'Todd',
-            current_stock:{qty:240,unit:'g'},
-            suggested_qty:{qty:1000,unit:'g'},
-            recipe_id:null,
-            actions:[]
-          }
-        ]
+        status:'ready_to_start',
+        missions:[{
+          id:'pfr1',
+          name:{it:'Maccheroni',en:'Maccheroni',es:'Maccheroni'},
+          production_mode:'DAILY', storage_method:'FRIDGE', freezable:false,
+          real_shelf_life:1,
+          minimum_batch:{qty:500,unit:'g'}, preferred_batch:{qty:1000,unit:'g'},
+          operational_criticality:'MEDIUM',
+          status:'ready_to_start',
+          reason_today:{it:'Produzione giornaliera — Todd lun–mer',
+                        en:'Daily production — Todd Mon–Wed',
+                        es:'Producción diaria — Todd lun–mié'},
+          blocked_by:null, depends_on_station:null,
+          estimated_duration:50, assigned_person:'Todd',
+          current_stock:{qty:240,unit:'g'}, suggested_qty:{qty:1000,unit:'g'},
+          recipe_id:null, actions:[]
+        }]
       }
 
-    } /* /stations */
+    }
   };
 }
 
-/* ── Kitchen state singleton — reset on each page load ── */
+/* ── Kitchen state singleton ── */
 var KS = null;
 
-/* ── Helper: localize a {it,en,es}|string field ── */
+/* ── Localize a {it,en,es}|string field ── */
 function _kl(v){ if(!v) return ''; return typeof v==='object'?(v[LANG]||v.it||''):v; }
 
 /* ── Event dispatcher ── */
@@ -4677,125 +4732,158 @@ function _kEvt(evt){
   var now = new Date();
   var hm  = now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
 
-  /* ── EVT_FRUGE_RECEIVED ── */
   if(evt==='EVT_FRUGE_RECEIVED'){
+    /* Receiving: done */
     KS.stations.ricezione.missions[0].status  = 'done';
     KS.stations.ricezione.missions[0].actions = [];
     KS.stations.ricezione.status = 'done';
-    /* Unlock processing */
+    /* Processing: unblocked → ready_to_start */
     var proc1 = KS.stations.processazione.missions[0];
-    proc1.status = 'ready'; proc1.blocked_by = null; proc1.blockReason = null;
-    KS.stations.processazione.status = 'ready';
-    KS.relay.push({
-      ico:'📦',
-      msg:{it:'Frugé ricevuto. Tela ha confermato. Stazione Processazione sbloccata.',
-           en:'Frugé received. Tela confirmed. Processing station unblocked.',
-           es:'Frugé recibido. Tela confirmó. Estación de Procesado desbloqueada.'},
-      time:hm
-    });
+    proc1.status = 'ready_to_start'; proc1.blocked_by = null;
+    KS.stations.processazione.status = 'ready_to_start';
+    /* Salmon Cakes: still blocked — no change yet */
+    /* Full relay */
+    KS.relay.push({ico:'📦',
+      msg:{it:'Frugé ricevuto. Tela confermato. Processazione sbloccata.',
+           en:'Frugé received. Tela confirmed. Processing unblocked.',
+           es:'Frugé recibido. Tela confirmó. Procesado desbloqueado.'},
+      time:hm});
+    /* Forno-filtered relay */
+    KS.relay_forno.push({ico:'📦',
+      msg:{it:'Salmone arrivato. In attesa della processazione.',
+           en:'Salmon has arrived. Waiting for processing.',
+           es:'El salmón llegó. Esperando procesado.'},
+      time:hm});
   }
 
-  /* ── EVT_PROC_START ── */
   else if(evt==='EVT_PROC_START'){
     var m = KS.stations.processazione.missions[0];
-    m.status = 'in_progress';
+    m.status  = 'in_progress';
     m.actions = [{id:'act_proc_done',label:'kp_btn_complete',cls:'kp-btn-success',evt:'EVT_PROC_COMPLETE'}];
     KS.stations.processazione.status = 'in_progress';
-    KS.relay.push({
-      ico:'🐟',
+    KS.relay.push({ico:'🐟',
       msg:{it:'Processazione salmone avviata. Forno in attesa del verde.',
            en:'Salmon processing started. Oven waiting for green light.',
-           es:'Procesado de salmón iniciado. Horno en espera de la señal.'},
-      time:hm
-    });
+           es:'Procesado de salmón iniciado. Horno en espera.'},
+      time:hm});
+    /* No forno relay for this internal event */
   }
 
-  /* ── EVT_PROC_COMPLETE ── */
   else if(evt==='EVT_PROC_COMPLETE'){
     KS.stations.processazione.missions[0].status  = 'done';
     KS.stations.processazione.missions[0].actions = [];
     KS.stations.processazione.status = 'done';
-    /* Salmon Cakes: fully unblocked */
+    /* Salmon Cakes: BLOCKED → ready_to_start, add Start button */
     var f1 = KS.stations.forno.missions[0];
-    f1.status = 'ready'; f1.blocked_by = null; f1.blockReason = null;
-    KS.stations.forno.status = 'ready';
-    KS.relay.push({
-      ico:'🤖',
-      msg:{it:'Salmone processato ✓ — Rachel può iniziare le Salmon Cakes adesso.',
-           en:'Salmon processed ✓ — Rachel can start Salmon Cakes now.',
-           es:'Salmón procesado ✓ — Rachel puede iniciar Salmon Cakes ahora.'},
-      time:hm
-    });
+    f1.status     = 'ready_to_start';
+    f1.blocked_by = null;
+    f1.actions    = [{id:'act_forno1_start',label:'kp_btn_start',cls:'kp-btn-primary',evt:'EVT_FORNO_START'}];
+    KS.stations.forno.status = 'ready_to_start';
+    /* Full relay */
+    KS.relay.push({ico:'🤖',
+      msg:{it:'Salmone processato ✓ — Forno sbloccato. Rachel può iniziare le Salmon Cakes.',
+           en:'Salmon processed ✓ — Oven unblocked. Rachel can start Salmon Cakes.',
+           es:'Salmón procesado ✓ — Horno desbloqueado. Rachel puede iniciar Salmon Cakes.'},
+      time:hm});
+    /* Forno-specific relay — clean message for Rachel */
+    KS.relay_forno.push({ico:'✅',
+      msg:{it:'Salmone processato. Puoi iniziare le Salmon Cakes.',
+           en:'Salmon processed. You can start Salmon Cakes.',
+           es:'Salmón procesado. Puedes iniciar las Salmon Cakes.'},
+      time:hm});
   }
 
-  /* ── EVT_FORNO_START ── */
   else if(evt==='EVT_FORNO_START'){
     var fm = KS.stations.forno.missions[0];
-    fm.status   = 'in_progress';
-    fm.actions  = [{id:'act_forno_done',label:'kp_btn_complete',cls:'kp-btn-success',evt:'EVT_FORNO_COMPLETE'}];
+    fm.status  = 'in_progress';
+    fm.actions = [{id:'act_forno_done',label:'kp_btn_complete',cls:'kp-btn-success',evt:'EVT_FORNO_COMPLETE'}];
     KS.stations.forno.status = 'in_progress';
-    KS.relay.push({
-      ico:'🔥',
-      msg:{it:'Rachel ha avviato Salmon Cakes. Timer 40 min.',
+    KS.relay.push({ico:'🔥',
+      msg:{it:'Rachel ha avviato le Salmon Cakes. Timer 40 min.',
            en:'Rachel started Salmon Cakes. 40-min timer.',
            es:'Rachel inició Salmon Cakes. Temporizador 40 min.'},
-      time:hm
-    });
+      time:hm});
+    KS.relay_forno.push({ico:'🔥',
+      msg:{it:'Salmon Cakes in corso. ~40 minuti.',
+           en:'Salmon Cakes in progress. ~40 minutes.',
+           es:'Salmon Cakes en curso. ~40 minutos.'},
+      time:hm});
   }
 
-  /* ── EVT_FORNO_COMPLETE ── */
   else if(evt==='EVT_FORNO_COMPLETE'){
     var fdm = KS.stations.forno.missions[0];
     fdm.status  = 'done'; fdm.actions = [];
     fdm.current_stock = {qty:39,unit:'pz'};
-    KS.stations.forno.status = 'in_progress'; /* still has other missions */
-    KS.relay.push({
-      ico:'✅',
-      msg:{it:'Salmon Cakes pronte — 39 pz in frigo. Stock aggiornato.',
-           en:'Salmon Cakes done — 39 pz in fridge. Stock updated.',
-           es:'Salmon Cakes listas — 39 pz en heladera. Stock actualizado.'},
-      time:hm
-    });
+    KS.stations.forno.status = 'in_progress'; /* other missions pending */
+    KS.relay.push({ico:'✅',
+      msg:{it:'Salmon Cakes pronte — 39 pz in frigo.',
+           en:'Salmon Cakes done — 39 pz in fridge.',
+           es:'Salmon Cakes listas — 39 pz en heladera.'},
+      time:hm});
+    KS.relay_forno.push({ico:'✅',
+      msg:{it:'Salmon Cakes pronte ✓ — 39 pz in frigo.',
+           en:'Salmon Cakes done ✓ — 39 pz in fridge.',
+           es:'Salmon Cakes listas ✓ — 39 pz en heladera.'},
+      time:hm});
   }
 
-  /* ── EVT_ROMAINE_DONE ── */
   else if(evt==='EVT_ROMAINE_DONE'){
     var rm = KS.stations.insalata.missions[0];
-    rm.status = 'done'; rm.actions = [];
-    KS.stations.insalata.status = 'done';
-    KS.relay.push({
-      ico:'🥗',
+    rm.status = 'ready_for_service'; rm.actions = [];
+    KS.stations.insalata.status = 'ready_for_service';
+    KS.relay.push({ico:'🥗',
       msg:{it:'Romaine chopped — Insalata pronta per il servizio.',
-           en:'Romaine chopped — Salad station ready for service.',
-           es:'Romaine cortada — estación de ensalada lista para el servicio.'},
-      time:hm
-    });
+           en:'Romaine chopped — Salad ready for service.',
+           es:'Romaine cortada — Ensalada lista para el servicio.'},
+      time:hm});
   }
 
-  /* ── EVT_OPEN_ARRABBIATA ── */
   else if(evt==='EVT_OPEN_ARRABBIATA'){
-    openTab('recipe',{id:'arrabbiata',name:'Arrabbiata'});
-    return; /* no re-render needed */
+    openTab('recipe',{id:'arrabbiata',name:'Arrabbiata'}); return;
   }
-
-  /* ── EVT_OPEN_TIRAMISU ── */
   else if(evt==='EVT_OPEN_TIRAMISU'){
-    openTab('recipe',{id:'tiramisu',name:'Tiramisu'});
-    return;
+    openTab('recipe',{id:'tiramisu',name:'Tiramisu'}); return;
+  }
+  else if(evt==='EVT_SET_VIEW_CHEF'){
+    _KV = 'chef';
+  }
+  else if(evt==='EVT_SET_VIEW_STATION'){
+    _KV = 'station';
   }
 
-  /* re-render kitchen workspace in-place */
   var ws = document.getElementById('workspace');
   if(ws) ws.innerHTML = pageKitchen();
   kitchenAfterRender();
 }
 
-/* ── Mission status label ── */
+/* ══ STATE-LABEL MAPPING (v013a) ════════════════════════════════════════════
+ * blocked           → ⛔ Bloccata          (no action button ever)
+ * ready_to_start    → Da iniziare          (action button present)
+ * in_progress       → In corso…            (complete button)
+ * ready_for_service → Pronta per servizio  (no action needed)
+ * done              → ✓ Completata         (muted)
+ * watch             → Da controllare       (yellow)
+ ══════════════════════════════════════════════════════════════════════════ */
 function _kMLabel(st){
   var map={
-    blocked:'kp_mission_blocked', ready:'kp_mission_ready',
-    in_progress:'kp_mission_ip', done:'kp_mission_done'};
-  return t(map[st]||'kp_mission_ready');
+    blocked:           t('kp_st_blocked'),
+    ready_to_start:    t('kp_st_ready_to_start'),
+    in_progress:       t('kp_st_in_progress'),
+    ready_for_service: t('kp_st_ready_for_service'),
+    done:              t('kp_st_done'),
+    watch:             t('kp_st_watch')
+  };
+  return map[st] || st;
+}
+
+/* ── CSS class per status ── */
+function _kMCls(st){
+  var map={
+    blocked:'ms-blocked', ready_to_start:'ms-ready',
+    in_progress:'ms-in_progress', ready_for_service:'ms-rfs',
+    done:'ms-done', watch:'ms-watch'
+  };
+  return map[st]||'ms-ready';
 }
 
 /* ── Criticality pill ── */
@@ -4809,11 +4897,10 @@ function _kCritPill(c){
 
 /* ── Stock chip ── */
 function _kStockChip(stock,suggested){
-  if(!stock) return '';
+  if(!stock || stock.qty === null) return '';
   var s = stock.qty+' '+stock.unit;
-  var sugg = suggested ? ' → '+suggested.qty+' '+suggested.unit : '';
-  return '<div class="kp-m-stock"><span class="kp-m-stock-lbl">'+t('kp_stock')+'</span>'
-    +s+sugg+'</div>';
+  var sugg = (suggested && suggested.qty) ? ' → '+t('kp_make')+' '+suggested.qty+' '+suggested.unit : '';
+  return '<div class="kp-m-stock"><span class="kp-m-stock-lbl">'+t('kp_stock')+'</span>'+s+sugg+'</div>';
 }
 
 /* ── VIRTUAL_FLOW badge ── */
@@ -4822,60 +4909,51 @@ function _kVirtualBadge(s){
   return '<span class="kp-virt-badge">'+t('kp_virtual_flow')+'</span>';
 }
 
-/* ── UI-only state (not part of KS event model) ── */
+/* ── UI state ── */
 var _kExpandedStation = null;
 var _kRelayOpen       = false;
-
-/* ── Station order (v013: 7 stations) ── */
 var _kOrder = ['ricezione','processazione','saucier','forno','insalata','pasticceria','pasta_fresca'];
 
-/* ── Focus layer: collect all actionable missions across all stations ── */
+/* ══ CHEF VIEW helpers ═════════════════════════════════════════════════════ */
+
 function _kFocusItems(){
   var items = [];
   _kOrder.forEach(function(sid){
     var s = KS.stations[sid];
     if(!s) return;
     s.missions.forEach(function(m){
-      if(m.status === 'ready' || m.status === 'in_progress' || m.status === 'blocked'){
-        /* only BLOCKED with high criticality bubble up */
-        if(m.status === 'blocked' && m.operational_criticality !== 'HIGH') return;
+      if(m.status === 'ready_to_start' || m.status === 'in_progress'){
+        items.push({mission:m, station:s});
+      } else if(m.status === 'blocked' && m.operational_criticality === 'HIGH'){
         items.push({mission:m, station:s});
       }
     });
   });
-  /* sort: in_progress first, then ready, then blocked */
-  var ord={in_progress:0,ready:1,blocked:2};
+  var ord={in_progress:0, ready_to_start:1, blocked:2};
   items.sort(function(a,b){ return (ord[a.mission.status]||9)-(ord[b.mission.status]||9); });
   return items;
 }
 
-/* ── Render Focus layer ── */
 function _kRenderFocus(){
   var items = _kFocusItems();
-  var headLabel = t('kp_focus_label');
-
   if(items.length === 0){
     return '<div class="kp-focus">'
-      +'<div class="kp-focus-head">'
-        +'<div class="kp-focus-label">'+headLabel+'</div>'
-      +'</div>'
+      +'<div class="kp-focus-head"><div class="kp-focus-label">'+t('kp_focus_label')+'</div></div>'
       +'<div class="kp-focus-empty">'+t('kp_focus_empty')+'</div>'
       +'</div>';
   }
-
-  var countKey = items.length === 1 ? 'kp_focus_count_one' : 'kp_focus_count_many';
+  var countKey = items.length===1 ? 'kp_focus_count_one' : 'kp_focus_count_many';
   var itemsHtml = items.slice(0,4).map(function(fi){
-    var m = fi.mission, s = fi.station;
-    var dotCls = m.status === 'in_progress' ? 'fi-in_progress'
-               : m.status === 'blocked'     ? 'fi-blocked'
+    var m=fi.mission, s=fi.station;
+    var dotCls = m.status==='in_progress' ? 'fi-in_progress'
+               : m.status==='blocked'     ? 'fi-blocked'
                : 'fi-ready';
     var actHtml = '';
-    if(m.actions && m.actions.length && m.status !== 'done'){
+    if(m.actions && m.actions.length && m.status!=='blocked' && m.status!=='done'){
       actHtml = '<div class="kp-fitem-actions">'
         +m.actions.map(function(a){
           return '<button class="kp-btn '+a.cls+'" data-kevt="'+a.evt+'">'+t(a.label)+'</button>';
-        }).join('')
-        +'</div>';
+        }).join('')+'</div>';
     }
     var owner = m.assigned_person ? ' · '+m.assigned_person : '';
     return '<div class="kp-fitem">'
@@ -4888,52 +4966,40 @@ function _kRenderFocus(){
       +'</div>'
       +'</div>';
   }).join('');
-
   return '<div class="kp-focus">'
     +'<div class="kp-focus-head">'
-      +'<div class="kp-focus-label">'+headLabel+'</div>'
+      +'<div class="kp-focus-label">'+t('kp_focus_label')+'</div>'
       +'<div class="kp-focus-count">'+t(countKey,{n:items.length})+'</div>'
     +'</div>'
     +'<div class="kp-focus-items">'+itemsHtml+'</div>'
     +'</div>';
 }
 
-/* ── Render accordion station row ── */
 function _kStationRow(s){
   if(!s) return '';
   var expanded = (_kExpandedStation === s.id);
-
-  /* badge: count non-done missions */
-  var active = s.missions.filter(function(m){ return m.status !== 'done'; });
+  var active = s.missions.filter(function(m){ return m.status!=='done'; });
   var badgeHtml = '';
-  if(active.length > 0 && s.status !== 'idle' && s.status !== 'done'){
-    var bCls = 'sb-'+s.status;
-    badgeHtml = '<span class="kp-sbadge '+bCls+'">'+active.length+'</span>';
+  if(active.length > 0 && s.status!=='done'){
+    badgeHtml = '<span class="kp-sbadge sb-'+s.status+'">'+active.length+'</span>';
   }
-
-  /* missions panel (shown when expanded) */
   var missionsHtml = s.missions.map(function(m){
-    var mstLbl  = _kMLabel(m.status);
-    var mstCls  = 'ms-'+m.status;
-    var textCls = m.status==='done'?' ms-done':m.status==='blocked'?' ms-blocked':'';
-    var blockHtml = (m.status==='blocked')
-      ? '<div class="kp-m-reason">'+_kl(m.reason_today)+'</div>' : '';
-    var reasonHtml = (m.status!=='blocked' && m.status!=='done')
-      ? '<div class="kp-m-reason kp-m-reason-soft">'+_kl(m.reason_today)+'</div>' : '';
+    var mstLbl = _kMLabel(m.status);
+    var mstCls = _kMCls(m.status);
+    /* reason: always show except done */
+    var reasonHtml = (m.status!=='done')
+      ? '<div class="kp-m-reason'+(m.status==='blocked'?' kp-m-reason-warn':' kp-m-reason-soft')+'">'+_kl(m.reason_today)+'</div>'
+      : '';
     /* batch hint */
-    var batchHtml = '';
-    if(m.status!=='done' && m.preferred_batch && m.preferred_batch.qty){
-      batchHtml = '<div class="kp-m-batch">'+t('kp_batch')+': '+m.preferred_batch.qty+' '+m.preferred_batch.unit+'</div>';
-    }
-    /* stock chip */
+    var batchHtml = (m.status!=='done' && m.preferred_batch && m.preferred_batch.qty)
+      ? '<div class="kp-m-batch">'+t('kp_batch')+': '+m.preferred_batch.qty+' '+m.preferred_batch.unit+'</div>'
+      : '';
     var stockHtml = _kStockChip(m.current_stock, m.status==='done'?null:m.suggested_qty);
-    /* criticality + duration */
-    var metaHtml = _kCritPill(m.operational_criticality);
-    if(m.estimated_duration){
-      metaHtml += '<span class="kp-m-dur">~'+m.estimated_duration+' min</span>';
-    }
+    var metaHtml  = _kCritPill(m.operational_criticality);
+    if(m.estimated_duration) metaHtml += '<span class="kp-m-dur">~'+m.estimated_duration+' min</span>';
+    /* actions: ONLY if not blocked and not done */
     var actHtml = '';
-    if(m.actions && m.actions.length && m.status!=='done'){
+    if(m.actions && m.actions.length && m.status!=='blocked' && m.status!=='done'){
       actHtml = '<div class="kp-m-actions">'
         +m.actions.map(function(a){
           return '<button class="kp-btn '+a.cls+'" data-kevt="'+a.evt+'">'+t(a.label)+'</button>';
@@ -4941,17 +5007,15 @@ function _kStationRow(s){
     }
     return '<div class="kp-mission">'
       +'<div class="kp-m-head">'
-        +'<div class="kp-m-status '+mstCls+'">'+mstLbl+'</div>'
-        +metaHtml
+        +'<div class="kp-m-status '+mstCls+'">'+mstLbl+'</div>'+metaHtml
       +'</div>'
       +'<div class="kp-m-body">'
-        +'<div class="kp-m-text'+textCls+'">'+_kl(m.name)+'</div>'
-        +blockHtml+reasonHtml+batchHtml+stockHtml+actHtml
+        +'<div class="kp-m-text'+(m.status==='done'?' ms-done-txt':'')+'">'+_kl(m.name)+'</div>'
+        +reasonHtml+batchHtml+stockHtml+actHtml
       +'</div>'
       +'</div>';
   }).join('');
-
-  var ownerLbl = s.owner ? s.owner : t('kp_owner_tbd');
+  var ownerLbl = s.owner || t('kp_owner_tbd');
   return '<div class="kp-srow ks-'+s.status+(expanded?' kp-expanded':'')+'\" data-ksrow="'+s.id+'">'
     +'<div class="kp-srow-head">'
       +'<div class="kp-srow-ico">'+s.icon+'</div>'
@@ -4959,57 +5023,150 @@ function _kStationRow(s){
         +'<div class="kp-srow-name">'+_kl(s.label)+_kVirtualBadge(s)+'</div>'
         +'<div class="kp-srow-owner">'+ownerLbl+'</div>'
       +'</div>'
-      +'<div class="kp-srow-right">'
-        +badgeHtml
-        +'<span class="kp-srow-chev">▾</span>'
-      +'</div>'
+      +'<div class="kp-srow-right">'+badgeHtml+'<span class="kp-srow-chev">▾</span></div>'
     +'</div>'
     +'<div class="kp-srow-missions">'+missionsHtml+'</div>'
     +'</div>';
 }
 
-/* ── Render relay chip + log ── */
 function _kRenderRelay(){
-  var msgs   = KS.relay;
-  var chipLbl = t('kp_relay_title');
+  var msgs = KS.relay;
   var chipSub = msgs.length > 0 ? t('kp_relay_chip_n',{n:msgs.length}) : t('kp_relay_chip_0');
-  var badgeHtml = msgs.length > 0
-    ? '<span class="kp-relay-chip-badge">'+msgs.length+'</span>' : '';
-
+  var badgeHtml = msgs.length > 0 ? '<span class="kp-relay-chip-badge">'+msgs.length+'</span>' : '';
   var logHtml = '';
   if(_kRelayOpen){
-    var inner = msgs.length === 0
+    var inner = msgs.length===0
       ? '<div class="kp-relay-empty">'+t('kp_relay_empty')+'</div>'
       : msgs.slice().reverse().map(function(m){
           return '<div class="kp-rmsg">'
             +'<span class="kp-rmsg-ico">'+m.ico+'</span>'
-            +'<div class="kp-rmsg-body">'
-              +'<div>'+_kl(m.msg)+'</div>'
+            +'<div class="kp-rmsg-body"><div>'+_kl(m.msg)+'</div>'
               +'<div class="kp-rmsg-time">'+m.time+'</div>'
-            +'</div>'
-            +'</div>';
+            +'</div></div>';
         }).join('');
     logHtml = '<div class="kp-relay-log" id="kp-relay-log">'+inner+'</div>';
   }
-
   return '<div class="kp-relay-chip'+(_kRelayOpen?' kp-relay-open':'')+'\" id="kp-relay-chip">'
-      +'<span class="kp-relay-chip-ico">🤖</span>'
-      +'<span class="kp-relay-chip-label">'+chipLbl+' · '+chipSub+'</span>'
-      +badgeHtml
-      +'<span class="kp-relay-chip-chev">▾</span>'
-    +'</div>'
-    +logHtml;
+    +'<span class="kp-relay-chip-ico">🤖</span>'
+    +'<span class="kp-relay-chip-label">'+t('kp_relay_title')+' · '+chipSub+'</span>'
+    +badgeHtml+'<span class="kp-relay-chip-chev">▾</span>'
+    +'</div>'+logHtml;
 }
 
-/* ── Page render ── */
+/* ══ STATION VIEW renderer ════════════════════════════════════════════════ */
+
+function _kRenderStation(){
+  var s = KS.stations[_KV_STATION];
+  if(!s) return '<div class="pi"><p>Station not found.</p></div>';
+
+  /* filtered relay for this station */
+  var msgs = KS['relay_'+_KV_STATION] || [];
+
+  /* Mission cards */
+  var missionsHtml = s.missions.map(function(m){
+    var mstLbl = _kMLabel(m.status);
+    var mstCls = _kMCls(m.status);
+
+    /* reason: show only when blocked or ready_to_start */
+    var reasonHtml = (m.status==='blocked' || m.status==='ready_to_start')
+      ? '<div class="sv-mission-reason'+(m.status==='blocked'?' sv-reason-blocked':'')+'">'+_kl(m.reason_today)+'</div>'
+      : '';
+
+    /* batch: shown as "Fai: 39 pz" in plain language */
+    var batchHtml = (m.status!=='done' && m.status!=='ready_for_service' && m.preferred_batch && m.preferred_batch.qty)
+      ? '<div class="sv-mission-batch">'+t('kp_make')+' '+m.preferred_batch.qty+' '+m.preferred_batch.unit+'</div>'
+      : '';
+
+    /* action button — NEVER shown when blocked */
+    var actHtml = '';
+    if(m.actions && m.actions.length && m.status!=='blocked' && m.status!=='done'){
+      actHtml = '<div class="sv-mission-actions">'
+        +m.actions.map(function(a){
+          return '<button class="kp-btn sv-btn '+a.cls+'" data-kevt="'+a.evt+'">'+t(a.label)+'</button>';
+        }).join('')+'</div>';
+    }
+
+    var cardCls = 'sv-mission'
+      + (m.status==='blocked'           ? ' sv-m-blocked' : '')
+      + (m.status==='done'              ? ' sv-m-done'    : '')
+      + (m.status==='ready_for_service' ? ' sv-m-rfs'     : '');
+
+    return '<div class="'+cardCls+'">'
+      +'<div class="sv-m-head">'
+        +'<div class="sv-m-name'+(m.status==='done'?' sv-m-done-txt':'')+'">'+_kl(m.name)+'</div>'
+        +'<div class="sv-m-status '+mstCls+'">'+mstLbl+'</div>'
+      +'</div>'
+      +reasonHtml+batchHtml+actHtml
+      +'</div>';
+  }).join('');
+
+  /* Incoming messages for this station */
+  var relayHtml = '';
+  if(msgs.length > 0){
+    relayHtml = '<div class="sv-relay">'
+      +msgs.slice().reverse().map(function(m){
+        return '<div class="sv-relay-msg">'
+          +'<span class="sv-relay-ico">'+m.ico+'</span>'
+          +'<div class="sv-relay-body"><div class="sv-relay-text">'+_kl(m.msg)+'</div>'
+            +'<div class="sv-relay-time">'+m.time+'</div>'
+          +'</div></div>';
+      }).join('')
+      +'</div>';
+  }
+
+  var ownerLbl = s.owner || t('kp_owner_tbd');
+  var dateStr  = _kDatePhrase();
+
+  return '<div class="pi kp-wrap sv-wrap">'
+    /* Station header */
+    +'<div class="sv-header">'
+      +'<div class="sv-station-ico">'+s.icon+'</div>'
+      +'<div class="sv-station-info">'
+        +'<div class="sv-station-name">'+_kl(s.label)+'</div>'
+        +'<div class="sv-station-owner">'+ownerLbl+' · '+dateStr+'</div>'
+      +'</div>'
+    +'</div>'
+    /* Incoming comms */
+    +relayHtml
+    /* Mission cards */
+    +'<div class="sv-missions">'+missionsHtml+'</div>'
+    +'</div>';
+}
+
+/* ── Helper: time-of-day greeting word ── */
+function _kDatePhrase(){
+  var h = new Date().getHours();
+  return h < 12 ? t('kp_phase_morning') : h < 16 ? t('kp_phase_lunch') : t('kp_phase_evening');
+}
+
+/* ══ VIEW TOGGLE ══════════════════════════════════════════════════════════ */
+function _kRenderToggle(){
+  var isChef = (_KV === 'chef');
+  return '<div class="kp-view-toggle">'
+    +'<button class="kp-vt-btn'+(isChef?' kp-vt-active':'')+'\" data-kevt="EVT_SET_VIEW_CHEF">'
+      +t('kp_view_chef')
+    +'</button>'
+    +'<button class="kp-vt-btn'+(!isChef?' kp-vt-active':'')+'\" data-kevt="EVT_SET_VIEW_STATION">'
+      +t('kp_view_station')
+    +'</button>'
+    +'</div>';
+}
+
+/* ══ PAGE RENDER ══════════════════════════════════════════════════════════ */
 function pageKitchen(){
   if(!KS){ KS = _kitchenInitState(); _kExpandedStation = null; _kRelayOpen = false; }
 
-  var stationsHtml = _kOrder.map(function(id){
-    return _kStationRow(KS.stations[id]);
-  }).join('');
+  if(_KV === 'station'){
+    return '<div class="pi kp-wrap">'
+      +_kRenderToggle()
+      +_kRenderStation()
+      +'</div>';
+  }
 
+  /* Chef View */
+  var stationsHtml = _kOrder.map(function(id){ return _kStationRow(KS.stations[id]); }).join('');
   return '<div class="pi kp-wrap">'
+    +_kRenderToggle()
     +'<div class="kp-header">'
       +'<div class="kp-title">'+t('kp_title')+'</div>'
       +'<div class="kp-sub">'+t('kp_sub')+'</div>'
@@ -5024,12 +5181,11 @@ function pageKitchen(){
 function kitchenAfterRender(){
   var ws = document.getElementById('workspace');
   if(!ws) return;
-
   ws.querySelectorAll('[data-ksrow]').forEach(function(row){
     var head = row.querySelector('.kp-srow-head');
     if(!head) return;
     head.addEventListener('click', function(e){
-      if(e.target.closest('.kp-btn')) return;
+      if(e.target.closest('.kp-btn,.kp-vt-btn')) return;
       var sid = row.dataset.ksrow;
       _kExpandedStation = (_kExpandedStation === sid) ? null : sid;
       var ws2 = document.getElementById('workspace');
@@ -5037,7 +5193,6 @@ function kitchenAfterRender(){
       kitchenAfterRender();
     });
   });
-
   var chip = document.getElementById('kp-relay-chip');
   if(chip){
     chip.addEventListener('click', function(){
@@ -5047,7 +5202,6 @@ function kitchenAfterRender(){
       kitchenAfterRender();
     });
   }
-
   ws.querySelectorAll('[data-kevt]').forEach(function(btn){
     btn.addEventListener('click', function(e){
       e.stopPropagation();
