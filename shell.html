@@ -1,6 +1,6 @@
 <!-- ── NEW SHELL LAB BANNER ── -->
 <div id="shell-lab-banner" style="position:fixed;top:0;left:0;right:0;z-index:99999;background:linear-gradient(90deg,#0f766e,#0891b2);color:white;font-size:11px;font-weight:800;letter-spacing:0.09em;text-transform:uppercase;text-align:center;padding:5px 16px;font-family:-apple-system,BlinkMacSystemFont,sans-serif;user-select:none;box-shadow:0 1px 6px rgba(8,145,178,0.4);">
-  🎨 NEW SHELL LAB &nbsp;·&nbsp; brigade-dev/shell.html &nbsp;·&nbsp; v014 &nbsp;·&nbsp; Not for kitchen use
+  🎨 NEW SHELL LAB &nbsp;·&nbsp; brigade-dev/shell.html &nbsp;·&nbsp; v015 &nbsp;·&nbsp; Not for kitchen use
 </div>
 <style>
 /* push shell content below banner */
@@ -8,6 +8,204 @@
 /* Banner height offset: #app handles safe-area via padding-top:var(--sat),
    body padding-top adds the banner bar height on top */
 body { padding-top: 26px; }
+
+/* ══ MODE SWITCH v015 ══════════════════════════════════════════════════════ */
+/* Mode bar — sits below topbar, above tabbar */
+#modebar{
+  flex-shrink:0;
+  display:flex;align-items:center;gap:0;
+  background:rgba(239,246,255,.92);
+  backdrop-filter:blur(20px) saturate(1.8);
+  -webkit-backdrop-filter:blur(20px) saturate(1.8);
+  border-bottom:1px solid var(--bd);
+  padding:0 14px;
+  height:38px;
+  z-index:99;
+  position:relative;
+  overflow:hidden;
+}
+/* Admin Studio tint */
+#modebar.mode-admin{
+  background:rgba(15,23,42,.94);
+  border-bottom:1px solid rgba(99,102,241,.25);
+}
+#modebar.mode-station{
+  background:rgba(240,253,244,.94);
+  border-bottom:1px solid rgba(22,163,74,.2);
+}
+.mb-tabs{display:flex;gap:2px;flex:1}
+.mb-tab{
+  display:flex;align-items:center;gap:5px;
+  padding:5px 12px;border-radius:7px;
+  font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;
+  color:var(--txm);background:none;border:none;cursor:pointer;
+  transition:background .15s,color .15s;
+  -webkit-tap-highlight-color:transparent;
+  white-space:nowrap;
+}
+.mb-tab:hover{background:rgba(37,99,235,.07);color:var(--b6)}
+.mb-tab.on{background:rgba(37,99,235,.12);color:var(--b7)}
+/* Admin active tab */
+#modebar.mode-admin .mb-tab{color:rgba(148,163,184,.8)}
+#modebar.mode-admin .mb-tab:hover{background:rgba(99,102,241,.12);color:#a5b4fc}
+#modebar.mode-admin .mb-tab.on{background:rgba(99,102,241,.2);color:#c7d2fe}
+/* Station active tab */
+#modebar.mode-station .mb-tab.on{background:rgba(22,163,74,.15);color:#15803d}
+/* Mode label pill (right side) */
+.mb-label{
+  font-size:9px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;
+  padding:3px 8px;border-radius:5px;flex-shrink:0;
+  white-space:nowrap;
+}
+.mb-label.ml-chef{background:rgba(37,99,235,.12);color:var(--b7)}
+.mb-label.ml-station{background:rgba(22,163,74,.12);color:#15803d}
+.mb-label.ml-admin{background:rgba(99,102,241,.2);color:#a5b4fc}
+
+/* Admin Studio — topbar and body tinting */
+body.mode-admin #topbar{
+  background:rgba(15,23,42,.95);
+  border-bottom:1px solid rgba(99,102,241,.2);
+}
+body.mode-admin #topbar .t-name{color:#e2e8f0}
+body.mode-admin #topbar .t-sub{color:#64748b}
+body.mode-admin #topbar .t-mark{background:linear-gradient(135deg,#4f46e5 0%,#818cf8 100%)}
+body.mode-admin #topbar .t-search{background:rgba(30,41,59,.8);border-color:rgba(99,102,241,.3);color:#94a3b8}
+body.mode-admin #topbar .t-search-input{color:#e2e8f0}
+body.mode-admin #topbar .t-search-input::placeholder{color:#64748b}
+body.mode-admin #topbar .chef-ai-btn{background:rgba(99,102,241,.15);border-color:rgba(99,102,241,.3)}
+body.mode-admin #topbar .cai-label{color:#c7d2fe}
+body.mode-admin #app{background:linear-gradient(148deg,#0f172a 0%,#1e1b4b 58%,#0f172a 100%)}
+
+/* Station Mode — clean, large, green accent */
+body.mode-station #app{background:linear-gradient(148deg,#f0fdf4 0%,#dcfce7 58%,#f0fdf4 100%)}
+body.mode-station #topbar{background:rgba(240,253,244,.92);border-bottom:1px solid rgba(22,163,74,.15)}
+body.mode-station #topbar .t-mark{background:linear-gradient(135deg,#16a34a 0%,#4ade80 100%)}
+body.mode-station #topbar .t-name{color:#14532d}
+body.mode-station #topbar .t-sub{color:#86efac}
+
+/* Unavailable-module screen */
+.mode-unavail{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  min-height:60vh;gap:16px;padding:40px 24px;text-align:center;
+}
+.mode-unavail-ico{font-size:48px;opacity:.3}
+.mode-unavail-title{font-size:17px;font-weight:700;color:var(--tx)}
+.mode-unavail-sub{font-size:14px;color:var(--txm);max-width:280px;line-height:1.5}
+.mode-unavail-btn{
+  margin-top:8px;padding:10px 22px;border-radius:var(--rp);
+  background:var(--b6);color:#fff;font-size:14px;font-weight:700;
+  border:none;cursor:pointer;-webkit-tap-highlight-color:transparent;
+}
+
+/* ── Admin Studio HOME ─────────────────────────────────────────────────────── */
+.admin-home{padding:0}
+.admin-header{
+  padding:20px 16px 12px;
+  border-bottom:1px solid rgba(99,102,241,.15);
+  display:flex;align-items:center;gap:12px;
+}
+.admin-header-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  background:rgba(99,102,241,.2);color:#a5b4fc;
+  font-size:9px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;
+  padding:4px 10px;border-radius:5px;
+}
+.admin-header-title{
+  font-size:18px;font-weight:800;color:#e2e8f0;letter-spacing:-.03em;
+  margin-top:4px;
+}
+.admin-header-sub{font-size:12px;color:#64748b;margin-top:2px}
+.admin-section{padding:16px 16px 0}
+.admin-section-lbl{
+  font-size:9px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;
+  color:#475569;margin-bottom:10px;
+}
+.admin-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.admin-card{
+  background:rgba(30,41,59,.7);border:1px solid rgba(99,102,241,.2);
+  border-radius:14px;padding:14px 14px 12px;cursor:pointer;
+  transition:background .15s,border-color .15s;
+  -webkit-tap-highlight-color:transparent;
+  display:flex;flex-direction:column;gap:4px;
+}
+.admin-card:hover{background:rgba(49,46,129,.5);border-color:rgba(99,102,241,.4)}
+.admin-card-ico{font-size:22px;margin-bottom:4px}
+.admin-card-title{font-size:13px;font-weight:700;color:#e2e8f0}
+.admin-card-desc{font-size:11px;color:#64748b;line-height:1.4}
+.admin-card-foot{
+  margin-top:6px;display:flex;align-items:center;gap:5px;
+  font-size:10px;font-weight:600;
+}
+.admin-card-foot .sdot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.admin-card.placeholder{opacity:.5;cursor:default}
+.admin-card.placeholder:hover{background:rgba(30,41,59,.7);border-color:rgba(99,102,241,.2)}
+.admin-card-placeholder-tag{
+  display:inline-flex;align-items:center;
+  font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+  background:rgba(99,102,241,.15);color:#818cf8;padding:2px 7px;border-radius:4px;
+  margin-top:4px;
+}
+.admin-status-row{
+  display:flex;gap:10px;padding:12px 16px;
+  background:rgba(15,23,42,.5);border-top:1px solid rgba(99,102,241,.1);
+  flex-wrap:wrap;
+}
+.admin-stat{display:flex;flex-direction:column;gap:2px;flex:1;min-width:60px}
+.admin-stat-val{font-size:20px;font-weight:800;color:#e2e8f0;letter-spacing:-.03em}
+.admin-stat-lbl{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:#64748b}
+
+/* ── Station Home ──────────────────────────────────────────────────────────── */
+.station-home{padding:0}
+.station-greeting{
+  padding:24px 20px 16px;
+}
+.station-greeting-badge{
+  display:inline-flex;align-items:center;gap:5px;
+  background:rgba(22,163,74,.12);color:#16a34a;
+  font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;
+  padding:4px 10px;border-radius:5px;margin-bottom:10px;
+}
+.station-greeting-name{font-size:26px;font-weight:800;color:#14532d;letter-spacing:-.04em;line-height:1.1}
+.station-greeting-station{font-size:15px;color:#16a34a;font-weight:600;margin-top:4px}
+.station-focus{
+  margin:0 16px 14px;
+  background:#fff;border:1px solid rgba(22,163,74,.25);border-radius:16px;
+  overflow:hidden;
+}
+.station-focus-header{
+  background:linear-gradient(90deg,#16a34a,#22c55e);
+  padding:10px 16px;display:flex;align-items:center;justify-content:space-between;
+}
+.station-focus-lbl{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#fff;opacity:.85}
+.station-focus-count{font-size:11px;font-weight:700;color:#fff;background:rgba(255,255,255,.25);padding:2px 8px;border-radius:10px}
+.station-task{
+  display:flex;align-items:center;gap:12px;padding:13px 16px;
+  border-bottom:1px solid rgba(22,163,74,.1);
+}
+.station-task:last-child{border-bottom:none}
+.station-task-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.station-task-dot.urgent{background:#dc2626}
+.station-task-dot.todo{background:#d97706}
+.station-task-dot.ok{background:#16a34a}
+.station-task-name{font-size:16px;font-weight:700;color:#1e293b;flex:1}
+.station-task-qty{font-size:14px;color:#475569;font-weight:600}
+.station-msgs{margin:0 16px 14px;background:#fff;border:1px solid var(--bd);border-radius:16px}
+.station-msgs-header{padding:10px 16px;border-bottom:1px solid var(--bd);display:flex;align-items:center;gap:6px}
+.station-msgs-lbl{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--txm);flex:1}
+.station-msgs-badge{background:var(--b6);color:#fff;font-size:9px;font-weight:800;padding:2px 6px;border-radius:8px}
+.station-msg{padding:12px 16px;border-bottom:1px solid var(--bd);font-size:14px;color:var(--tx);line-height:1.4}
+.station-msg:last-child{border-bottom:none}
+.station-msg-from{font-size:11px;font-weight:700;color:var(--b6);margin-bottom:2px}
+.station-quicklinks{padding:0 16px 20px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.station-ql{
+  background:#fff;border:1px solid var(--bd);border-radius:14px;
+  padding:14px;display:flex;flex-direction:column;gap:4px;cursor:pointer;
+  -webkit-tap-highlight-color:transparent;transition:background .15s;
+}
+.station-ql:hover{background:var(--bg)}
+.station-ql-ico{font-size:22px}
+.station-ql-lbl{font-size:13px;font-weight:700;color:var(--tx)}
+.station-ql-desc{font-size:11px;color:var(--txm)}
 </style>
 <script>
 // Shrink banner to corner pill after 10s
@@ -1765,6 +1963,7 @@ input,select,textarea{font-family:inherit}
 <body>
 <div id="app">
   <header id="topbar"></header>
+  <div id="modebar"><div class="mb-tabs" id="mb-tabs"></div><span class="mb-label ml-chef" id="mb-label">CHEF MODE</span></div>
   <nav id="tabbar" role="tablist"></nav>
   <main id="workspace" role="main" tabindex="-1" style="position:relative"></main>
 </div>
@@ -1987,6 +2186,31 @@ it:{
   tpsales:'Vendite per categoria',  tpmod:'Modifier & depletion',
   tplabor:'Labor cost',             tpfood:'Food cost %',
   tpnote:'Connessione TouchBistro in arrivo. I dati reali appariranno qui.',
+
+  /* Work Modes v015 */
+  wm_station:'Station Mode', wm_chef:'Chef Mode', wm_admin:'Admin Studio',
+  wm_station_desc:'Eseguo il lavoro', wm_chef_desc:'Coordino la cucina', wm_admin_desc:'Costruisco il sistema',
+  wm_unavail:'Non disponibile in questa modalità',
+  wm_switch:'Passa a',
+  /* Admin Studio home */
+  adm_title:'Admin Studio', adm_sub:'Configura e costruisci il sistema',
+  adm_sec_core:'Strumenti di sistema',
+  adm_sec_build:'Builders',
+  adm_pipeline_ok:'Pipeline OK', adm_bots:'5 bot', adm_last_run:'Run 02:13',
+  adm_card_bots:'Bot Center', adm_card_bots_desc:'Pipeline POS · log deduzioni · monitor',
+  adm_card_gallery:'Prep Gallery', adm_card_gallery_desc:'7 famiglie · catalogo visivo · componenti',
+  adm_card_rb:'Recipe Builder', adm_card_rb_desc:'Crea e modifica ricette (prossimamente)',
+  adm_card_pb:'Prep Builder', adm_card_pb_desc:'Configura prep task e stazioni (prossimamente)',
+  adm_card_sb:'Station Builder', adm_card_sb_desc:'Definisci stazioni e permessi (prossimamente)',
+  adm_card_audit:'Audit / Config', adm_card_audit_desc:'Impostazioni sistema · log · permessi',
+  adm_stat_recipes:'ricette', adm_stat_bots:'bot attivi', adm_stat_stations:'stazioni',
+  /* Station home */
+  st_badge:'Station Mode',
+  st_station:'Forno Station', /* mock */
+  st_focus_lbl:'FAI ORA', st_focus_count:'{n} task urgenti',
+  st_msgs_lbl:'Messaggi', st_recipes_lbl:'Ricette', st_timer_lbl:'Timer attivi',
+  st_ql_recipe:'Apri ricetta', st_ql_recipe_desc:'Consulta e scala',
+  st_ql_timer:'Timer', st_ql_timer_desc:'Attivo: 2',
   yct:'Sì Chef! ✅', ycclose:'Chiudi',
 },
 en:{
@@ -2194,6 +2418,29 @@ en:{
   tpsales:'Sales by category',      tpmod:'Modifier & depletion',
   tplabor:'Labor cost',             tpfood:'Food cost %',
   tpnote:'TouchBistro connection coming soon. Real data will appear here.',
+
+  /* Work Modes v015 */
+  wm_station:'Station Mode', wm_chef:'Chef Mode', wm_admin:'Admin Studio',
+  wm_station_desc:'I do the work', wm_chef_desc:'I coordinate', wm_admin_desc:'I build the system',
+  wm_unavail:'Not available in this mode',
+  wm_switch:'Switch to',
+  adm_title:'Admin Studio', adm_sub:'Configure and build the system',
+  adm_sec_core:'System tools',
+  adm_sec_build:'Builders',
+  adm_pipeline_ok:'Pipeline OK', adm_bots:'5 bots', adm_last_run:'Run 02:13',
+  adm_card_bots:'Bot Center', adm_card_bots_desc:'POS pipeline · deduction log · monitor',
+  adm_card_gallery:'Prep Gallery', adm_card_gallery_desc:'7 families · visual catalog · components',
+  adm_card_rb:'Recipe Builder', adm_card_rb_desc:'Create and edit recipes (coming soon)',
+  adm_card_pb:'Prep Builder', adm_card_pb_desc:'Configure prep tasks and stations (coming soon)',
+  adm_card_sb:'Station Builder', adm_card_sb_desc:'Define stations and permissions (coming soon)',
+  adm_card_audit:'Audit / Config', adm_card_audit_desc:'System settings · logs · permissions',
+  adm_stat_recipes:'recipes', adm_stat_bots:'active bots', adm_stat_stations:'stations',
+  st_badge:'Station Mode',
+  st_station:'Oven Station',
+  st_focus_lbl:'DO NOW', st_focus_count:'{n} urgent tasks',
+  st_msgs_lbl:'Messages', st_recipes_lbl:'Recipes', st_timer_lbl:'Active timers',
+  st_ql_recipe:'Open recipe', st_ql_recipe_desc:'View and scale',
+  st_ql_timer:'Timer', st_ql_timer_desc:'Active: 2',
   yct:'Yes Chef! ✅', ycclose:'Close',
 },
 es:{
@@ -2400,12 +2647,35 @@ es:{
   tpsales:'Ventas por categoría',   tpmod:'Modificadores & depletion',
   tplabor:'Costo laboral',          tpfood:'Food cost %',
   tpnote:'Conexión TouchBistro próximamente. Los datos reales aparecerán aquí.',
+
+  /* Work Modes v015 */
+  wm_station:'Modo Estación', wm_chef:'Modo Chef', wm_admin:'Admin Studio',
+  wm_station_desc:'Ejecuto el trabajo', wm_chef_desc:'Coordino', wm_admin_desc:'Construyo el sistema',
+  wm_unavail:'No disponible en este modo',
+  wm_switch:'Cambiar a',
+  adm_title:'Admin Studio', adm_sub:'Configura y construye el sistema',
+  adm_sec_core:'Herramientas del sistema',
+  adm_sec_build:'Builders',
+  adm_pipeline_ok:'Pipeline OK', adm_bots:'5 bots', adm_last_run:'Ejecución 02:13',
+  adm_card_bots:'Centro Bot', adm_card_bots_desc:'Pipeline POS · log deducciones · monitor',
+  adm_card_gallery:'Galería Prep', adm_card_gallery_desc:'7 familias · catálogo visual · componentes',
+  adm_card_rb:'Recipe Builder', adm_card_rb_desc:'Crea y edita recetas (próximamente)',
+  adm_card_pb:'Prep Builder', adm_card_pb_desc:'Configura tareas prep y estaciones (próximamente)',
+  adm_card_sb:'Station Builder', adm_card_sb_desc:'Define estaciones y permisos (próximamente)',
+  adm_card_audit:'Auditoría / Config', adm_card_audit_desc:'Configuración · registros · permisos',
+  adm_stat_recipes:'recetas', adm_stat_bots:'bots activos', adm_stat_stations:'estaciones',
+  st_badge:'Modo Estación',
+  st_station:'Estación Horno',
+  st_focus_lbl:'HACER AHORA', st_focus_count:'{n} tareas urgentes',
+  st_msgs_lbl:'Mensajes', st_recipes_lbl:'Recetas', st_timer_lbl:'Timers activos',
+  st_ql_recipe:'Abrir receta', st_ql_recipe_desc:'Ver y escalar',
+  st_ql_timer:'Timer', st_ql_timer_desc:'Activos: 2',
   yct:'¡Sí Chef! ✅', ycclose:'Cerrar',
 }
 };
 
 /* lang stored in module-scope var + sessionStorage */
-const SHELL_VERSION = 'v014';
+const SHELL_VERSION = 'v015';
 /* Recipe state lives in RECIPE object + _driverQty inside recipe JS block */
 let LANG = sessionStorage.getItem('ws_lang') || 'it';
 function setLang(l){ LANG=l; sessionStorage.setItem('ws_lang',l); renderAll(); }
@@ -2431,6 +2701,121 @@ const RINIT={executive:'MZ',lead:'DV',coordinator:'TL',cook:'CL',dish_crew:'AU',
 let ROLE = sessionStorage.getItem('ws_role') || 'executive';
 function setRole(r){ ROLE=r; sessionStorage.setItem('ws_role',r); renderAll(); }
 function can(p){ return (PERMS[p]||[]).includes(ROLE); }
+
+/* ══ WORK MODE v015 ══════════════════════════════════════════════════════════
+   Three modes: 'chef' | 'station' | 'admin'
+   Persisted in localStorage key 'boh_work_mode'.
+   Default: 'chef'.
+   Tabs remain open across mode switches; incompatible tabs show unavailable screen.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+var MODE_KEY = 'boh_work_mode';
+var MODES = ['station','chef','admin'];
+var MODE_LABELS = {
+  station:{it:'Station Mode',   en:'Station Mode',   es:'Modo Estación'},
+  chef:   {it:'Chef Mode',      en:'Chef Mode',       es:'Modo Chef'},
+  admin:  {it:'Admin Studio',   en:'Admin Studio',    es:'Admin Studio'}
+};
+var MODE_DESCS = {
+  station:{it:'Eseguo il lavoro',    en:'I do the work',    es:'Ejecuto el trabajo'},
+  chef:   {it:'Coordino la cucina',  en:'I coordinate',     es:'Coordino la cocina'},
+  admin:  {it:'Costruisco il sistema',en:'I build the system',es:'Construyo el sistema'}
+};
+
+/* Modules allowed per mode. 'home' is always allowed. */
+var MODE_MODULES = {
+  station: ['home','kitchen','recipe'],
+  chef:    ['home','kitchen','recipe','bot_center','daily_journal','pos'],
+  admin:   ['home','prep_gallery','bot_center','recipe','inventory','pos']
+};
+
+let MODE = (function(){
+  var v = localStorage.getItem(MODE_KEY);
+  return MODES.indexOf(v) >= 0 ? v : 'chef';
+})();
+
+function setMode(m){
+  if(MODES.indexOf(m) < 0) return;
+  MODE = m;
+  localStorage.setItem(MODE_KEY, m);
+  _applyModeClass();
+  renderAll();
+}
+
+function modeAllows(type){
+  return (MODE_MODULES[MODE] || []).indexOf(type) >= 0;
+}
+
+function _applyModeClass(){
+  var body = document.body;
+  body.classList.remove('mode-station','mode-chef','mode-admin');
+  body.classList.add('mode-'+MODE);
+}
+
+function renderModeBar(){
+  var tabs = MODES.map(function(m){
+    var lbl = MODE_LABELS[m][LANG] || MODE_LABELS[m].en;
+    var ico = m==='station'?'🔪':m==='chef'?'👨‍🍳':'⚙️';
+    return '<button class="mb-tab'+(m===MODE?' on':'')+'" data-mode="'+m+'" title="'+MODE_DESCS[m][LANG]+'">'      +'<span>'+ico+'</span><span>'+lbl+'</span></button>';
+  }).join('');
+  var el = document.getElementById('mb-tabs');
+  if(el) el.innerHTML = tabs;
+
+  var lbl = document.getElementById('mb-label');
+  if(lbl){
+    var ml = MODE==='station'?'ml-station':MODE==='chef'?'ml-chef':'ml-admin';
+    lbl.className = 'mb-label '+ml;
+    lbl.textContent = MODE_LABELS[MODE][LANG] || MODE_LABELS[MODE].en;
+  }
+  var bar = document.getElementById('modebar');
+  if(bar){
+    bar.className = '';
+    bar.classList.add('mode-'+MODE);
+  }
+  /* Wire buttons */
+  var tabsEl = document.getElementById('mb-tabs');
+  if(tabsEl){
+    tabsEl.addEventListener('click', function(e){
+      var btn = e.target.closest('[data-mode]');
+      if(btn){ setMode(btn.dataset.mode); }
+    });
+  }
+}
+
+/* ── Unavailable screen ───────────────────────────────────────────────────── */
+function pageUnavailable(tabType, tabTitle){
+  var modeLbl = MODE_LABELS[MODE][LANG] || MODE_LABELS[MODE].en;
+  /* Find which modes DO allow this module */
+  var allowedModes = MODES.filter(function(m){ return modeAllows(tabType); });
+  /* For simplicity, suggest the first mode that allows it */
+  var suggestMode = null;
+  for(var i=0;i<MODES.length;i++){
+    if(MODES[i]!==MODE && modeAllows_in(tabType, MODES[i])){ suggestMode=MODES[i]; break; }
+  }
+  var btnHtml = suggestMode
+    ? '<button class="mode-unavail-btn" onclick="setMode(\''+suggestMode+'\')">'
+      + '→ ' + (MODE_LABELS[suggestMode][LANG]||MODE_LABELS[suggestMode].en) + '</button>'
+    : '';
+
+  var title = LANG==='it' ? 'Non disponibile in '+modeLbl
+             : LANG==='es' ? 'No disponible en '+modeLbl
+             : 'Not available in '+modeLbl;
+  var sub   = LANG==='it' ? tabTitle+' non è accessibile in questa modalità.'
+             : LANG==='es' ? tabTitle+' no es accesible en este modo.'
+             : tabTitle+' is not available in this mode.';
+
+  return '<div class="pi"><div class="mode-unavail">'
+    +'<div class="mode-unavail-ico">🔒</div>'
+    +'<div class="mode-unavail-title">'+title+'</div>'
+    +'<div class="mode-unavail-sub">'+sub+'</div>'
+    +btnHtml
+    +'</div></div>';
+}
+
+function modeAllows_in(type, m){
+  return (MODE_MODULES[m]||[]).indexOf(type)>=0;
+}
+
 
 /* ══ TAB MANAGER ══════════════════════════════════════════════════════════ */
 /*
@@ -2780,8 +3165,15 @@ function badge(s){
   return '<span class="bdg '+(m[s]||'b-in')+'">'+(lbl[s]||s)+'</span>';
 }
 
-/* HOME */
+/* HOME — dispatches on MODE v015 */
 function pageHome(){
+  if(MODE==='station') return _homeStation();
+  if(MODE==='admin')   return _homeAdmin();
+  return _homeChef();
+}
+
+/* Chef Home — original logic preserved */
+function _homeChef(){
   var h=new Date().getHours();
   var gk=h<12?'morning':h<18?'afternoon':'evening';
   var n=RNAME[ROLE]||'Chef';
@@ -2793,9 +3185,7 @@ function pageHome(){
     {key:'ki',type:'kitchen',      perm:'see_kitchen',   ico:'👨‍🍳', sd:'s-wn', p:{}},
     {key:'pg',type:'prep_gallery',  perm:'see_kitchen',   ico:'🗂️',  sd:'s-ok', p:{}},
   ].filter(function(c){ return can(c.perm); });
-
   var cardHTML = cards.map(function(c){
-    /* Build onclick using data-tab + data-params on the element, wired in afterRender */
     return '<button class="hcard" data-tabtype="'+c.type+'" data-params=\''+JSON.stringify(c.p)+'\'>'
       +'<div class="hcard-top"><div class="hcard-ico">'+c.ico+'</div>'
       +'<span class="hcard-arr">↗</span></div>'
@@ -2806,7 +3196,6 @@ function pageHome(){
       +'<div class="hcard-foot"><span class="sdot '+c.sd+'"></span>'+t('cs_'+c.key)+'</div>'
       +'</button>';
   }).join('');
-
   return '<div class="pi"><div class="greet">'
     +'<p class="greet-ey">'+t('eyebrow')+'</p>'
     +'<h1 class="greet-h">'+t(gk,{n:n})+'</h1>'
@@ -2817,13 +3206,118 @@ function pageHome(){
     +'</div>';
 }
 
+/* Station Home — operational, large, focused */
+function _homeStation(){
+  var n=RNAME[ROLE]||'Chef';
+  return '<div class="station-home">'
+    +'<div class="station-greeting">'
+    +'<div class="station-greeting-badge">🔪 '+t('st_badge')+'</div>'
+    +'<div class="station-greeting-name">'+n+'</div>'
+    +'<div class="station-greeting-station">'+t('st_station')+'</div>'
+    +'</div>'
+    +'<div class="station-focus">'
+    +'<div class="station-focus-header">'
+    +'<span class="station-focus-lbl">'+t('st_focus_lbl')+'</span>'
+    +'<span class="station-focus-count">3</span>'
+    +'</div>'
+    +'<div class="station-task"><div class="station-task-dot urgent"></div><span class="station-task-name">Arrabbiata sauce</span><span class="station-task-qty">5.5 kg</span></div>'
+    +'<div class="station-task"><div class="station-task-dot todo"></div><span class="station-task-name">Pomodoro sauce</span><span class="station-task-qty">6 kg</span></div>'
+    +'<div class="station-task"><div class="station-task-dot todo"></div><span class="station-task-name">Demi glacé</span><span class="station-task-qty">2 kg</span></div>'
+    +'</div>'
+    +'<div class="station-msgs">'
+    +'<div class="station-msgs-header"><span class="station-msgs-lbl">'+t('sv_msgs_title')+'</span><span class="station-msgs-badge">2</span></div>'
+    +'<div class="station-msg"><div class="station-msg-from">Max</div>Fai doppio batch arrabbiata — evento sabato 40 coperti.</div>'
+    +'<div class="station-msg"><div class="station-msg-from">David</div>Delivery Frugé confermato, arriva alle 10:30.</div>'
+    +'</div>'
+    +'<div class="station-quicklinks">'
+    +'<button class="station-ql" data-tabtype="kitchen" data-params=\'{}\'>'
+    +'<div class="station-ql-ico">👨‍🍳</div>'
+    +'<div class="station-ql-lbl">'+t('kp_view_station')+'</div>'
+    +'<div class="station-ql-desc">Forno Station</div>'
+    +'</button>'
+    +'<button class="station-ql" data-tabtype="recipe" data-params=\'{"id":"arrabbiata","name":"Arrabbiata"}\'>'
+    +'<div class="station-ql-ico">📋</div>'
+    +'<div class="station-ql-lbl">'+t('st_ql_recipe')+'</div>'
+    +'<div class="station-ql-desc">Arrabbiata</div>'
+    +'</button>'
+    +'</div>'
+    +'<p class="note" style="margin:0 16px 16px"><span class="nd"></span>'+t('demo')+'</p>'
+    +'</div>';
+}
+
+/* Admin Studio Home — builder-oriented, dense, dark */
+function _homeAdmin(){
+  return '<div class="admin-home">'
+    +'<div class="admin-header">'
+    +'<div>'
+    +'<div class="admin-header-badge">⚙️ ADMIN STUDIO</div>'
+    +'<div class="admin-header-title">'+t('adm_title')+'</div>'
+    +'<div class="admin-header-sub">'+t('adm_sub')+'</div>'
+    +'</div>'
+    +'</div>'
+    +'<div class="admin-status-row">'
+    +'<div class="admin-stat"><div class="admin-stat-val">5</div><div class="admin-stat-lbl">'+t('adm_bots')+'</div></div>'
+    +'<div class="admin-stat"><div class="admin-stat-val">32</div><div class="admin-stat-lbl">'+t('adm_stat_recipes')+'</div></div>'
+    +'<div class="admin-stat"><div class="admin-stat-val">11</div><div class="admin-stat-lbl">'+t('adm_stat_stations')+'</div></div>'
+    +'<div class="admin-stat"><div class="admin-stat-val" style="color:#4ade80">OK</div><div class="admin-stat-lbl">pipeline</div></div>'
+    +'</div>'
+    +'<div class="admin-section">'
+    +'<div class="admin-section-lbl">'+t('adm_sec_core')+'</div>'
+    +'<div class="admin-grid">'
+    +'<button class="admin-card" data-tabtype="bot_center" data-params=\'{}\'>'
+    +'<div class="admin-card-ico">🤖</div>'
+    +'<div class="admin-card-title">'+t('adm_card_bots')+'</div>'
+    +'<div class="admin-card-desc">'+t('adm_card_bots_desc')+'</div>'
+    +'<div class="admin-card-foot"><span class="sdot s-ok"></span><span style="color:#4ade80;font-size:10px">OK</span></div>'
+    +'</button>'
+    +'<button class="admin-card" data-tabtype="prep_gallery" data-params=\'{}\'>'
+    +'<div class="admin-card-ico">🗂️</div>'
+    +'<div class="admin-card-title">'+t('adm_card_gallery')+'</div>'
+    +'<div class="admin-card-desc">'+t('adm_card_gallery_desc')+'</div>'
+    +'<div class="admin-card-foot"><span class="sdot s-ok"></span><span style="color:#94a3b8;font-size:10px">v014</span></div>'
+    +'</button>'
+    +'</div>'
+    +'</div>'
+    +'<div class="admin-section">'
+    +'<div class="admin-section-lbl">'+t('adm_sec_build')+'</div>'
+    +'<div class="admin-grid">'
+    +'<button class="admin-card placeholder">'
+    +'<div class="admin-card-ico">📋</div>'
+    +'<div class="admin-card-title">'+t('adm_card_rb')+'</div>'
+    +'<div class="admin-card-desc">'+t('adm_card_rb_desc')+'</div>'
+    +'<div class="admin-card-placeholder-tag">COMING SOON</div>'
+    +'</button>'
+    +'<button class="admin-card placeholder">'
+    +'<div class="admin-card-ico">📝</div>'
+    +'<div class="admin-card-title">'+t('adm_card_pb')+'</div>'
+    +'<div class="admin-card-desc">'+t('adm_card_pb_desc')+'</div>'
+    +'<div class="admin-card-placeholder-tag">COMING SOON</div>'
+    +'</button>'
+    +'<button class="admin-card placeholder">'
+    +'<div class="admin-card-ico">🏗️</div>'
+    +'<div class="admin-card-title">'+t('adm_card_sb')+'</div>'
+    +'<div class="admin-card-desc">'+t('adm_card_sb_desc')+'</div>'
+    +'<div class="admin-card-placeholder-tag">COMING SOON</div>'
+    +'</button>'
+    +'<button class="admin-card" data-tabtype="pos" data-params=\'{}\'>'
+    +'<div class="admin-card-ico">📊</div>'
+    +'<div class="admin-card-title">'+t('adm_card_audit')+'</div>'
+    +'<div class="admin-card-desc">'+t('adm_card_audit_desc')+'</div>'
+    +'<div class="admin-card-foot"><span style="color:#64748b;font-size:10px">Audit · Config</span></div>'
+    +'</button>'
+    +'</div>'
+    +'</div>'
+    +'<p class="note" style="margin:0 16px 20px;color:#475569"><span class="nd"></span>'+t('demo')+'</p>'
+    +'</div>';
+}
 function homeAfterRender(){
   var ws=document.getElementById('workspace');
-  ws.querySelectorAll('.hcard').forEach(function(btn){
+  /* Wire hcards (Chef Mode) and admin-cards and station-ql (other modes) */
+  ws.querySelectorAll('.hcard, .admin-card:not(.placeholder), .station-ql').forEach(function(btn){
     btn.addEventListener('click', function(){
-      var type  = btn.dataset.tabtype;
-      var p     = JSON.parse(btn.dataset.params||'{}');
-      openTab(type, p);
+      var type = btn.dataset.tabtype;
+      var p    = JSON.parse(btn.dataset.params||'{}');
+      if(type) openTab(type, p);
     });
   });
 }
@@ -5983,7 +6477,7 @@ function renderTopBar(){
     /* Brand */
     '<div class="t-brand">'
     +'<div class="t-mark">B</div>'
-    +'<div class="t-words"><span class="t-name">Brigade</span><span class="t-sub">by BOH OS</span></div>'
+    +'<div class="t-words"><span class="t-name">Brigade</span><span class="t-sub">'+(MODE==='admin'?'Admin Studio':MODE==='station'?'Station Mode':'by BOH OS')+'</span></div>'
     +'</div>'
     /* Search */
     +'<div class="t-search" id="t-search-wrap">'    +'<span class="t-search-ico">⌕</span>'    +'<input class="t-search-input" id="t-search-input"'    +' placeholder="'+t('srch_placeholder')+'" autocomplete="off" spellcheck="false">'    +'<button class="t-search-clear" id="t-search-clear" tabindex="-1">✕</button>'    +'<div class="search-drop hi" id="search-drop"></div>'    +'</div>'
@@ -6106,9 +6600,10 @@ function _showNewTabMenu(){
     {type:'daily_journal',label:t('tj_short'), ico:'📓', p:{}},
     {type:'pos',          label:t('tp'),        ico:'📊', p:{}},
     {type:'kitchen',      label:t('tk'),        ico:'👨‍🍳', p:{}},
+    {type:'prep_gallery', label:t('tpg'),       ico:'🗂️', p:{}},
   ].filter(function(c){
-    /* only if NOT already open as a singleton */
-    return !TABS.find(function(x){ return x.type===c.type; });
+    /* v015: only show modules allowed in current MODE, and not already open */
+    return modeAllows(c.type) && !TABS.find(function(x){ return x.type===c.type; });
   });
 
   if(candidates.length===0){
@@ -6219,6 +6714,14 @@ function renderWorkspace(){
   var tab=TABS.find(function(x){ return x.id===AID; });
   var ws=document.getElementById('workspace');
   if(!tab){ ws.innerHTML='<div style="padding:60px;text-align:center;color:var(--txm)">—</div>'; return; }
+
+  /* v015 MODE GUARD — tab exists but not available in current mode */
+  if(tab.type !== 'home' && !modeAllows(tab.type)){
+    ws.innerHTML = pageUnavailable(tab.type, tab.title);
+    ws.scrollTop = 0;
+    return;
+  }
+
   var page=PAGES[tab.type];
   ws.innerHTML = page ? page.render(tab.params||{}) : '<p style="padding:40px;color:var(--txm)">Pagina non trovata.</p>';
   /* restore scroll */
@@ -6236,6 +6739,7 @@ function renderWorkspace(){
 
 function renderAll(){
   renderTopBar();
+  renderModeBar();
   renderTabBar();
   renderWorkspace();
 }
@@ -6577,6 +7081,10 @@ function hideDrop(){
 document.addEventListener('DOMContentLoaded', function(){
   LANG = sessionStorage.getItem('ws_lang') || 'it';
   ROLE = sessionStorage.getItem('ws_role') || 'executive';
+  /* v015: restore MODE from localStorage */
+  var savedMode = localStorage.getItem('boh_work_mode');
+  if(savedMode && ['station','chef','admin'].indexOf(savedMode) >= 0) MODE = savedMode;
+  _applyModeClass();
   _restoreTabs();
   if(TABS.length===0){
     openTab('home', {});
