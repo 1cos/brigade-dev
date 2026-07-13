@@ -1,6 +1,6 @@
 <!-- ── NEW SHELL LAB BANNER ── -->
 <div id="shell-lab-banner" style="position:fixed;top:0;left:0;right:0;z-index:99999;background:linear-gradient(90deg,#0f766e,#0891b2);color:white;font-size:11px;font-weight:800;letter-spacing:0.09em;text-transform:uppercase;text-align:center;padding:5px 16px;font-family:-apple-system,BlinkMacSystemFont,sans-serif;user-select:none;box-shadow:0 1px 6px rgba(8,145,178,0.4);">
-  🎨 NEW SHELL LAB &nbsp;·&nbsp; brigade-dev/shell.html &nbsp;·&nbsp; v017 &nbsp;·&nbsp; Not for kitchen use
+  🎨 NEW SHELL LAB &nbsp;·&nbsp; brigade-dev/shell.html &nbsp;·&nbsp; v019 &nbsp;·&nbsp; Not for kitchen use
 </div>
 <style>
 /* push shell content below banner */
@@ -1833,6 +1833,67 @@ input,select,textarea{font-family:inherit}
 .kp-rmsg-text{font-size:13px;color:var(--tx);line-height:1.4}
 .kp-rmsg-time{font-size:10px;color:var(--txm);margin-top:1px}
 
+/* ══ PREP PAGE v019 ═══════════════════════════════════════════════════════ */
+.prep-wrap{padding:0 0 80px}
+.prep-header{padding:20px 16px 12px}
+.prep-title{font-size:22px;font-weight:800;color:var(--tx);letter-spacing:-.03em}
+.prep-sub{font-size:13px;color:var(--txm);margin-top:2px}
+
+/* Loading */
+.prep-loading{display:flex;flex-direction:column;align-items:center;gap:12px;padding:60px 24px;color:var(--txm)}
+.prep-spinner{width:24px;height:24px;border:3px solid var(--bd);border-top-color:var(--b6);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.prep-loading-txt{font-size:13px}
+.prep-empty{padding:32px 16px;text-align:center;color:var(--txm);font-size:14px}
+
+/* Bot badge */
+.prep-bot-badge{margin:0 16px 10px;display:inline-block;font-size:10px;font-weight:700;color:#7c3aed;background:rgba(124,58,237,.07);border:.5px solid rgba(124,58,237,.2);border-radius:6px;padding:2px 8px}
+.prep-bot-warn{color:#ca8a04;background:rgba(202,138,4,.07);border-color:rgba(202,138,4,.25)}
+
+/* Station accordion */
+.prep-station{margin:0 0 2px}
+.prep-station-head{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--bg);border-bottom:1px solid var(--bd);cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none}
+.prep-station-name{font-size:13px;font-weight:800;color:var(--tx);letter-spacing:.02em;text-transform:uppercase}
+.prep-station-right{display:flex;align-items:center;gap:6px}
+.prep-station-badge{background:#dc2626;color:#fff;font-size:10px;font-weight:800;padding:1px 7px;border-radius:20px;min-width:18px;text-align:center}
+.prep-station-count{font-size:12px;color:var(--txm);font-weight:600}
+.prep-station-chevron{font-size:11px;color:var(--txm);width:14px;text-align:center}
+.prep-station-body{padding:6px 12px 10px}
+
+/* Prep cards */
+.prep-card{background:rgba(255,255,255,.75);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-radius:12px;margin-bottom:6px;box-shadow:0 1px 4px rgba(30,58,95,.06),inset 0 1px 0 rgba(255,255,255,.9);overflow:hidden}
+.prep-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:12px 12px 10px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.prep-card-main{flex:1;min-width:0}
+.prep-card-name{font-size:16px;font-weight:700;color:var(--tx);line-height:1.3;display:flex;align-items:center;gap:6px}
+.prep-wip-dot{width:8px;height:8px;border-radius:50%;background:#2563eb;flex-shrink:0;animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.prep-card-meta{margin-top:4px;display:flex;flex-direction:column;gap:2px}
+.prep-qty{font-size:15px;font-weight:800;color:var(--tx);letter-spacing:-.01em}
+.prep-brief{font-size:12px;color:var(--txm);line-height:1.4}
+.prep-stock{font-size:12px;color:var(--txm)}
+.prep-unver{color:#ca8a04;font-size:11px}
+.prep-log-badge{display:inline-flex;align-items:center;font-size:11px;font-weight:600;color:#059669;background:rgba(5,150,105,.08);border:.5px solid rgba(5,150,105,.2);border-radius:8px;padding:1px 7px;margin-top:2px}
+.prep-card-right{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0}
+.prep-pill{display:inline-flex;align-items:center;font-size:11px;font-weight:700;border-radius:20px;padding:3px 9px;letter-spacing:.02em;white-space:nowrap}
+.prep-chevron{font-size:10px;color:var(--txm);padding:0 2px}
+
+/* Card body (expanded) */
+.prep-card-body{border-top:1px solid var(--bd);padding:0 12px}
+.prep-expand-section{padding:10px 0;border-bottom:1px solid var(--bd)}
+.prep-expand-section:last-child{border-bottom:none}
+.prep-detail-row{display:flex;align-items:baseline;justify-content:space-between;gap:8px;font-size:13px;color:var(--tx);padding:2px 0}
+.prep-detail-lbl{font-size:11px;font-weight:600;color:var(--txm);white-space:nowrap}
+.prep-src-badge{font-size:10px;font-weight:600;color:#ca8a04;background:rgba(202,138,4,.08);border:.5px solid rgba(202,138,4,.3);border-radius:4px;padding:1px 5px}
+.prep-legacy-note{font-size:10px;font-weight:700;color:#7c3aed;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
+.prep-sec-lbl{font-size:10px;font-weight:700;color:var(--txm);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px}
+.prep-log-list{display:flex;flex-direction:column;gap:4px}
+.prep-log-row{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--tx)}
+.prep-log-who{font-weight:700;color:var(--b6);min-width:60px}
+.prep-log-qty{font-weight:600;color:#059669;flex:1}
+.prep-log-time{color:var(--txm);font-size:11px}
+.prep-recipe-link{font-size:12px;color:#059669;font-weight:600}
+.prep-recipe-none{font-size:12px;color:var(--txm)}
+
 /* ══ PREP CARD GALLERY v014 ════════════════════════════════════════════════ */
 
 .pg-wrap{padding-bottom:48px}
@@ -2305,11 +2366,30 @@ it:{
   cai_duty:'in servizio', online_n:'online',
   cai_ctx_prefix:'Contesto: ', cai_ctx_home:'Home workspace',
   cai_ctx_bots:'Bot Center — pipeline', cai_ctx_journal:'Diario operativo',
-  cai_ctx_recipe:'Ricetta', cai_ctx_inv:'Dispensa', cai_ctx_kitchen:'Cucina — stazioni live',
-  tk:'Cucina',
-  ch_ki:'Cucina', cd_ki:'Chef View · Stazione · Sous Chef UX', cs_ki:'v013b',
+  cai_ctx_recipe:'Ricetta', cai_ctx_inv:'Dispensa', cai_ctx_kitchen:'Prep — preplist live',
+  tk:'Prep',
+  ch_ki:'Prep', cd_ki:'Preplist live · suggerimenti reali · per stazione', cs_ki:'v019',
   /* kitchen page */
-  kp_title:'Cucina', kp_sub:'La cucina cambia attenzione, non struttura.',
+  kp_title:'Prep', kp_sub:'La preplist della tua stazione, oggi.',
+  prep_loading:'Caricamento preplist…',
+  prep_no_data:'Nessun dato disponibile.',
+  prep_all_stations:'Tutte le stazioni',
+  prep_no_tasks:'Nessuna prep in questa stazione.',
+  prep_today_logs:'Prodotto oggi',
+  prep_no_recipe:'Nessuna ricetta collegata',
+  prep_stock_unverified:'Stock non verificato',
+  prep_recorded_stock:'Stock registrato',
+  prep_avg_usage:'Consumo medio',
+  prep_hide_ok:'Nascondi quelle OK',
+  prep_show_all:'Mostra tutte ({n})',
+  prep_no_sugg:'Nessun suggerimento oggi',
+  prep_fallback_note:'Suggerimento (legacy)',
+  pill_do_first:'🔴 DA FARE PRIMA',
+  pill_do_today:'🟠 DA FARE OGGI',
+  pill_looks_good:'🟢 OK',
+  pill_count_first:'🟡 CONTA PRIMA',
+  pill_check:'⚪ CONTROLLA',
+  pill_in_progress:'🔵 IN CORSO',
   kp_ctx_title:'Contesto operativo',
   kp_relay_title:'Chef AI Relay',
   kp_relay_empty:'Nessun messaggio ancora.',
@@ -2599,10 +2679,29 @@ en:{
   cai_duty:'on duty', online_n:'online',
   cai_ctx_prefix:'Context: ', cai_ctx_home:'Home workspace',
   cai_ctx_bots:'Bot Center — pipeline', cai_ctx_journal:'Operations Journal',
-  cai_ctx_recipe:'Recipe', cai_ctx_inv:'Pantry', cai_ctx_kitchen:'Kitchen — live stations',
-  tk:'Kitchen',
-  ch_ki:'Kitchen', cd_ki:'Chef View · Station · Sous Chef UX', cs_ki:'v013b',
-  kp_title:'Kitchen', kp_sub:'The kitchen shifts attention, not structure.',
+  cai_ctx_recipe:'Recipe', cai_ctx_inv:'Pantry', cai_ctx_kitchen:'Prep — live prep list',
+  tk:'Prep',
+  ch_ki:'Prep', cd_ki:'Live prep list · real suggestions · by station', cs_ki:'v019',
+  kp_title:'Prep', kp_sub:'Your station prep list, today.',
+  prep_loading:'Loading prep list…',
+  prep_no_data:'No data available.',
+  prep_all_stations:'All stations',
+  prep_no_tasks:'No prep tasks in this station.',
+  prep_today_logs:'Made today',
+  prep_no_recipe:'No recipe linked',
+  prep_stock_unverified:'Unverified stock',
+  prep_recorded_stock:'Recorded stock',
+  prep_avg_usage:'Average usage',
+  prep_hide_ok:'Hide OK items',
+  prep_show_all:'Show all ({n})',
+  prep_no_sugg:'No suggestion today',
+  prep_fallback_note:'Suggestion (legacy)',
+  pill_do_first:'🔴 DO FIRST',
+  pill_do_today:'🟠 DO TODAY',
+  pill_looks_good:'🟢 LOOKS GOOD',
+  pill_count_first:'🟡 COUNT FIRST',
+  pill_check:'⚪ CHECK',
+  pill_in_progress:'🔵 IN PROGRESS',
   kp_ctx_title:'Operational context',
   kp_relay_title:'Chef AI Relay',
   kp_relay_empty:'No messages yet.',
@@ -2889,10 +2988,29 @@ es:{
   cai_duty:'en servicio', online_n:'en línea',
   cai_ctx_prefix:'Contexto: ', cai_ctx_home:'Inicio workspace',
   cai_ctx_bots:'Centro Bot — pipeline', cai_ctx_journal:'Diario de operaciones',
-  cai_ctx_recipe:'Receta', cai_ctx_inv:'Despensa', cai_ctx_kitchen:'Cocina — estaciones en vivo',
-  tk:'Cocina',
-  ch_ki:'Cocina', cd_ki:'Chef View · Estación · UX Sous Chef', cs_ki:'v013b',
-  kp_title:'Cocina', kp_sub:'La cocina cambia atención, no estructura.',
+  cai_ctx_recipe:'Receta', cai_ctx_inv:'Despensa', cai_ctx_kitchen:'Prep — lista en vivo',
+  tk:'Prep',
+  ch_ki:'Prep', cd_ki:'Lista prep en vivo · sugerencias reales · por estación', cs_ki:'v019',
+  kp_title:'Prep', kp_sub:'Tu lista de prep de hoy, por estación.',
+  prep_loading:'Cargando lista de prep…',
+  prep_no_data:'No hay datos disponibles.',
+  prep_all_stations:'Todas las estaciones',
+  prep_no_tasks:'Sin tareas de prep en esta estación.',
+  prep_today_logs:'Producido hoy',
+  prep_no_recipe:'Sin receta vinculada',
+  prep_stock_unverified:'Stock no verificado',
+  prep_recorded_stock:'Stock registrado',
+  prep_avg_usage:'Consumo promedio',
+  prep_hide_ok:'Ocultar las OK',
+  prep_show_all:'Mostrar todas ({n})',
+  prep_no_sugg:'Sin sugerencia hoy',
+  prep_fallback_note:'Sugerencia (legacy)',
+  pill_do_first:'🔴 PRIMERO',
+  pill_do_today:'🟠 HOY',
+  pill_looks_good:'🟢 OK',
+  pill_count_first:'🟡 CONTAR PRIMERO',
+  pill_check:'⚪ REVISAR',
+  pill_in_progress:'🔵 EN CURSO',
   kp_ctx_title:'Contexto operativo',
   kp_relay_title:'Chef AI Relay',
   kp_relay_empty:'Ningún mensaje aún.',
@@ -3082,7 +3200,7 @@ es:{
 };
 
 /* lang stored in module-scope var + sessionStorage */
-const SHELL_VERSION = 'v017';
+const SHELL_VERSION = 'v019';
 /* Recipe state lives in RECIPE object + _driverQty inside recipe JS block */
 let LANG = sessionStorage.getItem('ws_lang') || 'it';
 function setLang(l){ LANG=l; sessionStorage.setItem('ws_lang',l); renderAll(); }
@@ -3133,7 +3251,7 @@ var MODE_DESCS = {
 var MODE_MODULES = {
   station: ['home','kitchen','recipe','prep_families'],
   chef:    ['home','kitchen','recipe','bot_center','daily_journal','pos','prep_families'],
-  admin:   ['home','prep_gallery','prep_families','bot_center','recipe','inventory','pos','mission_designer']
+  admin:   ['home','kitchen','prep_gallery','prep_families','bot_center','recipe','inventory','pos','mission_designer']
 };
 
 let MODE = (function(){
@@ -3565,7 +3683,7 @@ var J_FILTER_VIS = 'all';
 var J_SHOW_FORM  = false;
 
 /* ══ PAGE RENDERERS ═══════════════════════════════════════════════════════ */
-var ICO={home:'⌂',bot_center:'🤖',recipe:'📋',inventory:'📦',daily_journal:'📓',pos:'📊',kitchen:'👨‍🍳',mission_designer:'🎯'};;
+var ICO={home:'⌂',bot_center:'🤖',recipe:'📋',inventory:'📦',daily_journal:'📓',pos:'📊',kitchen:'📋',prep_families:'🥗',mission_designer:'🎯'};
 
 function badge(s){
   var m={ok:'b-ok',warn:'b-wn',error:'b-er',pending:'b-in'};
@@ -3590,9 +3708,7 @@ function _homeChef(){
     {key:'jo',type:'daily_journal',perm:'see_journal',   ico:'📓', sd:'s-in', p:{}},
     {key:'ve',type:'pos',          perm:'see_sales',     ico:'📊', sd:'s-in', p:{}},
     {key:'re',type:'recipe',       perm:'see_recipes',   ico:'📋', sd:'s-ok', p:{id:'tiramisu',name:'Tiramisu'}},
-    {key:'ki',type:'kitchen',      perm:'see_kitchen',   ico:'👨‍🍳', sd:'s-wn', p:{}},
-    {key:'pg',type:'prep_gallery',  perm:'see_kitchen',   ico:'🗂️',  sd:'s-ok', p:{}},
-    {key:'pf',type:'prep_families', perm:'see_kitchen',   ico:'🥗',  sd:'s-ok', p:{}},
+    {key:'ki',type:'kitchen',      perm:'see_kitchen',   ico:'📋', sd:'s-wn', p:{}},
   ].filter(function(c){ return can(c.perm); });
   var cardHTML = cards.map(function(c){
     return '<button class="hcard" data-tabtype="'+c.type+'" data-params=\''+JSON.stringify(c.p)+'\'>'
@@ -6191,8 +6307,7 @@ function _kEvt(evt){
   else if(evt==='EVT_SET_VIEW_STATION'){ _KV = 'station'; }
 
   var ws = document.getElementById('workspace');
-  if(ws) ws.innerHTML = pageKitchen();
-  kitchenAfterRender();
+  if(ws){ ws.innerHTML = pagePrep(); prepAfterRender(); }
 }
 
 /* ══ STATUS LABEL HELPERS ══════════════════════════════════════════════════
@@ -6488,59 +6603,461 @@ function _kPhrase(){
 }
 
 /* ══ PAGE RENDER ═══════════════════════════════════════════════════════════ */
-function pageKitchen(){
-  if(!KS){ KS=_kitchenInitState(); _kExpandedStation=null; _kRelayOpen=false; }
-
-  if(_KV==='station'){
-    return '<div class="pi kp-wrap">'+_kRenderToggle()+_kRenderStation()+'</div>';
-  }
-
-  var stationsHtml=_kOrder.map(function(id){ return _kStationRow(KS.stations[id]); }).join('');
-  return '<div class="pi kp-wrap">'
-    +_kRenderToggle()
-    +'<div class="kp-header">'
-      +'<div class="kp-title">'+t('kp_title')+'</div>'
-      +'<div class="kp-sub">'+t('kp_sub')+'</div>'
+function pagePrep(){
+  return '<div class="pi prep-wrap" id="prep-root">'
+    +'<div class="prep-header">'
+      +'<div class="prep-title">'+t('kp_title')+'</div>'
+      +'<div class="prep-sub">'+t('kp_sub')+'</div>'
     +'</div>'
-    +_kRenderFocus()
-    +'<div class="kp-sec-lbl">'+t('kp_sec_stations')+'</div>'
-    +'<div class="kp-accordion" id="kp-accordion">'+stationsHtml+'</div>'
-    +_kRenderRelay()
+    +'<div id="prep-body"><div class="prep-loading">'
+      +'<div class="prep-spinner"></div>'
+      +'<div class="prep-loading-txt">'+t('prep_loading')+'</div>'
+    +'</div></div>'
     +'</div>';
 }
 
-function kitchenAfterRender(){
-  var ws=document.getElementById('workspace');
-  if(!ws) return;
-  ws.querySelectorAll('[data-ksrow]').forEach(function(row){
-    var head=row.querySelector('.kp-srow-head');
-    if(!head) return;
-    head.addEventListener('click',function(e){
-      if(e.target.closest('.kp-btn,.kp-vt-btn')) return;
-      var sid=row.dataset.ksrow;
-      _kExpandedStation=(_kExpandedStation===sid)?null:sid;
-      var ws2=document.getElementById('workspace');
-      if(ws2) ws2.innerHTML=pageKitchen();
-      kitchenAfterRender();
+function prepAfterRender(){
+  _prepExpanded = {};
+  _prepHideOk = false;
+  _fetchPrepData();
+}
+
+/* ── Prep state ── */
+var _prepData = null;
+var _prepLoading = false;
+var _prepError = null;
+var _prepExpanded = {};
+var _prepHideOk = false;
+var _prepOpenStation = null;
+
+/* ── Suggestion status ordering (lower = more urgent) ── */
+var _SUGG_ORDER = {
+  do_first:0, prep_today:1, count_first:2, no_demand_path:3,
+  defer_to_tomorrow:4, looks_ok:5, out_of_scope:6
+};
+
+/* ── Fetch all 4 data sources ── */
+function _fetchPrepData(){
+  var url  = SUPABASE_URL+'/rest/v1/';
+  var hdrs = {'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY};
+
+  var todayCDT = new Intl.DateTimeFormat('en-CA',{timeZone:'America/Chicago',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+  var d7 = (function(){ var d=new Date(todayCDT+'T12:00:00'); d.setDate(d.getDate()-7); return d.toISOString().slice(0,10); })();
+
+  var urlPT = url+'prep_tasks'
+    +'?select=id,name,category,prep_type,unit,current_stock,suggested_qty,suggested_note,in_progress,need_tomorrow,recipe_id,expected_duration_days,min_cover_days'
+    +'&archived=eq.false&order=category.asc,name.asc&limit=500';
+
+  var urlPL = url+'prep_log'
+    +'?select=item,qty,unit,user_name,created_at'
+    +'&created_at=gte.'+todayCDT+'T00:00:00-05:00'
+    +'&order=created_at.asc&limit=500';
+
+  var cutoff24h = new Date(Date.now()-86400000).toISOString();
+  var urlSC = url+'prep_stock_counts'
+    +'?select=prep_task_id,counted_qty,unit,counted_by,counted_at,reconcile_status'
+    +'&counted_at=gte.'+cutoff24h
+    +'&order=counted_at.desc&limit=300';
+
+  function gf(u){ return fetch(u,{headers:hdrs}).then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); }); }
+
+  Promise.all([gf(urlPT), gf(urlPL), gf(urlSC)])
+    .then(function(res){
+      return _fetchSuggestions(res[0]||[], res[1]||[], res[2]||[], todayCDT, d7, url, hdrs);
+    })
+    .catch(function(e){
+      console.error('[Prep] fetch error:',e);
+      _prepError = e.message;
+      var body=document.getElementById('prep-body');
+      if(body) body.innerHTML='<div class="prep-empty" style="color:var(--er);">'+t('prep_no_data')+'<br><small>'+(e.message||'')+'</small></div>';
     });
-  });
-  var chip=document.getElementById('kp-relay-chip');
-  if(chip){
-    chip.addEventListener('click',function(){
-      _kRelayOpen=!_kRelayOpen;
-      var ws2=document.getElementById('workspace');
-      if(ws2) ws2.innerHTML=pageKitchen();
-      kitchenAfterRender();
+}
+
+/* ── Two-pass suggestion fetch: find valid run date, then load full data ── */
+function _fetchSuggestions(tasks, logRows, cntRows, todayCDT, d7, url, hdrs){
+  var urlDates = url+'prep_suggestions_daily'
+    +'?select=suggestion_date,prep_task_id'
+    +'&suggestion_date=lte.'+todayCDT
+    +'&suggestion_date=gte.'+d7
+    +'&limit=2000';
+
+  return fetch(urlDates,{headers:hdrs})
+    .then(function(r){ return r.json(); })
+    .then(function(dateRows){
+      var counts={};
+      (dateRows||[]).forEach(function(r){ counts[r.suggestion_date]=(counts[r.suggestion_date]||0)+1; });
+      var validDate = Object.keys(counts).filter(function(d){ return counts[d]>=50; }).sort().reverse()[0]||null;
+
+      if(!validDate){
+        return _buildPrepData(tasks, {}, logRows, cntRows, null);
+      }
+      var urlFull = url+'prep_suggestions_daily'
+        +'?select=prep_task_id,status,confidence,planned_output,output_unit,minimum_increment,current_stock,stock_source,stock_unit,net_requirement,reason,production_constraint_quality,debug_json'
+        +'&suggestion_date=eq.'+validDate
+        +'&limit=500';
+      return fetch(urlFull,{headers:hdrs})
+        .then(function(r){ return r.json(); })
+        .then(function(fullRows){
+          var si={};
+          (fullRows||[]).forEach(function(r){ si[r.prep_task_id]=r; });
+          return _buildPrepData(tasks, si, logRows, cntRows, validDate);
+        });
     });
+}
+
+/* ── Build data structure and render ── */
+function _buildPrepData(tasks, suggIndex, logRows, cntRows, validDate){
+  var logIndex={};
+  (logRows||[]).forEach(function(r){ if(!logIndex[r.item]) logIndex[r.item]=[]; logIndex[r.item].push(r); });
+  var cntIndex={};
+  (cntRows||[]).forEach(function(r){ if(!cntIndex[r.prep_task_id]) cntIndex[r.prep_task_id]=r; });
+  _prepData = {tasks:tasks, sugg:suggIndex, logs:logIndex, counts:cntIndex, validDate:validDate};
+  _prepOpenStation = _pickDefaultStation(tasks, suggIndex);
+  _renderPrepBody();
+}
+
+/* ── Pick default open station (no hardcoded ROLE→person mapping) ──
+   Priority:
+   1. sessionStorage('prep_default_station') — set externally when real user object available
+   2. First station with do_first or prep_today
+   3. First station available
+*/
+function _pickDefaultStation(tasks, suggIndex){
+  var stations = _getStations(tasks);
+  if(!stations.length) return null;
+
+  /* 1. Session-stored user default_station */
+  var userStation = sessionStorage.getItem('prep_default_station')||null;
+  if(userStation && stations.indexOf(userStation)>=0) return userStation;
+
+  /* 2. First station with urgent prep */
+  for(var s=0;s<stations.length;s++){
+    var st=stations[s];
+    var stTasks=tasks.filter(function(tk){ return tk.category===st; });
+    for(var i=0;i<stTasks.length;i++){
+      var sg=suggIndex[stTasks[i].id];
+      if(sg&&(sg.status==='do_first'||sg.status==='prep_today')) return st;
+      if(!sg&&stTasks[i].suggested_note&&stTasks[i].suggested_note.split('|')[0]==='red') return st;
+    }
   }
-  ws.querySelectorAll('[data-kevt]').forEach(function(btn){
-    btn.addEventListener('click',function(e){
-      e.stopPropagation();
-      var evt=btn.dataset.kevt;
-      if(evt) _kEvt(evt);
-    });
+
+  /* 3. First station */
+  return stations[0];
+}
+
+/* ── Get sorted station list from task categories ── */
+function _getStations(tasks){
+  var seen={},order=[];
+  (tasks||[]).forEach(function(t){ if(t.category&&!seen[t.category]){ seen[t.category]=true; order.push(t.category); } });
+  return order.sort();
+}
+
+/* ── Pill status for a task ── */
+function _taskPillStatus(task, suggIndex){
+  if(task.in_progress) return {status:'in_progress',conf:null,sugg:null};
+  var sg = suggIndex ? suggIndex[task.id] : null;
+
+  /* PRIMARY: new bot suggestion */
+  if(sg) return {status:sg.status||'no_demand_path',conf:sg.confidence,sugg:sg};
+
+  /* FALLBACK TEMPORANEO — legacy suggested_note (rimuovere quando bot-prep-suggester ha cron) */
+  if(task.suggested_note && task.suggested_note.indexOf('|')>=0){
+    var parts=task.suggested_note.split('|');
+    var col=parts[0];
+    var ls=col==='red'?'do_first':col==='yellow'?'prep_today':col==='green'?'looks_ok':'no_demand_path';
+    return {status:ls,conf:null,sugg:null,legacy:true,legacyNote:parts[1]||''};
+  }
+  return {status:'no_demand_path',conf:null,sugg:null};
+}
+
+/* ── Sort tasks: urgency first, then alpha ── */
+function _sortStationTasks(tasks, suggIndex){
+  return tasks.slice().sort(function(a,b){
+    var pa=_taskPillStatus(a,suggIndex), pb=_taskPillStatus(b,suggIndex);
+    var oa=pa.status==='in_progress'?-1:(_SUGG_ORDER[pa.status]!==undefined?_SUGG_ORDER[pa.status]:9);
+    var ob=pb.status==='in_progress'?-1:(_SUGG_ORDER[pb.status]!==undefined?_SUGG_ORDER[pb.status]:9);
+    if(oa!==ob) return oa-ob;
+    return a.name.localeCompare(b.name);
   });
 }
+
+/* ── Pill HTML ── */
+function _pillHtml(status){
+  var map={
+    do_first:          {key:'pill_do_first',   bg:'rgba(220,38,38,.09)', border:'#fca5a5',color:'#dc2626'},
+    prep_today:        {key:'pill_do_today',   bg:'rgba(234,88,12,.09)', border:'#fdba74',color:'#ea580c'},
+    looks_ok:          {key:'pill_looks_good', bg:'rgba(22,163,74,.08)', border:'#bbf7d0',color:'#16a34a'},
+    count_first:       {key:'pill_count_first',bg:'rgba(202,138,4,.09)',border:'#fde68a',color:'#ca8a04'},
+    defer_to_tomorrow: {key:'pill_looks_good', bg:'rgba(22,163,74,.06)', border:'#d1fae5',color:'#059669'},
+    no_demand_path:    {key:'pill_check',      bg:'rgba(100,116,139,.06)',border:'#e2e8f0',color:'#64748b'},
+    out_of_scope:      {key:'pill_check',      bg:'rgba(100,116,139,.06)',border:'#e2e8f0',color:'#64748b'},
+    in_progress:       {key:'pill_in_progress',bg:'rgba(37,99,235,.09)', border:'#bfdbfe',color:'#1d4ed8'}
+  };
+  var cfg=map[status]||map['no_demand_path'];
+  return '<span class="prep-pill" style="background:'+cfg.bg+';border:1px solid '+cfg.border+';color:'+cfg.color+';">'+t(cfg.key)+'</span>';
+}
+
+/* ── Border color for card left stripe ── */
+function _cardBorderColor(status){
+  var m={do_first:'#dc2626',prep_today:'#ea580c',looks_ok:'#16a34a',count_first:'#ca8a04',
+         defer_to_tomorrow:'#059669',in_progress:'#2563eb',no_demand_path:'#e2e8f0',out_of_scope:'#e2e8f0'};
+  return m[status]||'#e2e8f0';
+}
+
+/* ── Format qty+unit for display ── */
+function _fmtQty(qty,unit){
+  if(qty===null||qty===undefined) return null;
+  var n=parseFloat(qty); if(isNaN(n)||n<=0) return null;
+  var u=(unit||'').toLowerCase();
+  if(u==='g'){ if(n>=1000) return (n/1000).toFixed(1).replace(/\.0$/,'')+'kg'; return Math.round(n)+'g'; }
+  if(u==='kg') return n.toFixed(1).replace(/\.0$/,'')+'kg';
+  if(u==='pezzi'||u==='pz'){ var ni=Math.round(n); return ni+' pz'; }
+  if(u==='nests') return Math.round(n)+' nests';
+  if(u==='cup') return n+' cup'+(n>1?'s':'');
+  return n+(unit?' '+unit:'');
+}
+
+/* ── Format time CDT ── */
+function _fmtTime(iso){
+  try{ return new Date(iso).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',hour12:true,timeZone:'America/Chicago'}); }
+  catch(e){ return ''; }
+}
+
+/* ── Render card closed state ── */
+function _renderCardClosed(task, pillInfo, logs){
+  var status   = pillInfo.status;
+  var sugg     = pillInfo.sugg;
+  var border   = _cardBorderColor(status);
+  var expanded = _prepExpanded[task.id]?true:false;
+  var chevron  = expanded?'▼':'▶';
+
+  /* Quantity */
+  var qtyStr=null;
+  if(sugg&&sugg.planned_output&&parseFloat(sugg.planned_output)>0){
+    qtyStr=_fmtQty(sugg.planned_output,sugg.output_unit||sugg.stock_unit||task.unit);
+    if(qtyStr&&sugg.production_constraint_quality==='valid_fixed_batch'&&sugg.minimum_increment){
+      var batches=Math.round(parseFloat(sugg.planned_output)/parseFloat(sugg.minimum_increment));
+      if(batches>1) qtyStr=batches+' batches · '+qtyStr;
+    }
+  } else if(pillInfo.legacy&&task.suggested_qty){
+    qtyStr=_fmtQty(task.suggested_qty,task.unit);
+  }
+
+  /* Brief operational text */
+  var brief='';
+  if(pillInfo.legacy&&pillInfo.legacyNote){ brief=pillInfo.legacyNote; }
+  else if(sugg&&sugg.reason){
+    var rp=sugg.reason.split('|');
+    if(LANG==='it'&&rp[1]) brief=rp[1];
+    else if(LANG==='es'&&rp[3]) brief=rp[3];
+    else brief=rp[2]||rp[0]||'';
+    /* Station View: plain English for cook/coordinator */
+    if(ROLE!=='executive'&&ROLE!=='lead'){
+      var SM={do_first:'Current stock is running low. Prepare before service.',
+              prep_today:'Stock is getting low. Prepare today.',
+              looks_ok:'Stock should be enough. No prep needed.',
+              count_first:'Count stock before preparing more.',
+              defer_to_tomorrow:'Stock covers today. Check again tomorrow.',
+              no_demand_path:'Not enough data yet.'};
+      brief=SM[status]||brief;
+    }
+    if(brief.length>120) brief=brief.slice(0,117)+'…';
+  }
+
+  /* Stock */
+  var stockVal=sugg?sugg.current_stock:task.current_stock;
+  var stockStr=_fmtQty(stockVal,(sugg&&sugg.stock_unit)||task.unit);
+  var stockUnver=sugg&&sugg.stock_source==='db_snapshot_unverified';
+
+  /* Today logs count */
+  var logCount=(logs||[]).length;
+
+  return '<div class="prep-card'+(expanded?' prep-card-open':'')+'" data-prep-id="'+task.id+'"'
+    +' style="border-left:4px solid '+border+';">'
+    +'<div class="prep-card-head" data-expand="'+task.id+'">'
+      +'<div class="prep-card-main">'
+        +'<div class="prep-card-name">'+(task.in_progress?'<span class="prep-wip-dot"></span>':'')+task.name+'</div>'
+        +'<div class="prep-card-meta">'
+          +(qtyStr?'<span class="prep-qty">'+qtyStr+'</span>':'')
+          +(brief?'<span class="prep-brief">'+brief+'</span>':'')
+          +(stockStr?'<span class="prep-stock">'+t('prep_recorded_stock')+': <b>'+stockStr+'</b>'+(stockUnver?' <span class="prep-unver">⚠</span>':'')+'</span>':'')
+          +(logCount>0?'<span class="prep-log-badge">'+t('prep_today_logs')+': '+logCount+'</span>':'')
+        +'</div>'
+      +'</div>'
+      +'<div class="prep-card-right">'
+        +_pillHtml(status)
+        +'<span class="prep-chevron">'+chevron+'</span>'
+      +'</div>'
+    +'</div>'
+    +(expanded?_renderCardExpanded(task,pillInfo,logs||[]):'')
+    +'</div>';
+}
+
+/* ── Render card expanded section ── */
+function _renderCardExpanded(task, pillInfo, logs){
+  var sugg=pillInfo.sugg;
+  var status=pillInfo.status;
+  var html='<div class="prep-card-body">';
+
+  if(sugg){
+    html+='<div class="prep-expand-section">';
+    var poStr=_fmtQty(sugg.planned_output,sugg.output_unit||sugg.stock_unit||task.unit);
+    var netStr=_fmtQty(sugg.net_requirement,sugg.stock_unit||task.unit);
+    if(poStr) html+='<div class="prep-detail-row"><span class="prep-detail-lbl">Planned output</span><b>'+poStr+'</b></div>';
+    if(netStr&&status!=='looks_ok') html+='<div class="prep-detail-row"><span class="prep-detail-lbl">Net requirement</span>'+netStr+'</div>';
+    var stStr=_fmtQty(sugg.current_stock,sugg.stock_unit||task.unit);
+    if(stStr){
+      var srcBadge=sugg.stock_source==='db_snapshot_unverified'?'<span class="prep-src-badge">⚠ '+t('prep_stock_unverified')+'</span>':'';
+      html+='<div class="prep-detail-row"><span class="prep-detail-lbl">'+t('prep_recorded_stock')+'</span>'+stStr+srcBadge+'</div>';
+    }
+    /* Avg daily from debug_json */
+    try{
+      var dj=sugg.debug_json,comps=dj&&dj.forecast_components;
+      if(comps&&comps.length){
+        var avg=parseFloat(comps[0].forecast_qty);
+        if(!isNaN(avg)&&avg>0){ var aStr=_fmtQty(avg,sugg.stock_unit||task.unit); if(aStr) html+='<div class="prep-detail-row"><span class="prep-detail-lbl">'+t('prep_avg_usage')+'/day</span>'+aStr+'</div>'; }
+      }
+    }catch(e){}
+    /* Confidence (chef/admin only) */
+    if(sugg.confidence&&(ROLE==='executive'||ROLE==='lead')){
+      var cc=sugg.confidence==='high'?'#16a34a':sugg.confidence==='medium'?'#d97706':'#94a3b8';
+      html+='<div class="prep-detail-row"><span class="prep-detail-lbl">Confidence</span><span style="color:'+cc+';font-weight:700;">'+sugg.confidence+'</span></div>';
+    }
+    html+='</div>';
+  } else if(pillInfo.legacy){
+    html+='<div class="prep-expand-section"><div class="prep-legacy-note">'+t('prep_fallback_note')+'</div>';
+    if(task.suggested_qty) html+='<div class="prep-detail-row"><span class="prep-detail-lbl">Suggested</span>'+(_fmtQty(task.suggested_qty,task.unit)||'—')+'</div>';
+    html+='</div>';
+  }
+
+  /* Today logs */
+  if(logs&&logs.length>0){
+    html+='<div class="prep-expand-section">';
+    html+='<div class="prep-sec-lbl">'+t('prep_today_logs')+'</div>';
+    html+='<div class="prep-log-list">';
+    logs.forEach(function(l){
+      html+='<div class="prep-log-row">'
+        +'<span class="prep-log-who">'+l.user_name+'</span>'
+        +'<span class="prep-log-qty">'+(l.qty>0?_fmtQty(l.qty,l.unit)||'':'—')+'</span>'
+        +'<span class="prep-log-time">'+_fmtTime(l.created_at)+'</span>'
+        +'</div>';
+    });
+    html+='</div></div>';
+  }
+
+  /* Recipe info (read-only, no navigation in Pilot 1) */
+  html+='<div class="prep-expand-section">';
+  html+=task.recipe_id
+    ?'<div class="prep-recipe-link">📖 Recipe linked</div>'
+    :'<div class="prep-recipe-none">'+t('prep_no_recipe')+'</div>';
+  html+='</div>';
+
+  html+='</div>';
+  return html;
+}
+
+/* ── Render one station accordion ── */
+function _renderStation(stationName, tasks, suggIndex, logIndex){
+  var stTasks=tasks.filter(function(t){ return t.category===stationName; });
+  var sorted=_sortStationTasks(stTasks,suggIndex);
+  var actionableCount=sorted.filter(function(t){
+    var s=_taskPillStatus(t,suggIndex).status;
+    return s==='do_first'||s==='prep_today'||s==='count_first'||t.in_progress;
+  }).length;
+  var isOpen=(_prepOpenStation===stationName);
+  var html='<div class="prep-station" data-station="'+stationName+'">';
+  html+='<div class="prep-station-head" data-saccordion="'+stationName+'">'
+    +'<span class="prep-station-name">'+stationName.replace(' Station','')+'</span>'
+    +'<div class="prep-station-right">'
+      +(actionableCount>0?'<span class="prep-station-badge">'+actionableCount+'</span>':'')
+      +'<span class="prep-station-count">'+sorted.length+'</span>'
+      +'<span class="prep-station-chevron">'+(isOpen?'▼':'▶')+'</span>'
+    +'</div>'
+    +'</div>';
+  if(isOpen){
+    html+='<div class="prep-station-body">';
+    if(sorted.length===0){
+      html+='<div class="prep-empty">'+t('prep_no_tasks')+'</div>';
+    } else {
+      sorted.forEach(function(task){
+        var pillInfo=_taskPillStatus(task,suggIndex);
+        var logs=logIndex[task.name]||[];
+        html+=_renderCardClosed(task,pillInfo,logs);
+      });
+    }
+    html+='</div>';
+  }
+  html+='</div>';
+  return html;
+}
+
+/* ── Full body render ── */
+function _renderPrepBody(){
+  var body=document.getElementById('prep-body');
+  if(!body||!_prepData) return;
+  var tasks=_prepData.tasks, si=_prepData.sugg, li=_prepData.logs, vd=_prepData.validDate;
+  var stations=_getStations(tasks);
+  if(!stations.length){ body.innerHTML='<div class="prep-empty">'+t('prep_no_data')+'</div>'; return; }
+
+  /* Sort: open station first, rest alpha */
+  var ordered=stations.slice().sort(function(a,b){
+    if(a===_prepOpenStation) return -1; if(b===_prepOpenStation) return 1;
+    return a.localeCompare(b);
+  });
+
+  var html='';
+  if(ROLE==='executive'||ROLE==='lead'){
+    html+=vd
+      ?'<div class="prep-bot-badge">📊 Bot: '+vd+'</div>'
+      :'<div class="prep-bot-badge prep-bot-warn">⚠ '+t('prep_no_sugg')+'</div>';
+  }
+  ordered.forEach(function(st){ html+=_renderStation(st,tasks,si,li); });
+  body.innerHTML=html;
+  _wirePrepEvents();
+}
+
+/* ── Wire events — event delegation, no onclick= attributes ── */
+function _wirePrepEvents(){
+  var body=document.getElementById('prep-body');
+  if(!body) return;
+
+  /* remove previous listener by cloning — avoids duplicate listeners on re-render */
+  var newBody=body.cloneNode(true);
+  body.parentNode.replaceChild(newBody,body);
+  newBody.addEventListener('click',function(e){
+    /* Station accordion */
+    var sHead=e.target.closest('[data-saccordion]');
+    if(sHead){
+      var st=sHead.dataset.saccordion;
+      _prepOpenStation=(_prepOpenStation===st)?null:st;
+      _renderPrepBody();
+      return;
+    }
+    /* Card expand/collapse */
+    var expEl=e.target.closest('[data-expand]');
+    if(expEl){
+      var tid=expEl.dataset.expand;
+      _prepExpanded[tid]=!_prepExpanded[tid];
+      /* Re-render inline card only */
+      var card=newBody.querySelector('[data-prep-id="'+tid+'"]');
+      if(card&&_prepData){
+        var task=_prepData.tasks.find(function(t){ return String(t.id)===String(tid); });
+        if(task){
+          var pi=_taskPillStatus(task,_prepData.sugg);
+          var logs=_prepData.logs[task.name]||[];
+          var tmp=document.createElement('div');
+          tmp.innerHTML=_renderCardClosed(task,pi,logs);
+          if(tmp.firstChild) card.parentNode.replaceChild(tmp.firstChild,card);
+          /* Re-wire after inline replace */
+          _wirePrepEvents();
+        }
+      }
+      return;
+    }
+  });
+}
+
+
 
 
 
@@ -7451,7 +7968,7 @@ var PAGES={
   inventory:        {render:pageInventory,       after:null},
   daily_journal:    {render:pageJournal,         after:journalAfterRender, rerender:true},
   pos:              {render:pageSales,           after:null},
-  kitchen:          {render:pageKitchen,         after:kitchenAfterRender, rerender:true},
+  kitchen:          {render:pagePrep,             after:prepAfterRender,    rerender:true},
   prep_gallery:     {render:pagePrepGallery,     after:prepGalleryAfterRender},
   prep_families:    {render:pagePrepFamilies,    after:prepFamiliesAfterRender},
   mission_designer: {render:pageMissionDesigner, after:missionDesignerAfterRender}
@@ -7612,8 +8129,7 @@ function _showNewTabMenu(){
     {type:'bot_center',   label:t('tb'),       ico:'🤖', p:{}},
     {type:'daily_journal',label:t('tj_short'), ico:'📓', p:{}},
     {type:'pos',          label:t('tp'),        ico:'📊', p:{}},
-    {type:'kitchen',      label:t('tk'),        ico:'👨‍🍳', p:{}},
-    {type:'prep_gallery',     label:t('tpg'),  ico:'🗂️', p:{}},
+    {type:'kitchen',          label:t('tk'),   ico:'📋', p:{}},
     {type:'prep_families',    label:t('tpf'),  ico:'🥗', p:{}},
     {type:'mission_designer', label:t('tmd'),  ico:'🎯', p:{}},
   ].filter(function(c){
