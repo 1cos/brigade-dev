@@ -3131,9 +3131,9 @@ var MODE_DESCS = {
 
 /* Modules allowed per mode. 'home' is always allowed. */
 var MODE_MODULES = {
-  station: ['home','kitchen','recipe'],
-  chef:    ['home','kitchen','recipe','bot_center','daily_journal','pos'],
-  admin:   ['home','prep_gallery','bot_center','recipe','inventory','pos','mission_designer']
+  station: ['home','kitchen','recipe','prep_families'],
+  chef:    ['home','kitchen','recipe','bot_center','daily_journal','pos','prep_families'],
+  admin:   ['home','prep_gallery','prep_families','bot_center','recipe','inventory','pos','mission_designer']
 };
 
 let MODE = (function(){
