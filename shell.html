@@ -1,6 +1,6 @@
 <!-- ── NEW SHELL LAB BANNER ── -->
 <div id="shell-lab-banner" style="position:fixed;top:0;left:0;right:0;z-index:99999;background:linear-gradient(90deg,#0f766e,#0891b2);color:white;font-size:11px;font-weight:800;letter-spacing:0.09em;text-transform:uppercase;text-align:center;padding:5px 16px;font-family:-apple-system,BlinkMacSystemFont,sans-serif;user-select:none;box-shadow:0 1px 6px rgba(8,145,178,0.4);">
-  🎨 NEW SHELL LAB &nbsp;·&nbsp; brigade-dev/shell.html &nbsp;·&nbsp; v015 &nbsp;·&nbsp; Not for kitchen use
+  🎨 NEW SHELL LAB &nbsp;·&nbsp; brigade-dev/shell.html &nbsp;·&nbsp; v016 &nbsp;·&nbsp; Not for kitchen use
 </div>
 <style>
 /* push shell content below banner */
@@ -1958,6 +1958,171 @@ input,select,textarea{font-family:inherit}
 .pg-td-comp.pb{color:#7c3aed}
 .pg-td-comp.pc{color:#0891b2}
 .pg-td-comp.pd{color:#d97706}
+
+/* ══ KITCHEN FLOW STUDIO HOME v016 ════════════════════════════════════════ */
+
+/* Hero — Flow Planner */
+.kfs-hero{
+  margin:16px 16px 0;
+  background:linear-gradient(135deg,rgba(79,70,229,.18) 0%,rgba(99,102,241,.08) 100%);
+  border:1px solid rgba(99,102,241,.3);
+  border-radius:18px;
+  padding:20px 20px 18px;
+  position:relative;
+  overflow:hidden;
+}
+.kfs-hero::before{
+  content:'';
+  position:absolute;inset:0;
+  background:radial-gradient(ellipse at 80% 20%, rgba(129,140,248,.12) 0%, transparent 60%);
+  pointer-events:none;
+}
+.kfs-hero-eyebrow{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:9px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;
+  color:#818cf8;margin-bottom:10px;
+}
+.kfs-hero-eyebrow-dot{
+  width:6px;height:6px;border-radius:50%;
+  background:#818cf8;
+  box-shadow:0 0 6px rgba(129,140,248,.7);
+  animation:kfs-pulse 2.4s ease-in-out infinite;
+}
+@keyframes kfs-pulse{
+  0%,100%{opacity:1;transform:scale(1)}
+  50%{opacity:.4;transform:scale(.7)}
+}
+.kfs-hero-title{
+  font-size:20px;font-weight:800;color:#e2e8f0;
+  letter-spacing:-.04em;line-height:1.15;
+  margin-bottom:6px;
+}
+.kfs-hero-desc{
+  font-size:13px;color:#94a3b8;line-height:1.5;
+  margin-bottom:16px;
+}
+.kfs-hero-cta{
+  display:inline-flex;align-items:center;gap:8px;
+  background:linear-gradient(135deg,#4f46e5,#6366f1);
+  color:#fff;font-size:13px;font-weight:700;
+  padding:10px 18px;border-radius:10px;border:none;cursor:pointer;
+  box-shadow:0 4px 14px rgba(79,70,229,.4);
+  -webkit-tap-highlight-color:transparent;
+  transition:opacity .15s, transform .1s;
+}
+.kfs-hero-cta:active{opacity:.85;transform:scale(.98)}
+.kfs-hero-cta-ico{font-size:16px}
+.kfs-hero-preview-tag{
+  display:inline-flex;align-items:center;
+  margin-left:12px;
+  font-size:9px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;
+  background:rgba(255,255,255,.12);color:rgba(255,255,255,.7);
+  padding:3px 7px;border-radius:5px;
+}
+/* Nodes preview strip inside hero */
+.kfs-hero-nodes{
+  display:flex;gap:6px;margin-top:16px;flex-wrap:wrap;
+}
+.kfs-node{
+  display:inline-flex;align-items:center;gap:5px;
+  font-size:10px;font-weight:600;color:#94a3b8;
+  background:rgba(15,23,42,.5);border:1px solid rgba(99,102,241,.2);
+  padding:4px 9px;border-radius:7px;
+}
+.kfs-node-dot{
+  width:5px;height:5px;border-radius:50%;flex-shrink:0;
+}
+
+/* ── Section label */
+.kfs-section{padding:18px 16px 0}
+.kfs-section-lbl{
+  font-size:9px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;
+  color:#475569;margin-bottom:10px;display:flex;align-items:center;gap:8px;
+}
+.kfs-section-lbl::after{
+  content:'';flex:1;height:1px;background:rgba(99,102,241,.15);
+}
+
+/* ── Tools grid (3 columns) */
+.kfs-tools{
+  display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;
+  padding:0 16px;
+}
+.kfs-tool{
+  background:rgba(30,41,59,.7);border:1px solid rgba(99,102,241,.18);
+  border-radius:14px;padding:13px 12px 11px;cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+  transition:background .15s,border-color .15s,transform .1s;
+  display:flex;flex-direction:column;gap:3px;
+  text-align:left;
+}
+.kfs-tool:active{transform:scale(.97)}
+.kfs-tool:hover{background:rgba(49,46,129,.45);border-color:rgba(99,102,241,.35)}
+.kfs-tool.live{border-color:rgba(99,102,241,.35)}
+.kfs-tool.placeholder{opacity:.48;cursor:default}
+.kfs-tool.placeholder:hover{background:rgba(30,41,59,.7);border-color:rgba(99,102,241,.18);transform:none}
+.kfs-tool-ico{font-size:20px;margin-bottom:3px}
+.kfs-tool-name{font-size:12px;font-weight:700;color:#e2e8f0;line-height:1.25}
+.kfs-tool-desc{font-size:10px;color:#64748b;line-height:1.35}
+.kfs-tool-tag{
+  margin-top:5px;
+  display:inline-flex;align-items:center;
+  font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+  padding:2px 6px;border-radius:4px;
+}
+.kfs-tool-tag.live{background:rgba(99,102,241,.2);color:#818cf8}
+.kfs-tool-tag.soon{background:rgba(71,85,105,.3);color:#64748b}
+
+/* ── System row (2 columns) */
+.kfs-system{
+  display:grid;grid-template-columns:1fr 1fr;gap:8px;
+  padding:0 16px;
+}
+.kfs-sys{
+  background:rgba(15,23,42,.6);border:1px solid rgba(71,85,105,.25);
+  border-radius:12px;padding:12px 12px 10px;cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+  transition:background .15s,border-color .15s;
+  display:flex;flex-direction:column;gap:3px;text-align:left;
+}
+.kfs-sys:hover{background:rgba(30,41,59,.8);border-color:rgba(99,102,241,.25)}
+.kfs-sys.placeholder{opacity:.4;cursor:default}
+.kfs-sys.placeholder:hover{background:rgba(15,23,42,.6);border-color:rgba(71,85,105,.25)}
+.kfs-sys-ico{font-size:17px;margin-bottom:2px}
+.kfs-sys-name{font-size:11px;font-weight:700;color:#cbd5e1}
+.kfs-sys-desc{font-size:10px;color:#475569;line-height:1.3}
+
+/* ── Recenti / LAB log */
+.kfs-log{margin:16px 16px 0;border:1px solid rgba(99,102,241,.15);border-radius:14px;overflow:hidden}
+.kfs-log-header{
+  display:flex;align-items:center;gap:8px;
+  padding:10px 14px;
+  background:rgba(15,23,42,.5);border-bottom:1px solid rgba(99,102,241,.12);
+}
+.kfs-log-lbl{font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#475569;flex:1}
+.kfs-log-badge{
+  font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+  background:rgba(245,158,11,.15);color:#d97706;
+  padding:2px 7px;border-radius:4px;
+}
+.kfs-log-row{
+  display:flex;align-items:flex-start;gap:10px;
+  padding:10px 14px;border-bottom:1px solid rgba(99,102,241,.08);
+}
+.kfs-log-row:last-child{border-bottom:none}
+.kfs-log-ico{font-size:13px;flex-shrink:0;margin-top:1px;opacity:.6}
+.kfs-log-body{flex:1}
+.kfs-log-text{font-size:12px;color:#94a3b8;line-height:1.4}
+.kfs-log-time{font-size:10px;color:#475569;margin-top:1px}
+
+/* ── Footer note */
+.kfs-footer{padding:12px 16px 20px;text-align:center}
+.kfs-footer-note{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:10px;color:#334155;
+  background:rgba(15,23,42,.4);border:1px solid rgba(71,85,105,.2);
+  padding:5px 12px;border-radius:7px;
+}
 </style>
 </head>
 <body>
@@ -2211,6 +2376,43 @@ it:{
   st_msgs_lbl:'Messaggi', st_recipes_lbl:'Ricette', st_timer_lbl:'Timer attivi',
   st_ql_recipe:'Apri ricetta', st_ql_recipe_desc:'Consulta e scala',
   st_ql_timer:'Timer', st_ql_timer_desc:'Attivo: 2',
+
+  /* Kitchen Flow Studio v016 */
+  kfs_eyebrow:'Kitchen Flow Studio',
+  kfs_hero_title:'Progetta il funzionamento\ndella cucina.',
+  kfs_hero_desc:'Flow, missioni, dipendenze tra stazioni, relay Chef AI. Tutto parte da qui.',
+  kfs_hero_cta:'Apri Flow Planner',
+  kfs_hero_preview:'PREVIEW',
+  kfs_node_stations:'5 stazioni',
+  kfs_node_missions:'12 missioni',
+  kfs_node_deps:'3 dipendenze',
+  kfs_node_mock:'Flow demo',
+  kfs_sec_tools:'Strumenti',
+  kfs_sec_system:'Sistema',
+  kfs_sec_log:'Attività recente',
+  kfs_log_badge:'LAB DEMO',
+  kfs_tool_recipe_name:'Recipe Designer',
+  kfs_tool_recipe_desc:'Editor ricette, BOM, procedura',
+  kfs_tool_prep_name:'Prep Library',
+  kfs_tool_prep_desc:'7 famiglie operative · catalogo missioni',
+  kfs_tool_station_name:'Station Designer',
+  kfs_tool_station_desc:'Stazioni, responsabili, turni',
+  kfs_tool_soon:'Coming soon',
+  kfs_tool_live:'Attivo',
+  kfs_sys_ai_name:'Chef AI Studio',
+  kfs_sys_ai_desc:'Regole · relay · automazioni',
+  kfs_sys_inv_name:'Inventory Rules',
+  kfs_sys_inv_desc:'Receiving · shelf life · forecast',
+  kfs_sys_bot_name:'Bot Center',
+  kfs_sys_bot_desc:'Pipeline · audit · versioni',
+  kfs_sys_soon:'Prossimamente',
+  kfs_log_1:'Prep Card Gallery aperta in Lab',
+  kfs_log_1t:'Questo Lab',
+  kfs_log_2:'Station Mode e Chef Mode completati',
+  kfs_log_2t:'v015',
+  kfs_log_3:'Struttura Kitchen Flow Studio definita',
+  kfs_log_3t:'v016',
+  kfs_footer_note:'🔬 Lab — Dati mock. Nessuna connessione DB.',
   yct:'Sì Chef! ✅', ycclose:'Chiudi',
 },
 en:{
@@ -2441,6 +2643,43 @@ en:{
   st_msgs_lbl:'Messages', st_recipes_lbl:'Recipes', st_timer_lbl:'Active timers',
   st_ql_recipe:'Open recipe', st_ql_recipe_desc:'View and scale',
   st_ql_timer:'Timer', st_ql_timer_desc:'Active: 2',
+
+  /* Kitchen Flow Studio v016 */
+  kfs_eyebrow:'Kitchen Flow Studio',
+  kfs_hero_title:'Design how\nyour kitchen works.',
+  kfs_hero_desc:'Flows, missions, cross-station dependencies, Chef AI relay. Everything starts here.',
+  kfs_hero_cta:'Open Flow Planner',
+  kfs_hero_preview:'PREVIEW',
+  kfs_node_stations:'5 stations',
+  kfs_node_missions:'12 missions',
+  kfs_node_deps:'3 dependencies',
+  kfs_node_mock:'Demo flow',
+  kfs_sec_tools:'Tools',
+  kfs_sec_system:'System',
+  kfs_sec_log:'Recent activity',
+  kfs_log_badge:'LAB DEMO',
+  kfs_tool_recipe_name:'Recipe Designer',
+  kfs_tool_recipe_desc:'Recipe editor, BOM, procedure',
+  kfs_tool_prep_name:'Prep Library',
+  kfs_tool_prep_desc:'7 operational families · mission catalog',
+  kfs_tool_station_name:'Station Designer',
+  kfs_tool_station_desc:'Stations, owners, shifts',
+  kfs_tool_soon:'Coming soon',
+  kfs_tool_live:'Active',
+  kfs_sys_ai_name:'Chef AI Studio',
+  kfs_sys_ai_desc:'Rules · relay · automations',
+  kfs_sys_inv_name:'Inventory Rules',
+  kfs_sys_inv_desc:'Receiving · shelf life · forecast',
+  kfs_sys_bot_name:'Bot Center',
+  kfs_sys_bot_desc:'Pipeline · audit · versions',
+  kfs_sys_soon:'Coming soon',
+  kfs_log_1:'Prep Card Gallery opened in Lab',
+  kfs_log_1t:'This Lab',
+  kfs_log_2:'Station Mode and Chef Mode completed',
+  kfs_log_2t:'v015',
+  kfs_log_3:'Kitchen Flow Studio architecture defined',
+  kfs_log_3t:'v016',
+  kfs_footer_note:'🔬 Lab — Mock data. No DB connection.',
   yct:'Yes Chef! ✅', ycclose:'Close',
 },
 es:{
@@ -2670,12 +2909,49 @@ es:{
   st_msgs_lbl:'Mensajes', st_recipes_lbl:'Recetas', st_timer_lbl:'Timers activos',
   st_ql_recipe:'Abrir receta', st_ql_recipe_desc:'Ver y escalar',
   st_ql_timer:'Timer', st_ql_timer_desc:'Activos: 2',
+
+  /* Kitchen Flow Studio v016 */
+  kfs_eyebrow:'Kitchen Flow Studio',
+  kfs_hero_title:'Diseña cómo funciona\ntu cocina.',
+  kfs_hero_desc:'Flujos, misiones, dependencias entre estaciones, relay Chef AI. Todo empieza aquí.',
+  kfs_hero_cta:'Abrir Flow Planner',
+  kfs_hero_preview:'PREVIEW',
+  kfs_node_stations:'5 estaciones',
+  kfs_node_missions:'12 misiones',
+  kfs_node_deps:'3 dependencias',
+  kfs_node_mock:'Flujo demo',
+  kfs_sec_tools:'Herramientas',
+  kfs_sec_system:'Sistema',
+  kfs_sec_log:'Actividad reciente',
+  kfs_log_badge:'LAB DEMO',
+  kfs_tool_recipe_name:'Recipe Designer',
+  kfs_tool_recipe_desc:'Editor recetas, BOM, procedimiento',
+  kfs_tool_prep_name:'Prep Library',
+  kfs_tool_prep_desc:'7 familias operativas · catálogo misiones',
+  kfs_tool_station_name:'Station Designer',
+  kfs_tool_station_desc:'Estaciones, responsables, turnos',
+  kfs_tool_soon:'Próximamente',
+  kfs_tool_live:'Activo',
+  kfs_sys_ai_name:'Chef AI Studio',
+  kfs_sys_ai_desc:'Reglas · relay · automatizaciones',
+  kfs_sys_inv_name:'Inventory Rules',
+  kfs_sys_inv_desc:'Recepción · vida útil · pronóstico',
+  kfs_sys_bot_name:'Bot Center',
+  kfs_sys_bot_desc:'Pipeline · auditoría · versiones',
+  kfs_sys_soon:'Próximamente',
+  kfs_log_1:'Prep Card Gallery abierta en Lab',
+  kfs_log_1t:'Este Lab',
+  kfs_log_2:'Station Mode y Chef Mode completados',
+  kfs_log_2t:'v015',
+  kfs_log_3:'Arquitectura Kitchen Flow Studio definida',
+  kfs_log_3t:'v016',
+  kfs_footer_note:'🔬 Lab — Datos mock. Sin conexión DB.',
   yct:'¡Sí Chef! ✅', ycclose:'Cerrar',
 }
 };
 
 /* lang stored in module-scope var + sessionStorage */
-const SHELL_VERSION = 'v015';
+const SHELL_VERSION = 'v016';
 /* Recipe state lives in RECIPE object + _driverQty inside recipe JS block */
 let LANG = sessionStorage.getItem('ws_lang') || 'it';
 function setLang(l){ LANG=l; sessionStorage.setItem('ws_lang',l); renderAll(); }
@@ -2712,9 +2988,9 @@ function can(p){ return (PERMS[p]||[]).includes(ROLE); }
 var MODE_KEY = 'boh_work_mode';
 var MODES = ['station','chef','admin'];
 var MODE_LABELS = {
-  station:{it:'Station Mode',   en:'Station Mode',   es:'Modo Estación'},
-  chef:   {it:'Chef Mode',      en:'Chef Mode',       es:'Modo Chef'},
-  admin:  {it:'Admin Studio',   en:'Admin Studio',    es:'Admin Studio'}
+  station:{it:'Station Mode',         en:'Station Mode',         es:'Modo Estación'},
+  chef:   {it:'Chef Mode',            en:'Chef Mode',            es:'Modo Chef'},
+  admin:  {it:'Kitchen Flow Studio',  en:'Kitchen Flow Studio',  es:'Kitchen Flow Studio'}
 };
 var MODE_DESCS = {
   station:{it:'Eseguo il lavoro',    en:'I do the work',    es:'Ejecuto el trabajo'},
@@ -3247,73 +3523,137 @@ function _homeStation(){
 
 /* Admin Studio Home — builder-oriented, dense, dark */
 function _homeAdmin(){
+  /* Kitchen Flow Studio — v016
+     Rules:
+     - No fake live data presented as real
+     - Mock/demo data is clearly labeled LAB
+     - Planner is hero but does NOT promise a graph yet (Preview tag)
+     - Prep Library → opens existing prep_gallery
+     - Bot Center → opens existing bot_center
+     - Recipe Designer, Station Designer → Coming Soon
+  */
   return '<div class="admin-home">'
+
+    /* ── Identity bar ── */
     +'<div class="admin-header">'
     +'<div>'
-    +'<div class="admin-header-badge">⚙️ ADMIN STUDIO</div>'
-    +'<div class="admin-header-title">'+t('adm_title')+'</div>'
-    +'<div class="admin-header-sub">'+t('adm_sub')+'</div>'
+    +'<div class="admin-header-badge">⚙️ KITCHEN FLOW STUDIO</div>'
+    +'<div class="admin-header-title">Kitchen Flow Studio</div>'
+    +'<div class="admin-header-sub">'+t('kfs_hero_desc')+'</div>'
     +'</div>'
     +'</div>'
-    +'<div class="admin-status-row">'
-    +'<div class="admin-stat"><div class="admin-stat-val">5</div><div class="admin-stat-lbl">'+t('adm_bots')+'</div></div>'
-    +'<div class="admin-stat"><div class="admin-stat-val">32</div><div class="admin-stat-lbl">'+t('adm_stat_recipes')+'</div></div>'
-    +'<div class="admin-stat"><div class="admin-stat-val">11</div><div class="admin-stat-lbl">'+t('adm_stat_stations')+'</div></div>'
-    +'<div class="admin-stat"><div class="admin-stat-val" style="color:#4ade80">OK</div><div class="admin-stat-lbl">pipeline</div></div>'
+
+    /* ── HERO: Flow Planner ── */
+    +'<div class="kfs-hero">'
+    +'<div class="kfs-hero-eyebrow">'
+    +'<span class="kfs-hero-eyebrow-dot"></span>'
+    +t('kfs_eyebrow')
     +'</div>'
-    +'<div class="admin-section">'
-    +'<div class="admin-section-lbl">'+t('adm_sec_core')+'</div>'
-    +'<div class="admin-grid">'
-    +'<button class="admin-card" data-tabtype="bot_center" data-params=\'{}\'>'
-    +'<div class="admin-card-ico">🤖</div>'
-    +'<div class="admin-card-title">'+t('adm_card_bots')+'</div>'
-    +'<div class="admin-card-desc">'+t('adm_card_bots_desc')+'</div>'
-    +'<div class="admin-card-foot"><span class="sdot s-ok"></span><span style="color:#4ade80;font-size:10px">OK</span></div>'
+    +'<div class="kfs-hero-title">'+t('kfs_hero_title').replace('\\n','<br>')+'</div>'
+    +'<button class="kfs-hero-cta" data-tabtype="prep_gallery" data-params=\'{}\'>'
+    +'<span class="kfs-hero-cta-ico">🗺</span>'
+    +t('kfs_hero_cta')
+    +'<span class="kfs-hero-preview-tag">'+t('kfs_hero_preview')+'</span>'
     +'</button>'
-    +'<button class="admin-card" data-tabtype="prep_gallery" data-params=\'{}\'>'
-    +'<div class="admin-card-ico">🗂️</div>'
-    +'<div class="admin-card-title">'+t('adm_card_gallery')+'</div>'
-    +'<div class="admin-card-desc">'+t('adm_card_gallery_desc')+'</div>'
-    +'<div class="admin-card-foot"><span class="sdot s-ok"></span><span style="color:#94a3b8;font-size:10px">v014</span></div>'
-    +'</button>'
+    /* Node strip — clearly mock */
+    +'<div class="kfs-hero-nodes">'
+    +'<div class="kfs-node"><span class="kfs-node-dot" style="background:#818cf8"></span>'+t('kfs_node_stations')+'</div>'
+    +'<div class="kfs-node"><span class="kfs-node-dot" style="background:#4ade80"></span>'+t('kfs_node_missions')+'</div>'
+    +'<div class="kfs-node"><span class="kfs-node-dot" style="background:#f59e0b"></span>'+t('kfs_node_deps')+'</div>'
+    +'<div class="kfs-node" style="border-color:rgba(245,158,11,.25);color:#92400e;background:rgba(245,158,11,.08)">🔬 '+t('kfs_node_mock')+'</div>'
     +'</div>'
     +'</div>'
-    +'<div class="admin-section">'
-    +'<div class="admin-section-lbl">'+t('adm_sec_build')+'</div>'
-    +'<div class="admin-grid">'
-    +'<button class="admin-card placeholder">'
-    +'<div class="admin-card-ico">📋</div>'
-    +'<div class="admin-card-title">'+t('adm_card_rb')+'</div>'
-    +'<div class="admin-card-desc">'+t('adm_card_rb_desc')+'</div>'
-    +'<div class="admin-card-placeholder-tag">COMING SOON</div>'
+
+    /* ── TOOLS (3-col) ── */
+    +'<div class="kfs-section"><div class="kfs-section-lbl">'+t('kfs_sec_tools')+'</div></div>'
+    +'<div class="kfs-tools">'
+
+    /* Prep Library — LIVE, opens existing gallery */
+    +'<button class="kfs-tool live" data-tabtype="prep_gallery" data-params=\'{}\'>'
+    +'<div class="kfs-tool-ico">📋</div>'
+    +'<div class="kfs-tool-name">'+t('kfs_tool_prep_name')+'</div>'
+    +'<div class="kfs-tool-desc">'+t('kfs_tool_prep_desc')+'</div>'
+    +'<span class="kfs-tool-tag live">'+t('kfs_tool_live')+'</span>'
     +'</button>'
-    +'<button class="admin-card placeholder">'
-    +'<div class="admin-card-ico">📝</div>'
-    +'<div class="admin-card-title">'+t('adm_card_pb')+'</div>'
-    +'<div class="admin-card-desc">'+t('adm_card_pb_desc')+'</div>'
-    +'<div class="admin-card-placeholder-tag">COMING SOON</div>'
+
+    /* Recipe Designer — Coming Soon */
+    +'<button class="kfs-tool placeholder">'
+    +'<div class="kfs-tool-ico">🍲</div>'
+    +'<div class="kfs-tool-name">'+t('kfs_tool_recipe_name')+'</div>'
+    +'<div class="kfs-tool-desc">'+t('kfs_tool_recipe_desc')+'</div>'
+    +'<span class="kfs-tool-tag soon">'+t('kfs_tool_soon')+'</span>'
     +'</button>'
-    +'<button class="admin-card placeholder">'
-    +'<div class="admin-card-ico">🏗️</div>'
-    +'<div class="admin-card-title">'+t('adm_card_sb')+'</div>'
-    +'<div class="admin-card-desc">'+t('adm_card_sb_desc')+'</div>'
-    +'<div class="admin-card-placeholder-tag">COMING SOON</div>'
+
+    /* Station Designer — Coming Soon */
+    +'<button class="kfs-tool placeholder">'
+    +'<div class="kfs-tool-ico">👨\u200d🍳</div>'
+    +'<div class="kfs-tool-name">'+t('kfs_tool_station_name')+'</div>'
+    +'<div class="kfs-tool-desc">'+t('kfs_tool_station_desc')+'</div>'
+    +'<span class="kfs-tool-tag soon">'+t('kfs_tool_soon')+'</span>'
     +'</button>'
-    +'<button class="admin-card" data-tabtype="pos" data-params=\'{}\'>'
-    +'<div class="admin-card-ico">📊</div>'
-    +'<div class="admin-card-title">'+t('adm_card_audit')+'</div>'
-    +'<div class="admin-card-desc">'+t('adm_card_audit_desc')+'</div>'
-    +'<div class="admin-card-foot"><span style="color:#64748b;font-size:10px">Audit · Config</span></div>'
+
+    +'</div>'
+
+    /* ── SYSTEM (2-col) ── */
+    +'<div class="kfs-section"><div class="kfs-section-lbl">'+t('kfs_sec_system')+'</div></div>'
+    +'<div class="kfs-system">'
+
+    /* Bot Center — LIVE, opens existing module */
+    +'<button class="kfs-sys" data-tabtype="bot_center" data-params=\'{}\'>'
+    +'<div class="kfs-sys-ico">🔧</div>'
+    +'<div class="kfs-sys-name">'+t('kfs_sys_bot_name')+'</div>'
+    +'<div class="kfs-sys-desc">'+t('kfs_sys_bot_desc')+'</div>'
     +'</button>'
+
+    /* Chef AI Studio — Coming Soon */
+    +'<button class="kfs-sys placeholder">'
+    +'<div class="kfs-sys-ico">🤖</div>'
+    +'<div class="kfs-sys-name">'+t('kfs_sys_ai_name')+'</div>'
+    +'<div class="kfs-sys-desc">'+t('kfs_sys_ai_desc')+'</div>'
+    +'</button>'
+
+    /* Inventory Rules — Coming Soon */
+    +'<button class="kfs-sys placeholder">'
+    +'<div class="kfs-sys-ico">📦</div>'
+    +'<div class="kfs-sys-name">'+t('kfs_sys_inv_name')+'</div>'
+    +'<div class="kfs-sys-desc">'+t('kfs_sys_inv_desc')+'</div>'
+    +'</button>'
+
+    +'</div>'
+
+    /* ── RECENT ACTIVITY — clearly LAB mock ── */
+    +'<div class="kfs-section"><div class="kfs-section-lbl">'+t('kfs_sec_log')+'</div></div>'
+    +'<div class="kfs-log">'
+    +'<div class="kfs-log-header">'
+    +'<span class="kfs-log-lbl">Lab changelog</span>'
+    +'<span class="kfs-log-badge">'+t('kfs_log_badge')+'</span>'
+    +'</div>'
+    +'<div class="kfs-log-row">'
+    +'<div class="kfs-log-ico">🗺</div>'
+    +'<div class="kfs-log-body"><div class="kfs-log-text">'+t('kfs_log_3')+'</div><div class="kfs-log-time">'+t('kfs_log_3t')+'</div></div>'
+    +'</div>'
+    +'<div class="kfs-log-row">'
+    +'<div class="kfs-log-ico">🔀</div>'
+    +'<div class="kfs-log-body"><div class="kfs-log-text">'+t('kfs_log_2')+'</div><div class="kfs-log-time">'+t('kfs_log_2t')+'</div></div>'
+    +'</div>'
+    +'<div class="kfs-log-row">'
+    +'<div class="kfs-log-ico">📋</div>'
+    +'<div class="kfs-log-body"><div class="kfs-log-text">'+t('kfs_log_1')+'</div><div class="kfs-log-time">'+t('kfs_log_1t')+'</div></div>'
     +'</div>'
     +'</div>'
-    +'<p class="note" style="margin:0 16px 20px;color:#475569"><span class="nd"></span>'+t('demo')+'</p>'
+
+    /* ── Footer note */
+    +'<div class="kfs-footer"><div class="kfs-footer-note">'+t('kfs_footer_note')+'</div></div>'
+
     +'</div>';
 }
 function homeAfterRender(){
   var ws=document.getElementById('workspace');
-  /* Wire hcards (Chef Mode) and admin-cards and station-ql (other modes) */
-  ws.querySelectorAll('.hcard, .admin-card:not(.placeholder), .station-ql').forEach(function(btn){
+  /* Wire all home nav buttons: hcards, admin-cards, station-ql, kfs buttons */
+  ws.querySelectorAll(
+    '.hcard, .admin-card:not(.placeholder), .station-ql, ' +
+    '.kfs-hero-cta, .kfs-tool:not(.placeholder), .kfs-sys:not(.placeholder)'
+  ).forEach(function(btn){
     btn.addEventListener('click', function(){
       var type = btn.dataset.tabtype;
       var p    = JSON.parse(btn.dataset.params||'{}');
@@ -6477,7 +6817,7 @@ function renderTopBar(){
     /* Brand */
     '<div class="t-brand">'
     +'<div class="t-mark">B</div>'
-    +'<div class="t-words"><span class="t-name">Brigade</span><span class="t-sub">'+(MODE==='admin'?'Admin Studio':MODE==='station'?'Station Mode':'by BOH OS')+'</span></div>'
+    +'<div class="t-words"><span class="t-name">Brigade</span><span class="t-sub">'+(MODE==='admin'?'Kitchen Flow Studio':MODE==='station'?'Station Mode':'by BOH OS')+'</span></div>'
     +'</div>'
     /* Search */
     +'<div class="t-search" id="t-search-wrap">'    +'<span class="t-search-ico">⌕</span>'    +'<input class="t-search-input" id="t-search-input"'    +' placeholder="'+t('srch_placeholder')+'" autocomplete="off" spellcheck="false">'    +'<button class="t-search-clear" id="t-search-clear" tabindex="-1">✕</button>'    +'<div class="search-drop hi" id="search-drop"></div>'    +'</div>'
