@@ -2355,6 +2355,8 @@ it:{
   sv_msgs_title:'Messaggi per te',
   tpg:'Gallery Prep',
   ch_pg:'Gallery Prep', cd_pg:'7 famiglie · 4 componenti · catalogo missioni', cs_pg:'v014',
+  tpf:'Prep · Famiglie',
+  ch_pf:'Prep Famiglie', cd_pf:'153 prep live · raggruppate per famiglia · dati reali DB', cs_pf:'v018',
   pg_title:'Prep Card Gallery',
   pg_sub:'7 famiglie operative. 4 componenti. Catalogo visivo.',
   pg_note:'Dati mock — nessuna query DB',
@@ -2646,6 +2648,8 @@ en:{
   sv_msgs_title:'Messages for you',
   tpg:'Prep Gallery',
   ch_pg:'Prep Gallery', cd_pg:'7 families · 4 components · mission catalog', cs_pg:'v014',
+  tpf:'Prep · Families',
+  ch_pf:'Prep Families', cd_pf:'153 live prep · grouped by family · real DB data', cs_pf:'v018',
   pg_title:'Prep Card Gallery',
   pg_sub:'7 operational families. 4 components. Visual catalog.',
   pg_note:'Mock data — no DB query',
@@ -2934,6 +2938,8 @@ es:{
   sv_msgs_title:'Mensajes para ti',
   tpg:'Galería Prep',
   ch_pg:'Galería Prep', cd_pg:'7 familias · 4 componentes · catálogo misiones', cs_pg:'v014',
+  tpf:'Prep · Familias',
+  ch_pf:'Prep Familias', cd_pf:'153 prep en vivo · agrupadas por familia · datos reales DB', cs_pf:'v018',
   pg_title:'Galería Prep Cards',
   pg_sub:'7 familias operativas. 4 componentes. Catálogo visual.',
   pg_note:'Datos mock — sin consulta DB',
@@ -3320,6 +3326,7 @@ function _tabTitle(type, p){
   if(type==='inventory')     return t('ti',{n:p.name||''});
   if(type==='pos')           return t('tp');
   if(type==='prep_gallery')  return t('tpg');
+  if(type==='prep_families') return t('tpf');
   return type;
 }
 
@@ -3585,6 +3592,7 @@ function _homeChef(){
     {key:'re',type:'recipe',       perm:'see_recipes',   ico:'📋', sd:'s-ok', p:{id:'tiramisu',name:'Tiramisu'}},
     {key:'ki',type:'kitchen',      perm:'see_kitchen',   ico:'👨‍🍳', sd:'s-wn', p:{}},
     {key:'pg',type:'prep_gallery',  perm:'see_kitchen',   ico:'🗂️',  sd:'s-ok', p:{}},
+    {key:'pf',type:'prep_families', perm:'see_kitchen',   ico:'🥗',  sd:'s-ok', p:{}},
   ].filter(function(c){ return can(c.perm); });
   var cardHTML = cards.map(function(c){
     return '<button class="hcard" data-tabtype="'+c.type+'" data-params=\''+JSON.stringify(c.p)+'\'>'
@@ -6907,6 +6915,460 @@ function prepGalleryAfterRender(){
 
 
 
+/* ══ PREP FAMILIES PAGE v018 ══════════════════════════════════════════════
+ *
+ * Read-only view of all 153 active prep_tasks grouped by production_family.
+ * Data: two separate REST fetches (prep_tasks + prep_task_classifications),
+ * joined in JS.  Zero writes to any table.
+ *
+ * Groups:
+ *   Weekly Batch | Daily Fresh | Frozen Production | Vendor Driven | Opportunistic
+ *   Operational / No Production Family   (29 records: family IS NULL)
+ *     └ sub-groups by work_type: Stock Checks | Setup | Cleaning | Operational Action
+ *   Unclassified   (prep_tasks rows with no matching classification row at all)
+ *
+ * Architecture:
+ *   pagePrepFamilies()      → sync, returns loading skeleton
+ *   prepFamiliesAfterRender() → async fetch → re-renders #pf-body
+ *   _pfCache                → avoids re-fetch while tab is open
+ *   _pfError                → last error message for display
+ *
+ * ════════════════════════════════════════════════════════════════════════ */
+
+var _pfCache   = null;   /* [{pt fields, ptc fields or nulls}] — cleared on tab change */
+var _pfLoading = false;
+var _pfError   = null;
+
+/* Clear cache when tab changes so a re-open re-fetches */
+(function(){
+  var _origOpenTab = typeof openTab === 'function' ? openTab : null;
+  /* We patch via the tab routing, not openTab directly — see prepFamiliesAfterRender */
+})();
+
+/* ── i18n strings ──────────────────────────────────────────────────────── */
+var PF_STRINGS = {
+  title:       {en:'Prep · Families', it:'Prep · Famiglie', es:'Prep · Familias'},
+  sub:         {en:'All active prep tasks grouped by production family.',
+                it:'Tutte le prep attive raggruppate per famiglia di produzione.',
+                es:'Todas las prep activas agrupadas por familia de producción.'},
+  loading:     {en:'Loading from database…', it:'Caricamento dal database…', es:'Cargando desde la base de datos…'},
+  err_title:   {en:'Could not load prep data', it:'Impossibile caricare i dati', es:'No se pudieron cargar los datos'},
+  err_retry:   {en:'Retry', it:'Riprova', es:'Reintentar'},
+  col_prep:    {en:'Prep', it:'Prep', es:'Prep'},
+  col_station: {en:'Station', it:'Stazione', es:'Estación'},
+  col_stock:   {en:'Stock', it:'Stock', es:'Stock'},
+  col_sugg:    {en:'Suggested', it:'Suggerido', es:'Sugerido'},
+  col_type:    {en:'Type', it:'Tipo', es:'Tipo'},
+  col_note:    {en:'Note', it:'Note', es:'Nota'},
+  lbl_canonical:  {en:'Canonical', it:'Canonico', es:'Canónico'},
+  lbl_confidence: {en:'MEDIUM confidence', it:'Confidenza MEDIA', es:'Confianza MEDIA'},
+  lbl_warning:    {en:'Note', it:'Nota', es:'Nota'},
+  lbl_inprog:     {en:'In progress', it:'In corso', es:'En curso'},
+  lbl_tomorrow:   {en:'Need tomorrow', it:'Serve domani', es:'Necesario mañana'},
+  lbl_done:       {en:'Done', it:'Fatto', es:'Hecho'},
+  fam_weekly:     {en:'Weekly Batch', it:'Batch Settimanale', es:'Batch Semanal'},
+  fam_daily:      {en:'Daily Fresh', it:'Fresco Giornaliero', es:'Fresco Diario'},
+  fam_frozen:     {en:'Frozen Production', it:'Produzione Congelata', es:'Producción Congelada'},
+  fam_vendor:     {en:'Vendor Driven', it:'Guidato dal Fornitore', es:'Guiado por Proveedor'},
+  fam_opport:     {en:'Opportunistic', it:'Opportunistico', es:'Oportunístico'},
+  fam_operational:{en:'Operational / No Production Family',
+                   it:'Operativo / Nessuna Famiglia di Produzione',
+                   es:'Operativo / Sin Familia de Producción'},
+  fam_unclassified:{en:'Unclassified', it:'Non classificato', es:'Sin clasificar'},
+  sub_stock:      {en:'Stock Checks', it:'Controlli Stock', es:'Controles de Stock'},
+  sub_setup:      {en:'Setup', it:'Setup', es:'Configuración'},
+  sub_cleaning:   {en:'Cleaning', it:'Pulizia', es:'Limpieza'},
+  sub_opact:      {en:'Operational Action', it:'Azione Operativa', es:'Acción Operativa'},
+  empty_family:   {en:'No prep in this group.', it:'Nessuna prep in questo gruppo.', es:'Sin prep en este grupo.'},
+  badge_readonly: {en:'Read-only · DB live', it:'Sola lettura · DB live', es:'Solo lectura · DB live'},
+  qa_count:       {en:'{n} prep loaded', it:'{n} prep caricate', es:'{n} prep cargadas'},
+  pt_checklist:   {en:'Checklist', it:'Checklist', es:'Checklist'},
+  pt_finale:      {en:'Final', it:'Finale', es:'Final'},
+  pt_supporto:    {en:'Support', it:'Supporto', es:'Soporte'},
+};
+function _pfs(key){ var o=PF_STRINGS[key]; if(!o) return key; return o[LANG]||o.en||key; }
+
+/* ── Family config ─────────────────────────────────────────────────────── */
+var PF_FAMILY_ORDER = [
+  {key:'weekly_batch',      label:'fam_weekly',  icon:'📅', color:'#1d4ed8'},
+  {key:'daily_fresh',       label:'fam_daily',   icon:'🌿', color:'#16a34a'},
+  {key:'frozen_production', label:'fam_frozen',  icon:'❄️', color:'#0891b2'},
+  {key:'vendor_driven',     label:'fam_vendor',  icon:'🚛', color:'#d97706'},
+  {key:'opportunistic',     label:'fam_opport',  icon:'♻️', color:'#7c3aed'},
+  {key:'__operational',     label:'fam_operational', icon:'⚙️', color:'#64748b'},
+  {key:'__unclassified',    label:'fam_unclassified', icon:'❓', color:'#94a3b8'},
+];
+
+/* Operational sub-group order */
+var PF_OP_SUBGROUPS = [
+  {key:'stock_check',       label:'sub_stock',   icon:'📋'},
+  {key:'station_setup',     label:'sub_setup',   icon:'🔧'},
+  {key:'cleaning',          label:'sub_cleaning',icon:'🧹'},
+  {key:'operational_action',label:'sub_opact',   icon:'⚡'},
+];
+
+/* ── Fetch helpers ─────────────────────────────────────────────────────── */
+function _pfFetch(url){
+  return fetch(url,{
+    headers:{
+      'apikey':      SUPABASE_KEY,
+      'Authorization':'Bearer '+SUPABASE_KEY,
+      'Content-Type':'application/json'
+    }
+  }).then(function(r){
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    return r.json();
+  });
+}
+
+function _pfLoadData(){
+  /* Two fetches in parallel, then join in JS */
+  var urlPT = SUPABASE_URL
+    + '/rest/v1/prep_tasks'
+    + '?select=id,name,category,prep_type,unit,current_stock,suggested_qty,suggested_note,in_progress,need_tomorrow,done'
+    + '&archived=eq.false'
+    + '&order=name.asc'
+    + '&limit=1000';
+  var urlPTC = SUPABASE_URL
+    + '/rest/v1/prep_task_classifications'
+    + '?select=prep_task_id,production_family,work_type,canonical_station,family_confidence,classification_warning'
+    + '&limit=1000';
+
+  return Promise.all([_pfFetch(urlPT), _pfFetch(urlPTC)])
+    .then(function(results){
+      var ptRows  = results[0] || [];
+      var ptcRows = results[1] || [];
+      /* Build classification index */
+      var idx = {};
+      ptcRows.forEach(function(r){ idx[r.prep_task_id] = r; });
+      /* LEFT JOIN: every prep_task row gets its classification (or null) */
+      return ptRows.map(function(pt){
+        var cls = idx[pt.id] || null;
+        return {
+          id:          pt.id,
+          name:        pt.name,
+          category:    pt.category,
+          prep_type:   pt.prep_type,
+          unit:        pt.unit,
+          current_stock:  pt.current_stock,
+          suggested_qty:  pt.suggested_qty,
+          suggested_note: pt.suggested_note,
+          in_progress:    pt.in_progress,
+          need_tomorrow:  pt.need_tomorrow,
+          done:           pt.done,
+          /* classification fields — null if no row in ptc */
+          production_family:      cls ? cls.production_family      : undefined,
+          work_type:              cls ? cls.work_type              : null,
+          canonical_station:      cls ? cls.canonical_station      : null,
+          family_confidence:      cls ? cls.family_confidence      : null,
+          classification_warning: cls ? cls.classification_warning : null,
+          _classified:            cls !== null,  /* false = Unclassified */
+        };
+      });
+    });
+}
+
+/* ── Stock / pill helpers ──────────────────────────────────────────────── */
+function _pfStockHtml(row){
+  if(row.current_stock === null || row.current_stock === undefined) return '';
+  var val = parseFloat(row.current_stock);
+  var unit = row.unit || '';
+  var sugg = (row.suggested_qty !== null && row.suggested_qty !== undefined)
+    ? ' → <b>'+parseFloat(row.suggested_qty)+' '+unit+'</b>' : '';
+  return '<span class="pf-stock">'+val+' '+unit+sugg+'</span>';
+}
+
+function _pfPillHtml(row){
+  if(!row.suggested_note) return '';
+  var parts = row.suggested_note.split('|');
+  var color = parts[0]||'green';
+  var cls = color==='red'?'pf-pill-red':color==='yellow'?'pf-pill-yellow':'pf-pill-green';
+  return '<span class="'+cls+'"></span>';
+}
+
+function _pfPrepTypeLbl(t){
+  if(t==='checklist') return _pfs('pt_checklist');
+  if(t==='finale')    return _pfs('pt_finale');
+  if(t==='supporto')  return _pfs('pt_supporto');
+  return t||'';
+}
+
+function _pfStatusBadges(row){
+  var b='';
+  if(row.in_progress)    b+='<span class="pf-badge pf-badge-ip">'+_pfs('lbl_inprog')+'</span>';
+  if(row.need_tomorrow)  b+='<span class="pf-badge pf-badge-tm">'+_pfs('lbl_tomorrow')+'</span>';
+  if(row.done)           b+='<span class="pf-badge pf-badge-done">'+_pfs('lbl_done')+'</span>';
+  return b;
+}
+
+/* ── Prep row renderer ─────────────────────────────────────────────────── */
+function _pfRow(row, showWarning){
+  var medBadge = (row.family_confidence==='MEDIUM')
+    ? '<span class="pf-conf-med">'+_pfs('lbl_confidence')+'</span>' : '';
+  var warnHtml = (showWarning && row.classification_warning)
+    ? '<div class="pf-warn">⚠ '+row.classification_warning+'</div>' : '';
+  var canonHtml = row.canonical_station
+    ? '<span class="pf-canon">'+_pfs('lbl_canonical')+': '+row.canonical_station+'</span>' : '';
+
+  return '<div class="pf-row'+(row.done?' pf-row-done':'')+'">'
+    +'<div class="pf-row-main">'
+      +'<div class="pf-row-name">'+_pfPillHtml(row)+row.name+_pfStatusBadges(row)+'</div>'
+      +'<div class="pf-row-meta">'
+        +'<span class="pf-station">'+row.category+'</span>'
+        +'<span class="pf-type">'+_pfPrepTypeLbl(row.prep_type)+'</span>'
+        +canonHtml
+        +medBadge
+      +'</div>'
+      +warnHtml
+    +'</div>'
+    +'<div class="pf-row-stock">'+_pfStockHtml(row)+'</div>'
+    +'</div>';
+}
+
+/* ── Group renderers ───────────────────────────────────────────────────── */
+function _pfFamilySection(cfg, rows, showWarning){
+  var color = cfg.color;
+  var count = rows.length;
+  if(count === 0) return '';
+  var rowsHtml = rows.map(function(r){ return _pfRow(r, showWarning); }).join('');
+  return '<div class="pf-section">'
+    +'<div class="pf-section-head" style="border-left:4px solid '+color+'">'
+      +'<span class="pf-section-ico">'+cfg.icon+'</span>'
+      +'<span class="pf-section-lbl">'+_pfs(cfg.label)+'</span>'
+      +'<span class="pf-section-count">'+count+'</span>'
+    +'</div>'
+    +'<div class="pf-rows">'+rowsHtml+'</div>'
+    +'</div>';
+}
+
+function _pfOperationalSection(rows){
+  if(rows.length === 0) return '';
+  /* sub-group by work_type */
+  var subHtml = '';
+  PF_OP_SUBGROUPS.forEach(function(sg){
+    var sub = rows.filter(function(r){ return r.work_type === sg.key; });
+    if(sub.length === 0) return;
+    var rowsHtml = sub.map(function(r){ return _pfRow(r, true); }).join('');
+    subHtml += '<div class="pf-subgroup">'
+      +'<div class="pf-subgroup-head">'+sg.icon+' '+_pfs(sg.label)
+        +' <span class="pf-section-count">'+sub.length+'</span></div>'
+      +'<div class="pf-rows">'+rowsHtml+'</div>'
+      +'</div>';
+  });
+  return '<div class="pf-section">'
+    +'<div class="pf-section-head" style="border-left:4px solid #64748b">'
+      +'<span class="pf-section-ico">⚙️</span>'
+      +'<span class="pf-section-lbl">'+_pfs('fam_operational')+'</span>'
+      +'<span class="pf-section-count">'+rows.length+'</span>'
+    +'</div>'
+    +'<div class="pf-section-note">Not a production family — these tasks are correctly classified; family is not applicable.</div>'
+    +subHtml
+    +'</div>';
+}
+
+/* ── Body renderer (called after fetch) ────────────────────────────────── */
+function _pfRenderBody(data){
+  var total = data.length;
+  /* Partition */
+  var byFamily = {};
+  PF_FAMILY_ORDER.forEach(function(f){ byFamily[f.key] = []; });
+  var operational = [];
+  var unclassified = [];
+
+  data.forEach(function(row){
+    if(!row._classified){
+      unclassified.push(row);
+      return;
+    }
+    var fam = row.production_family;
+    if(fam === null || fam === undefined){
+      operational.push(row);
+      return;
+    }
+    if(byFamily[fam]) byFamily[fam].push(row);
+    else byFamily[fam] = [row];
+  });
+
+  var html = '<div class="pf-qa-bar">'
+    +_pfs('qa_count').replace('{n}','<b>'+total+'</b>')
+    +' <span class="pf-badge-readonly">'+_pfs('badge_readonly')+'</span>'
+    +'</div>';
+
+  /* Five production families */
+  ['weekly_batch','daily_fresh','frozen_production','vendor_driven','opportunistic'].forEach(function(fk){
+    var cfg = PF_FAMILY_ORDER.find(function(f){ return f.key===fk; });
+    html += _pfFamilySection(cfg, byFamily[fk]||[], false);
+  });
+
+  /* Operational — 29 records with NULL family */
+  html += _pfOperationalSection(operational);
+
+  /* Unclassified — no ptc row at all */
+  if(unclassified.length > 0){
+    var cfg = PF_FAMILY_ORDER.find(function(f){ return f.key==='__unclassified'; });
+    html += _pfFamilySection(cfg, unclassified, false);
+  }
+
+  return html;
+}
+
+/* ── Page skeleton ─────────────────────────────────────────────────────── */
+function pagePrepFamilies(){
+  _pfCache = null; /* clear on each page open */
+  return '<div class="pi pf-wrap">'
+    +'<div class="pf-header">'
+      +'<div class="pf-title">'+_pfs('title')+'</div>'
+      +'<div class="pf-sub">'+_pfs('sub')+'</div>'
+    +'</div>'
+    +'<div id="pf-body" class="pf-body">'
+      +'<div class="pf-loading">'
+        +'<div class="pf-loading-spinner"></div>'
+        +'<div class="pf-loading-txt">'+_pfs('loading')+'</div>'
+      +'</div>'
+    +'</div>'
+    +'</div>';
+}
+
+/* ── After-render: fetch and paint ────────────────────────────────────── */
+function prepFamiliesAfterRender(){
+  var el = document.getElementById('pf-body');
+  if(!el) return;
+  if(_pfCache){
+    el.innerHTML = _pfRenderBody(_pfCache);
+    return;
+  }
+  _pfLoading = true;
+  _pfLoadData()
+    .then(function(data){
+      _pfCache = data;
+      _pfLoading = false;
+      var el2 = document.getElementById('pf-body');
+      if(el2) el2.innerHTML = _pfRenderBody(data);
+    })
+    .catch(function(err){
+      _pfLoading = false;
+      _pfError = err.message||'Unknown error';
+      var el2 = document.getElementById('pf-body');
+      if(el2) el2.innerHTML = '<div class="pf-err">'
+        +'<div class="pf-err-title">'+_pfs('err_title')+'</div>'
+        +'<div class="pf-err-msg">'+_pfError+'</div>'
+        +'<button class="pf-err-retry" onclick="_pfCache=null;prepFamiliesAfterRender()">'+_pfs('err_retry')+'</button>'
+        +'<div class="pf-err-fallback">Fallback: <a href="#" onclick="event.preventDefault();_pfShowMock()">Load mock data</a></div>'
+        +'</div>';
+    });
+}
+
+/* ── Mock fallback (used if Supabase is unreachable) ───────────────────── */
+function _pfShowMock(){
+  var el = document.getElementById('pf-body');
+  if(!el) return;
+  /* Build minimal mock from KS stations missions */
+  var mock = [];
+  if(KS){
+    Object.values(KS.stations).forEach(function(st){
+      (st.missions||[]).forEach(function(m,i){
+        mock.push({
+          id: st.id+'_'+i,
+          name: typeof m.name==='object'?(m.name.en||m.name.it):m.name,
+          category: typeof st.label==='object'?(st.label.en||st.label.it):st.label,
+          prep_type:'supporto', unit:'', current_stock:null,
+          suggested_qty:null, suggested_note:null,
+          in_progress:m.status==='in_progress', need_tomorrow:false, done:m.status==='done',
+          production_family:'weekly_batch', work_type:'quantitative_prep',
+          canonical_station:null, family_confidence:'MEDIUM',
+          classification_warning:'Mock data — Supabase unreachable',
+          _classified:true,
+        });
+      });
+    });
+  } else {
+    mock = [{id:0,name:'Mock prep (Supabase offline)',category:'Oven Station',prep_type:'supporto',
+             unit:'g',current_stock:'500',suggested_qty:'1000',suggested_note:'yellow|ok|ok|ok',
+             in_progress:false,need_tomorrow:false,done:false,
+             production_family:'weekly_batch',work_type:'quantitative_prep',
+             canonical_station:'Oven',family_confidence:'HIGH',classification_warning:null,_classified:true}];
+  }
+  el.innerHTML = '<div class="pf-mock-banner">⚠ Mock data — Supabase unreachable</div>'
+    + _pfRenderBody(mock);
+}
+
+/* ══ PREP FAMILIES CSS ═════════════════════════════════════════════════════ */
+(function(){
+  var s=document.createElement('style');
+  s.textContent=`
+.pf-wrap{padding:0 0 80px}
+.pf-header{padding:20px 16px 12px;border-bottom:1px solid var(--bd)}
+.pf-title{font-size:20px;font-weight:800;color:var(--tx);letter-spacing:-.3px}
+.pf-sub{font-size:13px;color:var(--txm);margin-top:2px}
+.pf-body{padding:0}
+.pf-qa-bar{padding:10px 16px;font-size:12px;color:var(--txm);display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--bd)}
+.pf-badge-readonly{background:var(--ok-bg);color:var(--ok);border:1px solid var(--ok-bd);border-radius:var(--rp);padding:2px 8px;font-size:11px;font-weight:700}
+/* Sections */
+.pf-section{margin:0;border-bottom:1px solid var(--bd)}
+.pf-section-head{display:flex;align-items:center;gap:8px;padding:12px 16px;background:var(--surf-g);cursor:default}
+.pf-section-ico{font-size:16px;line-height:1}
+.pf-section-lbl{font-size:13px;font-weight:800;color:var(--tx);flex:1;letter-spacing:-.1px}
+.pf-section-count{font-size:11px;font-weight:700;color:var(--txi);background:var(--b6);border-radius:var(--rp);padding:2px 7px;min-width:20px;text-align:center}
+.pf-section-note{padding:6px 16px 4px;font-size:11px;color:var(--txm);font-style:italic}
+/* Sub-groups (operational) */
+.pf-subgroup{border-top:1px solid var(--bd)}
+.pf-subgroup-head{padding:8px 20px;font-size:11px;font-weight:700;color:var(--txm);text-transform:uppercase;letter-spacing:.06em;display:flex;align-items:center;gap:6px;background:rgba(241,245,249,.6)}
+/* Rows */
+.pf-rows{display:flex;flex-direction:column}
+.pf-row{display:flex;align-items:flex-start;gap:12px;padding:10px 16px;border-bottom:1px solid var(--bd);transition:background .1s}
+.pf-row:last-child{border-bottom:none}
+.pf-row:hover{background:rgba(37,99,235,.03)}
+.pf-row-done{opacity:.55}
+.pf-row-main{flex:1;min-width:0}
+.pf-row-name{font-size:14px;font-weight:600;color:var(--tx);display:flex;align-items:center;gap:6px;flex-wrap:wrap;line-height:1.3}
+.pf-row-meta{display:flex;align-items:center;gap:6px;margin-top:3px;flex-wrap:wrap}
+.pf-row-stock{font-size:13px;color:var(--txm);white-space:nowrap;padding-top:1px}
+/* Meta chips */
+.pf-station{font-size:11px;color:var(--b6);font-weight:600;background:var(--b1);border-radius:var(--rp);padding:1px 7px}
+.pf-type{font-size:11px;color:var(--txm);font-weight:600}
+.pf-canon{font-size:11px;color:var(--txm)}
+.pf-conf-med{font-size:10px;color:var(--wn);background:var(--wn-bg);border:1px solid var(--wn-bd);border-radius:var(--rp);padding:1px 6px;font-weight:700}
+.pf-warn{font-size:11px;color:var(--wn);margin-top:3px}
+/* Status badges */
+.pf-badge{font-size:10px;font-weight:700;border-radius:var(--rp);padding:1px 6px}
+.pf-badge-ip{background:#ede9fe;color:#7c3aed}
+.pf-badge-tm{background:var(--wn-bg);color:var(--wn)}
+.pf-badge-done{background:var(--ok-bg);color:var(--ok)}
+/* Stock */
+.pf-stock{font-size:13px;color:var(--txm)}
+.pf-stock b{color:var(--tx);font-weight:700}
+/* Suggestion pills */
+.pf-pill-green,.pf-pill-yellow,.pf-pill-red{display:inline-block;width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.pf-pill-green{background:var(--ok)}
+.pf-pill-yellow{background:var(--wn)}
+.pf-pill-red{background:var(--er)}
+/* Loading */
+.pf-loading{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 16px;gap:12px}
+.pf-loading-spinner{width:28px;height:28px;border:3px solid var(--b2);border-top-color:var(--b6);border-radius:50%;animation:pf-spin .7s linear infinite}
+@keyframes pf-spin{to{transform:rotate(360deg)}}
+.pf-loading-txt{font-size:14px;color:var(--txm)}
+/* Error */
+.pf-err{padding:40px 16px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:10px}
+.pf-err-title{font-size:16px;font-weight:700;color:var(--er)}
+.pf-err-msg{font-size:13px;color:var(--txm);max-width:280px}
+.pf-err-retry{background:var(--b6);color:#fff;border:none;border-radius:var(--r1);padding:8px 20px;font-size:14px;font-weight:700;cursor:pointer}
+.pf-err-fallback{font-size:12px;color:var(--txm)}
+/* Mock banner */
+.pf-mock-banner{padding:8px 16px;background:var(--wn-bg);color:var(--wn);font-size:12px;font-weight:700;border-bottom:1px solid var(--wn-bd)}
+@media(min-width:600px){
+  .pf-row{padding:10px 20px}
+  .pf-section-head{padding:12px 20px}
+  .pf-subgroup-head{padding:8px 24px}
+  .pf-qa-bar{padding:10px 20px}
+}
+  `;
+  document.head.appendChild(s);
+})();
+
+/* ══ END PREP FAMILIES PAGE v018 ══════════════════════════════════════════ */
+
+
+
 /* ══ MISSION DESIGNER PAGE v017 ═══════════════════════════════════════════ */
 var MISSIONS_DEMO=[
   {id:'m1',name:'Arrabbiata Sauce',fam:'produci',ico:'\u{1F345}',owner:'Saucier',output:'4 kg',dur:'45 min',dep:'Pomodoro disponibile',unlocks:'Pasta Station',prio:'high'},
@@ -6991,6 +7453,7 @@ var PAGES={
   pos:              {render:pageSales,           after:null},
   kitchen:          {render:pageKitchen,         after:kitchenAfterRender, rerender:true},
   prep_gallery:     {render:pagePrepGallery,     after:prepGalleryAfterRender},
+  prep_families:    {render:pagePrepFamilies,    after:prepFamiliesAfterRender},
   mission_designer: {render:pageMissionDesigner, after:missionDesignerAfterRender}
 };
 
@@ -7151,6 +7614,7 @@ function _showNewTabMenu(){
     {type:'pos',          label:t('tp'),        ico:'📊', p:{}},
     {type:'kitchen',      label:t('tk'),        ico:'👨‍🍳', p:{}},
     {type:'prep_gallery',     label:t('tpg'),  ico:'🗂️', p:{}},
+    {type:'prep_families',    label:t('tpf'),  ico:'🥗', p:{}},
     {type:'mission_designer', label:t('tmd'),  ico:'🎯', p:{}},
   ].filter(function(c){
     /* v015: only show modules allowed in current MODE, and not already open */
