@@ -1,6 +1,6 @@
 <!-- ── NEW SHELL LAB BANNER ── -->
 <div id="shell-lab-banner" style="position:fixed;top:0;left:0;right:0;z-index:99999;background:linear-gradient(90deg,#0f766e,#0891b2);color:white;font-size:11px;font-weight:800;letter-spacing:0.09em;text-transform:uppercase;text-align:center;padding:5px 16px;font-family:-apple-system,BlinkMacSystemFont,sans-serif;user-select:none;box-shadow:0 1px 6px rgba(8,145,178,0.4);">
-  🎨 NEW SHELL LAB &nbsp;·&nbsp; brigade-dev/shell.html &nbsp;·&nbsp; v016 &nbsp;·&nbsp; Not for kitchen use
+  🎨 NEW SHELL LAB &nbsp;·&nbsp; brigade-dev/shell.html &nbsp;·&nbsp; v017 &nbsp;·&nbsp; Not for kitchen use
 </div>
 <style>
 /* push shell content below banner */
@@ -2123,6 +2123,65 @@ input,select,textarea{font-family:inherit}
   background:rgba(15,23,42,.4);border:1px solid rgba(71,85,105,.2);
   padding:5px 12px;border-radius:7px;
 }
+
+/* ══ MISSION DESIGNER v017 ════════════════════════════════════════════════ */
+.md-page{ padding:0 }
+.md-header{ padding:20px 16px 14px; border-bottom:1px solid rgba(99,102,241,.15); }
+.md-header-badge{ display:inline-flex;align-items:center;gap:6px; font-size:9px;font-weight:800;letter-spacing:.12em;text-transform:uppercase; color:#818cf8;margin-bottom:8px; }
+.md-header-title{ font-size:21px;font-weight:800;color:#e2e8f0; letter-spacing:-.04em;line-height:1.15; }
+.md-header-sub{ font-size:13px;color:#64748b;margin-top:4px;line-height:1.5; }
+.md-filter{ display:flex;gap:6px;padding:12px 16px; overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none; }
+.md-filter::-webkit-scrollbar{display:none}
+.md-filter-btn{ display:inline-flex;align-items:center;gap:5px; font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase; padding:5px 11px;border-radius:7px;border:1px solid rgba(99,102,241,.2); background:rgba(30,41,59,.6);color:#64748b; white-space:nowrap;cursor:pointer; -webkit-tap-highlight-color:transparent; transition:background .12s,border-color .12s,color .12s; }
+.md-filter-btn.on{ background:rgba(99,102,241,.22);border-color:rgba(99,102,241,.5);color:#c7d2fe; }
+.md-filter-dot{ width:6px;height:6px;border-radius:50%;flex-shrink:0; }
+.md-grid{ display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 16px 20px; }
+.md-card{ background:rgba(15,23,42,.7);border:1px solid rgba(99,102,241,.18);border-radius:16px;padding:14px 14px 12px;display:flex;flex-direction:column;gap:0;position:relative;overflow:hidden; }
+.md-card::before{ content:'';position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:16px 0 0 16px; }
+.md-card.fam-produci::before   { background:#818cf8 }
+.md-card.fam-processa::before  { background:#38bdf8 }
+.md-card.fam-prepara::before   { background:#4ade80 }
+.md-card.fam-controlla::before { background:#f59e0b }
+.md-card.fam-rifornisci::before{ background:#fb923c }
+.md-card.fam-setup::before     { background:#a78bfa }
+.md-card.fam-pulisci::before   { background:#94a3b8 }
+.md-card-head{ display:flex;align-items:flex-start;gap:8px;margin-bottom:8px; }
+.md-card-ico{ width:32px;height:32px;border-radius:9px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:15px; }
+.md-card-ico.fam-produci   { background:rgba(129,140,248,.18) }
+.md-card-ico.fam-processa  { background:rgba(56,189,248,.18) }
+.md-card-ico.fam-prepara   { background:rgba(74,222,128,.18) }
+.md-card-ico.fam-controlla { background:rgba(245,158,11,.18) }
+.md-card-ico.fam-rifornisci{ background:rgba(251,146,60,.18) }
+.md-card-ico.fam-setup     { background:rgba(167,139,250,.18) }
+.md-card-ico.fam-pulisci   { background:rgba(148,163,184,.15) }
+.md-card-name{ font-size:13px;font-weight:800;color:#e2e8f0;line-height:1.2;flex:1; }
+.md-card-fam{ font-size:8px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;padding:2px 6px;border-radius:4px;flex-shrink:0;margin-top:2px; }
+.md-card-fam.fam-produci   { background:rgba(129,140,248,.2);color:#a5b4fc }
+.md-card-fam.fam-processa  { background:rgba(56,189,248,.2); color:#7dd3fc }
+.md-card-fam.fam-prepara   { background:rgba(74,222,128,.2); color:#86efac }
+.md-card-fam.fam-controlla { background:rgba(245,158,11,.2); color:#fcd34d }
+.md-card-fam.fam-rifornisci{ background:rgba(251,146,60,.2); color:#fdba74 }
+.md-card-fam.fam-setup     { background:rgba(167,139,250,.2);color:#c4b5fd }
+.md-card-fam.fam-pulisci   { background:rgba(148,163,184,.15);color:#94a3b8 }
+.md-fields{ display:flex;flex-direction:column;gap:4px }
+.md-field{ display:flex;align-items:baseline;gap:5px; }
+.md-field-lbl{ font-size:9px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:#475569;flex-shrink:0;min-width:52px; }
+.md-field-val{ font-size:11px;color:#94a3b8;line-height:1.3; }
+.md-field-val.hi{ color:#cbd5e1;font-weight:600 }
+.md-dep{ display:inline-flex;align-items:center;gap:4px;font-size:10px;color:#94a3b8;background:rgba(30,41,59,.8);border:1px solid rgba(99,102,241,.15);padding:3px 7px;border-radius:5px;margin-top:6px; }
+.md-dep-ico{ font-size:11px;opacity:.7 }
+.md-unlocks{ display:inline-flex;align-items:center;gap:4px;font-size:10px;color:#4ade80;background:rgba(74,222,128,.08);border:1px solid rgba(74,222,128,.2);padding:3px 7px;border-radius:5px;margin-top:4px; }
+.md-priority{ display:flex;align-items:center;gap:4px;font-size:9px;color:#64748b;margin-top:8px;padding-top:8px;border-top:1px solid rgba(99,102,241,.1); }
+.md-priority-dot{ width:6px;height:6px;border-radius:50%;flex-shrink:0; }
+.md-priority-dot.p-high  { background:#ef4444 }
+.md-priority-dot.p-med   { background:#f59e0b }
+.md-priority-dot.p-low   { background:#4ade80 }
+.md-lab-note{ margin:0 16px 20px;display:flex;align-items:center;gap:8px;font-size:11px;color:#334155;background:rgba(15,23,42,.5);border:1px solid rgba(71,85,105,.2);padding:10px 14px;border-radius:10px; }
+.md-lab-note-ico{ font-size:14px;flex-shrink:0 }
+.md-concept{ margin:0 16px 14px;background:rgba(79,70,229,.1);border:1px solid rgba(99,102,241,.25);border-radius:14px;padding:14px 16px; }
+.md-concept-title{ font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#818cf8;margin-bottom:6px; }
+.md-concept-body{ font-size:12px;color:#94a3b8;line-height:1.6; }
+.md-concept-body strong{ color:#c7d2fe;font-weight:700 }
 </style>
 </head>
 <body>
@@ -2397,6 +2456,7 @@ it:{
   kfs_tool_prep_desc:'7 famiglie operative · catalogo missioni',
   kfs_tool_station_name:'Station Designer',
   kfs_tool_station_desc:'Stazioni, responsabili, turni',
+  kfs_tool_md_name:'Mission Designer', kfs_tool_md_desc:'Unita fondamentali del Flow Planner',
   kfs_tool_soon:'Coming soon',
   kfs_tool_live:'Attivo',
   kfs_sys_ai_name:'Chef AI Studio',
@@ -2413,6 +2473,27 @@ it:{
   kfs_log_3:'Struttura Kitchen Flow Studio definita',
   kfs_log_3t:'v016',
   kfs_footer_note:'🔬 Lab — Dati mock. Nessuna connessione DB.',
+
+  /* Mission Designer v017 */
+  md_badge:'Kitchen Flow Studio · Mission Designer',
+  md_title:'Le missioni sono i mattoni\ndel Kitchen Flow.',
+  md_sub:'Ogni missione ha un proprietario, un output definito e relazioni. Nel Flow Planner, ogni nodo sara una Missione.',
+  md_filter_all:'Tutte',
+  md_concept_title:'Cos\u2019\u00e8 una Missione',
+  md_concept_body:'Una <strong>Missione</strong> non e un task ne una prep generica. E una unita di lavoro con proprietario, output definito e relazioni. Nel Flow Planner, ogni nodo sara una Missione. Ogni freccia tra nodi sara una dipendenza tra Missioni.',
+  md_sec_missions:'Missioni demo',
+  md_field_owner:'Owner',
+  md_field_output:'Output',
+  md_field_input:'Input',
+  md_field_dur:'Durata',
+  md_field_type:'Tipo',
+  md_dep_label:'Dipende da',
+  md_unlocks_label:'Sblocca',
+  md_prio_high:'Alta priorita',
+  md_prio_med:'Media priorita',
+  md_prio_low:'Bassa priorita',
+  md_lab_note:'\u{1F52C} Catalogo esplorativo · Nessun dato salvato · Solo Lab',
+  tmd:'Mission Designer',
   yct:'Sì Chef! ✅', ycclose:'Chiudi',
 },
 en:{
@@ -2664,6 +2745,7 @@ en:{
   kfs_tool_prep_desc:'7 operational families · mission catalog',
   kfs_tool_station_name:'Station Designer',
   kfs_tool_station_desc:'Stations, owners, shifts',
+  kfs_tool_md_name:'Mission Designer', kfs_tool_md_desc:'Fundamental units of the Flow Planner',
   kfs_tool_soon:'Coming soon',
   kfs_tool_live:'Active',
   kfs_sys_ai_name:'Chef AI Studio',
@@ -2680,6 +2762,27 @@ en:{
   kfs_log_3:'Kitchen Flow Studio architecture defined',
   kfs_log_3t:'v016',
   kfs_footer_note:'🔬 Lab — Mock data. No DB connection.',
+
+  /* Mission Designer v017 */
+  md_badge:'Kitchen Flow Studio · Mission Designer',
+  md_title:'Missions are the building blocks\nof the Kitchen Flow.',
+  md_sub:'Every mission has an owner, a defined output and relationships. In the Flow Planner, each node will be a Mission.',
+  md_filter_all:'All',
+  md_concept_title:'What is a Mission',
+  md_concept_body:'A <strong>Mission</strong> is not a task or a generic prep. It is a unit of work with an owner, a defined output and relationships. In the Flow Planner, each node will be a Mission. Each arrow between nodes will be a dependency between Missions.',
+  md_sec_missions:'Demo missions',
+  md_field_owner:'Owner',
+  md_field_output:'Output',
+  md_field_input:'Input',
+  md_field_dur:'Duration',
+  md_field_type:'Type',
+  md_dep_label:'Depends on',
+  md_unlocks_label:'Unlocks',
+  md_prio_high:'High priority',
+  md_prio_med:'Medium priority',
+  md_prio_low:'Low priority',
+  md_lab_note:'\u{1F52C} Exploratory catalog · No data saved · Lab only',
+  tmd:'Mission Designer',
   yct:'Yes Chef! ✅', ycclose:'Close',
 },
 es:{
@@ -2930,6 +3033,7 @@ es:{
   kfs_tool_prep_desc:'7 familias operativas · catálogo misiones',
   kfs_tool_station_name:'Station Designer',
   kfs_tool_station_desc:'Estaciones, responsables, turnos',
+  kfs_tool_md_name:'Mission Designer', kfs_tool_md_desc:'Unidades fundamentales del Flow Planner',
   kfs_tool_soon:'Próximamente',
   kfs_tool_live:'Activo',
   kfs_sys_ai_name:'Chef AI Studio',
@@ -2946,12 +3050,33 @@ es:{
   kfs_log_3:'Arquitectura Kitchen Flow Studio definida',
   kfs_log_3t:'v016',
   kfs_footer_note:'🔬 Lab — Datos mock. Sin conexión DB.',
+
+  /* Mission Designer v017 */
+  md_badge:'Kitchen Flow Studio · Mission Designer',
+  md_title:'Las misiones son los bloques\ndel Kitchen Flow.',
+  md_sub:'Cada mision tiene un propietario, un resultado definido y relaciones. En el Flow Planner, cada nodo sera una Mision.',
+  md_filter_all:'Todas',
+  md_concept_title:'Que es una Mision',
+  md_concept_body:'Una <strong>Mision</strong> no es una tarea ni una prep generica. Es una unidad de trabajo con propietario, resultado definido y relaciones. En el Flow Planner, cada nodo sera una Mision.',
+  md_sec_missions:'Misiones demo',
+  md_field_owner:'Owner',
+  md_field_output:'Output',
+  md_field_input:'Input',
+  md_field_dur:'Duracion',
+  md_field_type:'Tipo',
+  md_dep_label:'Depende de',
+  md_unlocks_label:'Desbloquea',
+  md_prio_high:'Alta prioridad',
+  md_prio_med:'Media prioridad',
+  md_prio_low:'Baja prioridad',
+  md_lab_note:'\u{1F52C} Catalogo exploratorio · Sin datos · Solo Lab',
+  tmd:'Mission Designer',
   yct:'¡Sí Chef! ✅', ycclose:'Cerrar',
 }
 };
 
 /* lang stored in module-scope var + sessionStorage */
-const SHELL_VERSION = 'v016';
+const SHELL_VERSION = 'v017';
 /* Recipe state lives in RECIPE object + _driverQty inside recipe JS block */
 let LANG = sessionStorage.getItem('ws_lang') || 'it';
 function setLang(l){ LANG=l; sessionStorage.setItem('ws_lang',l); renderAll(); }
@@ -3002,7 +3127,7 @@ var MODE_DESCS = {
 var MODE_MODULES = {
   station: ['home','kitchen','recipe'],
   chef:    ['home','kitchen','recipe','bot_center','daily_journal','pos'],
-  admin:   ['home','prep_gallery','bot_center','recipe','inventory','pos']
+  admin:   ['home','prep_gallery','bot_center','recipe','inventory','pos','mission_designer']
 };
 
 let MODE = (function(){
@@ -3433,7 +3558,7 @@ var J_FILTER_VIS = 'all';
 var J_SHOW_FORM  = false;
 
 /* ══ PAGE RENDERERS ═══════════════════════════════════════════════════════ */
-var ICO={home:'⌂',bot_center:'🤖',recipe:'📋',inventory:'📦',daily_journal:'📓',pos:'📊',kitchen:'👨‍🍳'};
+var ICO={home:'⌂',bot_center:'🤖',recipe:'📋',inventory:'📦',daily_journal:'📓',pos:'📊',kitchen:'👨‍🍳',mission_designer:'🎯'};;
 
 function badge(s){
   var m={ok:'b-ok',warn:'b-wn',error:'b-er',pending:'b-in'};
@@ -3567,6 +3692,14 @@ function _homeAdmin(){
     /* ── TOOLS (3-col) ── */
     +'<div class="kfs-section"><div class="kfs-section-lbl">'+t('kfs_sec_tools')+'</div></div>'
     +'<div class="kfs-tools">'
+
+    /* Mission Designer — LIVE, v017 */
+    +'<button class="kfs-tool live" data-tabtype="mission_designer" data-params=\'{}\'>'
+    +'<div class="kfs-tool-ico">🎯</div>'
+    +'<div class="kfs-tool-name">'+t('kfs_tool_md_name')+'</div>'
+    +'<div class="kfs-tool-desc">'+t('kfs_tool_md_desc')+'</div>'
+    +'<span class="kfs-tool-tag live">'+t('kfs_tool_live')+'</span>'
+    +'</button>'
 
     /* Prep Library — LIVE, opens existing gallery */
     +'<button class="kfs-tool live" data-tabtype="prep_gallery" data-params=\'{}\'>'
@@ -6773,15 +6906,92 @@ function prepGalleryAfterRender(){
 }
 
 
+
+/* ══ MISSION DESIGNER PAGE v017 ═══════════════════════════════════════════ */
+var MISSIONS_DEMO=[
+  {id:'m1',name:'Arrabbiata Sauce',fam:'produci',ico:'\u{1F345}',owner:'Saucier',output:'4 kg',dur:'45 min',dep:'Pomodoro disponibile',unlocks:'Pasta Station',prio:'high'},
+  {id:'m2',name:'Filetta Salmone',fam:'processa',ico:'\u{1F41F}',owner:'Processing',input:'2 salmoni interi',output:'8 filetti',dur:'20 min',dep:null,unlocks:'Forno',prio:'high'},
+  {id:'m3',name:'Check Caesar',fam:'controlla',ico:'\u{1F957}',owner:'Salad',type:'Verifica stock',output:'Conferma disponibilita',dur:'5 min',dep:null,unlocks:null,prio:'med'},
+  {id:'m4',name:'Setup Saute Station',fam:'setup',ico:'\u{1F525}',owner:'Saute',output:'Stazione pronta',dur:'15 min',dep:'Delivery ricevuto',unlocks:'Servizio Saute',prio:'high'},
+  {id:'m5',name:'Pomodoro Sauce',fam:'produci',ico:'\u{1F345}',owner:'Saucier',output:'6 kg',dur:'60 min',dep:null,unlocks:'Arrabbiata Sauce',prio:'high'},
+  {id:'m6',name:'Thaw Scallops',fam:'prepara',ico:'\u{1F9AA}',owner:'Saute',output:'Capesante pronte',dur:'30 min',dep:null,unlocks:'Saute Service',prio:'med'},
+  {id:'m7',name:'Refill Olive Oil',fam:'rifornisci',ico:'\u{1FAD9}',owner:'Plating',output:'Olio rifornito',dur:'3 min',dep:null,unlocks:null,prio:'low'},
+  {id:'m8',name:'Clean Pasta Station',fam:'pulisci',ico:'\u{1F9F9}',owner:'Pasta',output:'Stazione pulita',dur:'10 min',dep:'Fine servizio',unlocks:null,prio:'low'}
+];
+var MD_FAM_COLORS={produci:'#818cf8',processa:'#38bdf8',prepara:'#4ade80',controlla:'#f59e0b',rifornisci:'#fb923c',setup:'#a78bfa',pulisci:'#94a3b8'};
+var MD_FAM_LBL_IT={produci:'PRODUCI',processa:'PROCESSA',prepara:'PREPARA',controlla:'CONTROLLA',rifornisci:'RIFORNISCI',setup:'SETUP',pulisci:'PULISCI'};
+var MD_FAM_LBL_EN={produci:'PRODUCE',processa:'PROCESS',prepara:'PREP',controlla:'CHECK',rifornisci:'REFILL',setup:'SETUP',pulisci:'CLEAN'};
+var MD_FAM_LBL_ES={produci:'PRODUCIR',processa:'PROCESAR',prepara:'PREPARAR',controlla:'VERIFICAR',rifornisci:'REPONER',setup:'SETUP',pulisci:'LIMPIAR'};
+function _mdFamLabel(fam){var m=LANG==='en'?MD_FAM_LBL_EN:LANG==='es'?MD_FAM_LBL_ES:MD_FAM_LBL_IT;return m[fam]||fam.toUpperCase();}
+var _mdFilter='all';
+function pageMissionDesigner(){
+  var fams=['all','produci','processa','prepara','controlla','rifornisci','setup','pulisci'];
+  var filterHTML=fams.map(function(f){
+    var on=f===_mdFilter?' on':'';
+    var dot=f!=='all'?'<span class="md-filter-dot" style="background:'+MD_FAM_COLORS[f]+'"></span>':'';
+    var lbl=f==='all'?t('md_filter_all'):_mdFamLabel(f);
+    return '<button class="md-filter-btn'+on+'" data-mdf="'+f+'">'+dot+lbl+'</button>';
+  }).join('');
+  var missions=_mdFilter==='all'?MISSIONS_DEMO:MISSIONS_DEMO.filter(function(m){return m.fam===_mdFilter;});
+  var cardsHTML=missions.map(function(m){
+    var pCls=m.prio==='high'?'p-high':m.prio==='med'?'p-med':'p-low';
+    var prioLbl=m.prio==='high'?t('md_prio_high'):m.prio==='med'?t('md_prio_med'):t('md_prio_low');
+    var fields='';
+    if(m.owner) fields+='<div class="md-field"><span class="md-field-lbl">'+t('md_field_owner')+'</span><span class="md-field-val hi">'+m.owner+'</span></div>';
+    if(m.input) fields+='<div class="md-field"><span class="md-field-lbl">'+t('md_field_input')+'</span><span class="md-field-val">'+m.input+'</span></div>';
+    if(m.output) fields+='<div class="md-field"><span class="md-field-lbl">'+t('md_field_output')+'</span><span class="md-field-val hi">'+m.output+'</span></div>';
+    if(m.dur) fields+='<div class="md-field"><span class="md-field-lbl">'+t('md_field_dur')+'</span><span class="md-field-val">'+m.dur+'</span></div>';
+    if(m.type) fields+='<div class="md-field"><span class="md-field-lbl">'+t('md_field_type')+'</span><span class="md-field-val">'+m.type+'</span></div>';
+    var depHTML=m.dep?'<div class="md-dep"><span class="md-dep-ico">\u26D3</span>'+t('md_dep_label')+': '+m.dep+'</div>':'';
+    var unlHTML=m.unlocks?'<div class="md-unlocks">\u25B6 '+t('md_unlocks_label')+': '+m.unlocks+'</div>':'';
+    return '<div class="md-card fam-'+m.fam+'">'
+      +'<div class="md-card-head">'
+      +'<div class="md-card-ico fam-'+m.fam+'">'+m.ico+'</div>'
+      +'<div style="flex:1"><div class="md-card-name">'+m.name+'</div>'
+      +'<span class="md-card-fam fam-'+m.fam+'">'+_mdFamLabel(m.fam)+'</span></div>'
+      +'</div>'
+      +'<div class="md-fields">'+fields+'</div>'
+      +depHTML+unlHTML
+      +'<div class="md-priority"><span class="md-priority-dot '+pCls+'"></span>'+prioLbl+'</div>'
+      +'</div>';
+  }).join('');
+  return '<div class="md-page">'
+    +'<div class="md-header">'
+    +'<div class="md-header-badge">\u{1F3AF} '+t('md_badge')+'</div>'
+    +'<div class="md-header-title">'+t('md_title').replace('\\n','<br>')+'</div>'
+    +'<div class="md-header-sub">'+t('md_sub')+'</div>'
+    +'</div>'
+    +'<div class="md-filter" id="md-filter">'+filterHTML+'</div>'
+    +'<div class="md-concept">'
+    +'<div class="md-concept-title">'+t('md_concept_title')+'</div>'
+    +'<div class="md-concept-body">'+t('md_concept_body')+'</div>'
+    +'</div>'
+    +'<div class="md-grid">'+cardsHTML+'</div>'
+    +'<div class="md-lab-note"><span class="md-lab-note-ico">\u{1F52C}</span>'+t('md_lab_note')+'</div>'
+    +'</div>';
+}
+function missionDesignerAfterRender(){
+  var ws=document.getElementById('workspace');
+  var strip=ws?ws.querySelector('#md-filter'):null;
+  if(!strip) return;
+  strip.addEventListener('click',function(e){
+    var btn=e.target.closest('[data-mdf]');
+    if(!btn) return;
+    _mdFilter=btn.dataset.mdf;
+    var tab=TABS.find(function(x){return x.id===AID;});
+    if(tab){var page=PAGES[tab.type];if(page){var ws2=document.getElementById('workspace');ws2.innerHTML=page.render(tab.params||{});if(page.after)page.after();}}
+  });
+}
 var PAGES={
-  home:         {render:pageHome,      after:homeAfterRender},
-  bot_center:   {render:pageBots,      after:botsAfterRender},
-  recipe:       {render:pageRecipe,    after:pageRecipeAfter},
-  inventory:    {render:pageInventory, after:null},
-  daily_journal:{render:pageJournal,   after:journalAfterRender, rerender:true},
-  pos:          {render:pageSales,     after:null},
-  kitchen:      {render:pageKitchen,   after:kitchenAfterRender, rerender:true},
-  prep_gallery: {render:pagePrepGallery, after:prepGalleryAfterRender}
+  home:             {render:pageHome,            after:homeAfterRender},
+  bot_center:       {render:pageBots,            after:botsAfterRender},
+  recipe:           {render:pageRecipe,          after:pageRecipeAfter},
+  inventory:        {render:pageInventory,       after:null},
+  daily_journal:    {render:pageJournal,         after:journalAfterRender, rerender:true},
+  pos:              {render:pageSales,           after:null},
+  kitchen:          {render:pageKitchen,         after:kitchenAfterRender, rerender:true},
+  prep_gallery:     {render:pagePrepGallery,     after:prepGalleryAfterRender},
+  mission_designer: {render:pageMissionDesigner, after:missionDesignerAfterRender}
 };
 
 /* ══ SHELL RENDERERS ══════════════════════════════════════════════════════ */
@@ -6940,7 +7150,8 @@ function _showNewTabMenu(){
     {type:'daily_journal',label:t('tj_short'), ico:'📓', p:{}},
     {type:'pos',          label:t('tp'),        ico:'📊', p:{}},
     {type:'kitchen',      label:t('tk'),        ico:'👨‍🍳', p:{}},
-    {type:'prep_gallery', label:t('tpg'),       ico:'🗂️', p:{}},
+    {type:'prep_gallery',     label:t('tpg'),  ico:'🗂️', p:{}},
+    {type:'mission_designer', label:t('tmd'),  ico:'🎯', p:{}},
   ].filter(function(c){
     /* v015: only show modules allowed in current MODE, and not already open */
     return modeAllows(c.type) && !TABS.find(function(x){ return x.type===c.type; });
