@@ -86,19 +86,128 @@ function suggMap() { const s = BD.peek('sugg'); return s ? byId(s.rows, 'prep_ta
 function eventsFrom(d0, d1) { return (BD.peek('events') || []).filter(e => e.event_date >= d0 && e.event_date <= d1); }
 function evRecipes(e) { return Array.isArray(e.event_recipes) ? e.event_recipes : []; }
 function cateringFor(recipeId, d0, d1) { return eventsFrom(d0, d1).filter(e => evRecipes(e).some(r => r.recipe_id === recipeId)); }
-function officeGroups(items) {
-  const team = items.filter(o => ['tell_chef', 'operation_note', 'sous_chef_chat'].includes(o.source));
-  const rest = items.filter(o => !team.includes(o));
-  return { team, critical: rest.filter(o => o.severity === 'critical'), warning: rest.filter(o => o.severity === 'warning'), other: rest.filter(o => o.severity !== 'critical' && o.severity !== 'warning') };
+/* ============ TRIAGE: Brigade signals → human decisions ============
+   Every guardian alert is re-checked against today's data. Out-of-date alerts are not shown as decisions.
+   Severity: red = real block / unreadable import / essential data missing · amber = review · neutral = info · green = done */
+const ageDays = iso => (Date.now() - new Date(String(iso).length === 10 ? iso + 'T12:00:00Z' : iso).getTime()) / 864e5;
+const dayOf = d => !d ? '' : String(d).length === 10 ? d : dCDT(d);
+const portionsFromText = t => { const m = String(t || '').match(/(\d+(?:[.,]\d+)?)\s*(porzion|porzin|portion|serv)/i); return m ? parseFloat(m[1].replace(',', '.')) : null; };
+function yieldOf(r) {
+  const parts = [], p = num(r.base_servings) || portionsFromText(r.yield_text);
+  if (r.yield_text && r.yield_text.trim()) parts.push('yield “' + r.yield_text.trim().replace(/\s+/g, ' ') + '”');
+  if (num(r.base_servings)) parts.push(plural(num(r.base_servings), 'portion'));
+  if (num(r.base_weight_g)) parts.push('batch ' + fmt(r.base_weight_g / 1000) + ' kg');
+  else if (num(r.base_weight)) parts.push('batch ' + fmt(r.base_weight) + ' ' + (r.weight_unit || ''));
+  return { has: !!(p || num(r.base_weight_g) || num(r.base_weight) || /\d/.test(r.yield_text || '')), text: parts.join(' and ') };
 }
-const ISSUE = { missing_photo: 'Recipes without a photo', missing_procedure: 'Recipes without a procedure', missing_base_servings: 'Recipes without base servings', bom_partial: 'Recipes with partial components', empty_bom: 'Recipes without components', bom_empty: 'Recipes without components', missing_pos_name: 'Recipes without POS name', null_stock: 'Prep without stock', missing_serving_fields: 'Recipes without serving fields' };
+const UNIT = { pezzi: 'pieces', pz: 'pieces', porzione: 'portion', porzioni: 'portions', filetto: 'fillet' };
+const portionOf = r => { let u = UNIT[String(r.serving_unit || '').toLowerCase()] || r.serving_unit || ''; if (num(r.serving_qty) === 1) u = u.replace(/s$/, ''); return [r.serving_qty, u].filter(Boolean).join(' '); };
+const soldText = o => { const m = String(o.summary || o.body || '').match(/sold (\d+) times in the last 30 days/i); return m ? `Sold ${m[1]} times in the last 30 days.` : ''; };
+const vendorShort = v => /hardie/i.test(v || '') ? "Hardie's" : /walmart/i.test(v || '') ? 'Walmart' : /^bek$|ben e/i.test(v || '') ? 'BEK' : (v || 'Vendor');
+const nice = t => { t = String(t || '').toLowerCase().replace(/\s+/g, ' ').trim(); return t ? t[0].toUpperCase() + t.slice(1) : t; };
+const recipeBtn = (id, label, focus) => `<button class="btn" data-a="openRecipe" data-r="${id}" data-focus="${focus || ''}">${label}</button>`;
+const brigadeBtn = label => `<a class="btn ghost" href="${BRIGADE_URL}" target="_blank" rel="noopener">${label} ↗</a>`;
+const ISSUE = { missing_photo: 'Recipes without a photo', missing_procedure: 'Recipes without a written procedure', missing_pos_name: 'Recipes without a POS name', null_stock: 'Prep without a stock count' };
+
+function invoiceCards() {
+  const byDoc = groupBy(BD.peek('invwarn') || [], x => x.document_id || x.id), cards = [], excluded = [];
+  Object.values(byDoc).forEach(list => {
+    const f = list[0], when = f.document_date, vendor = vendorShort(f.vendor);
+    const label = `${vendor}${f.document_number ? ' #' + f.document_number : ''}`;
+    if (list.some(x => x.code === 'BUYER-BAR-001')) { excluded.push(f); return; }
+    const broken = list.find(x => /PARSE_ERROR|UNKNOWN_DOC_TYPE/.test(x.code || ''));
+    if (broken) {
+      cards.push({ sev: 'red', area: 'invoice', today: ageDays(when || f.created_at) <= 14, date: when || f.created_at, title: `${vendor} invoice could not be read`, now: label,
+        why: broken.code === 'PARSE_ERROR' ? 'No lines were found in the document, so prices and stock were not updated.' : 'Brigade did not recognise this document, so nothing was imported.',
+        missing: 'A readable copy of the invoice', cta: brigadeBtn('Open invoices in Brigade') });
+      return;
+    }
+    const items = {};
+    list.forEach(x => { const m = String(x.message || '').match(/ordered ([\d.]+), (?:shipped|received) ([\d.]+) of (.+)$/i); if (m) items[m[3].trim()] = { item: m[3].trim(), ord: +m[1], got: +m[2] }; });
+    const all = Object.values(items), short = all.filter(i => i.got < i.ord), extra = all.filter(i => i.ord === 0 && i.got > 0), used = new Set(), lines = [];
+    short.forEach(sh => {
+      const tok = sh.item.split(/[^A-Z]+/i).filter(t => t.length > 2 && !/fresh|assorted|sliced|raw|organic|the/i.test(t));
+      let e = extra.find(x => !used.has(x) && tok.some(t => x.item.toUpperCase().includes(t.toUpperCase())));
+      if (!e && short.length === 1 && extra.length === 1) e = extra[0];
+      if (e) { used.add(e); lines.push(`${nice(sh.item)} → ${nice(e.item)}${sh.got ? ` (${sh.got} of ${sh.ord} arrived, plus ${e.got} substitute)` : ` (${e.got})`}`); }
+      else lines.push(`${nice(sh.item)}: ${sh.got ? `${sh.got} of ${sh.ord}` : `none of ${sh.ord}`} shipped`);
+    });
+    /* one short item and one unexpected item left on the same invoice: that is a substitution too */
+    const lastS = short.filter(sh => !lines.some(l => l.startsWith(nice(sh.item) + ' →'))), lastE = extra.filter(x => !used.has(x));
+    if (lastS.length === 1 && lastE.length === 1) { const k = lines.indexOf(lines.find(l => l.startsWith(nice(lastS[0].item) + ':'))); lines[k] = `${nice(lastS[0].item)} → ${nice(lastE[0].item)} (${lastE[0].got})`; used.add(lastE[0]); }
+    extra.filter(x => !used.has(x)).forEach(x => lines.push(`${nice(x.item)}: ${x.got} received, not ordered`));
+    if (!lines.length) return;
+    const subs = lines.filter(l => l.includes('→')).length;
+    cards.push({ sev: 'amber', area: 'invoice', today: false, date: when, now: label, lines,
+      title: subs === lines.length ? `${vendor} substituted ${plural(subs, 'item')}` : subs ? `${vendor} substituted ${subs} and shorted ${lines.length - subs}` : `${vendor} did not ship ${plural(lines.length, 'item')}`,
+      why: f.doc_status === 'pending' ? 'The invoice is waiting for review in Brigade.' : 'The invoice is already imported. Check stock and prices for these lines.',
+      cta: brigadeBtn('Review in Brigade') });
+  });
+  if (excluded.length) cards.push({ sev: 'neutral', area: 'invoice', date: excluded[0].document_date, title: `${plural(excluded.length, 'Walmart receipt')} kept out of the kitchen`, why: 'Bought by a non-kitchen buyer, so excluded on purpose.' });
+  return cards.sort((a, b) => (dayOf(b.date)).localeCompare(dayOf(a.date)));
+}
+
+let TRI = null, TRI_KEY = '';
+function triage() {
+  const key = ['office', 'recipes', 'bom', 'invwarn'].map(n => (BD.store[n] || {}).at).join('|');
+  if (TRI && key === TRI_KEY) return TRI;
+  const rec = byId(BD.peek('recipes') || []), bomN = {}, seen = {}, out = [], stale = [], history = [];
+  (BD.peek('bom') || []).forEach(b => { bomN[b.parent_recipe_id] = (bomN[b.parent_recipe_id] || 0) + 1; });
+  (BD.peek('office') || []).forEach(o => {
+    if (['tell_chef', 'operation_note', 'sous_chef_chat'].includes(o.source)) {
+      const msg = String(o.body || o.summary || o.title || '').trim(), who = o.from_user || 'Team';
+      if (o.chef_action === 'done') return history.push({ sev: 'green', kind: 'team', date: o.created_at, title: cut(msg, 100), why: `${who} · marked done, still open in L'Ufficio` });
+      if (who === 'Chef AI') return;                                          // an AI summary of a message already listed
+      if (/great service|good service|^⭐|⭐$/i.test(msg)) return history.push({ sev: 'neutral', kind: 'team', date: o.created_at, title: cut(msg, 100), why: who });
+      if (ageDays(o.created_at) > 14) return history.push({ sev: 'neutral', kind: 'team', date: o.created_at, title: cut(msg, 100), why: `${who} · older than 2 weeks` });
+      if (/^proposta/i.test(o.title || '')) return out.push({ sev: 'amber', area: 'team', today: true, date: o.created_at, title: `Sous Chef proposal for ${nice(o.recipe_name || 'a recipe')}`, why: msg, missing: 'Your approval', cta: brigadeBtn("Approve in L'Ufficio"), cta2: o.recipe_id ? recipeBtn(o.recipe_id, 'Open recipe') : '' });
+      const prod = /\b(i made|i did|made|ho fatto)\b[^.]*\d/i.test(msg);
+      return out.push({ sev: 'amber', area: 'team', today: true, date: o.created_at, title: prod ? `${who} reported production` : `${who}: ${cut(msg, 70)}`, why: msg, missing: prod ? 'Check it is recorded as production' : 'Your answer', cta: brigadeBtn(prod ? 'Check in Brigade' : "Answer in L'Ufficio") });
+    }
+    const r = rec[o.recipe_id], it = o.issue_type || '', name = r ? r.title : nice(o.recipe_name || 'Recipe');
+    if (o.recipe_id && !r) return stale.push({ title: o.title, why: 'The recipe is no longer in Brigade.' });
+    if (r && /archiv/i.test(r.category || '')) return stale.push({ title: name, why: 'The recipe is archived.', rid: r.id });
+    if (seen[o.recipe_id + it]) return; seen[o.recipe_id + it] = 1;
+    if (it === 'missing_base_servings') {
+      const y = yieldOf(r);
+      if (y.has) return stale.push({ title: `${name} · yield`, why: `Already has ${y.text}. The yield is set, so nothing is missing.`, rid: r.id });
+      return out.push({ sev: 'red', area: 'recipe', today: true, date: o.created_at, rid: r.id, focus: 'yield', title: `${name} has no yield`, why: `${soldText(o)} Without a yield Brigade cannot cost a portion or plan the prep.`.trim(), now: portionOf(r) ? `Portion is ${portionOf(r)}, but no batch weight or number of portions` : 'No batch weight and no number of portions', missing: 'The yield: batch weight in kg, or number of portions', cta: recipeBtn(r.id, 'Open recipe', 'yield') });
+    }
+    if (it === 'bom_empty' || it === 'empty_bom') {
+      if (bomN[o.recipe_id]) return stale.push({ title: `${name} · ingredients`, why: `Now has ${plural(bomN[o.recipe_id], 'component')}.`, rid: r.id });
+      return out.push({ sev: 'red', area: 'recipe', today: true, date: o.created_at, rid: r.id, focus: 'bom', title: `${name} has no ingredients`, why: `${soldText(o)} Food cost and prep forecast cannot see this dish.`.trim(), now: 'No components', missing: 'Its ingredients and sub-recipes', cta: recipeBtn(r.id, 'Open recipe', 'bom') });
+    }
+    if (it === 'bom_partial') {
+      const n = bomN[o.recipe_id] || 0;
+      if (n >= 4) return stale.push({ title: `${name} · ingredients`, why: `Now has ${n} components.`, rid: r.id });
+      return out.push({ sev: 'amber', area: 'recipe', today: false, date: o.created_at, rid: r.id, focus: 'bom', title: `${name} may be missing ingredients`, why: `${soldText(o)} Only ${plural(n, 'component')} listed, so its food cost may look too low.`.trim(), now: plural(n, 'component'), missing: 'Check every ingredient is listed', cta: recipeBtn(r.id, 'Open recipe', 'bom') });
+    }
+    if (it === 'missing_serving_fields') {
+      if (r && r.serving_qty && r.serving_unit) return stale.push({ title: `${name} · portion`, why: `The portion is ${portionOf(r)}.`, rid: r.id });
+      return history.push({ sev: 'neutral', kind: 'Portion size not set (optional)', date: o.created_at, title: name, why: 'Optional. Only used to plan prep from sales.', rid: r && r.id });
+    }
+    history.push({ sev: 'neutral', kind: ISSUE[it] || 'Other checks', date: o.created_at, title: name, rid: r && r.id });
+  });
+  invoiceCards().forEach(c => (c.sev === 'neutral' ? history : out).push(c));
+  const rank = { red: 0, amber: 1 };
+  out.sort((a, b) => rank[a.sev] - rank[b.sev] || dayOf(b.date).localeCompare(dayOf(a.date)));
+  TRI_KEY = key; TRI = { decisions: out, stale, history };
+  return TRI;
+}
+function decCard(d) {
+  return `<div class="dec"><div class="top"><span class="sev ${d.sev}"></span><div style="flex:1;min-width:0"><div class="name">${esc(d.title)}</div><div class="meta">${d.now ? esc(d.now) + ' · ' : ''}${d.date ? shortDay(dayOf(d.date)) : ''}</div></div></div>
+    ${d.why ? `<div class="q">${esc(d.why)}</div>` : ''}
+    ${d.lines ? `<ul class="lines">${d.lines.map(l => `<li>${esc(l)}</li>`).join('')}</ul>` : ''}
+    ${d.missing ? `<div class="meta"><b>Missing:</b> ${esc(d.missing)}</div>` : ''}
+    ${d.cta || d.cta2 ? `<div class="links">${d.cta || ''}${d.cta2 || ''}</div>` : ''}</div>`;
+}
 
 /* ============ TODAY ============ */
 SCREENS.today = { title: () => 'Today', c: '--today', render() {
   const t = BD.today(), h = BD.hourCDT();
   const greet = h < 12 ? 'Good morning, Chef.' : h < 17 ? 'Good afternoon, Chef.' : 'Good evening, Chef.';
   const top = `<div class="greet"><div class="eyebrow">${dayName(t)}</div><h1>${greet}</h1>`;
-  if (!need('sugg', 'prep', 'events', 'office', 'preplog', 'reports', 'recipes')) return `<div class="page">${top}</div>${waiting('sugg', 'prep', 'events', 'office', 'preplog', 'reports', 'recipes')}</div>`;
+  if (!need('sugg', 'prep', 'events', 'office', 'preplog', 'reports', 'recipes', 'bom', 'invwarn')) return `<div class="page">${top}</div>${waiting('sugg', 'prep', 'events', 'office', 'preplog', 'reports', 'recipes', 'bom', 'invwarn')}</div>`;
   const sugg = BD.peek('sugg'), prep = byId(BD.peek('prep')), tom = BD.addDays(t, 1);
   const rows = sugg.rows.filter(r => prep[r.prep_task_id]).map(r => ({ r, p: prep[r.prep_task_id] }));
   const chap = st => rows.filter(x => x.r.status === st);
@@ -107,7 +216,7 @@ SCREENS.today = { title: () => 'Today', c: '--today', render() {
   const brief = sugg.date !== t
     ? `The prep bot has not run today. The plan below is from <b>${shortDay(sugg.date || t)}</b>.`
     : open.length ? `Start with <b>${esc(open[0].p.name)}</b>. ${plural(open.length, 'prep')} to make today.` : 'Nothing urgent to make right now.';
-  const og = officeGroups(BD.peek('office') || []), needN = og.team.length + og.critical.length;
+  const needs = triage().decisions.filter(x => x.today), reds = needs.filter(x => x.sev === 'red').length;
   const evs = eventsFrom(t, tom);
   const prow = ({ r, p }) => {
     const ev = p.recipe_id ? cateringFor(p.recipe_id, t, tom) : [];
@@ -125,7 +234,7 @@ SCREENS.today = { title: () => 'Today', c: '--today', render() {
   ].sort((a, b) => a.at < b.at ? -1 : 1).slice(-14);
   return `<div class="page" style="--c:var(--today)">
     ${top}<p class="brief">${brief}</p></div>
-    ${needN ? `<div class="list"><button class="row" data-a="go" data-s="decisions" data-scope="today"><span class="dotw"></span><span class="main"><div class="name">${plural(needN, 'thing')} need you</div><div class="meta">${og.team.length} from the team · ${og.critical.length} critical recipe data</div></span><span class="chev">›</span></button></div>` : ''}
+    ${needs.length ? `<div class="list"><button class="row" data-a="go" data-s="decisions" data-scope="today"><span class="${reds ? 'dotr' : 'dotw'}"></span><span class="main"><div class="name">${needs.length} need${needs.length === 1 ? 's' : ''} you</div><div class="meta">${esc(needs.slice(0, 3).map(x => x.title).join(' · '))}${needs.length > 3 ? ' · …' : ''}</div></span><span class="chev">›</span></button></div>` : ''}
     ${evs.length ? `<section><h2>Events today and tomorrow</h2><div class="list">${evs.map(evRow).join('')}</div></section>` : ''}
     ${section('Do first', doFirst)}${section('Prep today', today)}${section('Count first', count)}
     ${defer.length ? `<section><div class="chap"><h2>Better tomorrow</h2><span>${defer.length}</span></div><div class="list">${defer.map(prow).join('')}</div></section>` : ''}
@@ -141,20 +250,19 @@ function evRow(e) {
 
 /* ============ DECISIONS (one queue; everything else links here) ============ */
 SCREENS.decisions = { title: () => 'Decisions', c: '--today', render(p) {
-  if (!need('office', 'recipes')) return `<div class="page">${backBtn()}${waiting('office')}</div>`;
-  const og = officeGroups(BD.peek('office') || []), all = p.scope !== 'today';
-  const item = o => {
-    const link = o.recipe_id ? `data-a="openRecipe" data-r="${o.recipe_id}"` : o.ingredient_id ? `data-a="openIng" data-id="${o.ingredient_id}"` : '';
-    return `<${link ? 'button' : 'div'} class="row" ${link}><span class="main"><div class="name">${esc(cut(o.title || o.summary || o.body, 90))}</div><div class="meta">${esc(o.from_user || o.source)} · ${shortDay(dCDT(o.created_at))}${o.recipe_name ? ' · ' + esc(o.recipe_name) : ''}${o.ingredient_name ? ' · ' + esc(o.ingredient_name) : ''}</div>${o.suggested_action ? `<div class="meta">${esc(cut(o.suggested_action, 110))}</div>` : ''}</span>${link ? '<span class="chev">›</span>' : ''}</${link ? 'button' : 'div'}>`;
-  };
-  const block = (h, list, max) => list.length ? `<section><div class="chap"><h2>${h}</h2><span>${list.length}</span></div><div class="list">${list.slice(0, p['m_' + h] ? 999 : max).map(item).join('')}${list.length > max && !p['m_' + h] ? `<button class="more" data-a="more" data-k="m_${esc(h)}">Show all ${list.length}</button>` : ''}</div></section>` : '';
-  const types = groupBy(og.other.concat(og.warning), o => o.issue_type || 'other');
+  if (!need('office', 'recipes', 'bom', 'invwarn')) return `<div class="page">${backBtn()}${waiting('office', 'invwarn')}</div>`;
+  const T = triage(), today = p.scope === 'today', list = today ? T.decisions.filter(d => d.today) : T.decisions;
+  const red = list.filter(d => d.sev === 'red'), amber = list.filter(d => d.sev === 'amber');
+  const sec = (h, l) => l.length ? `<section><div class="chap"><h2>${h}</h2><span>${l.length}</span></div><div class="list">${l.map(decCard).join('')}</div></section>` : '';
+  const hist = groupBy(T.history, h => h.area === 'invoice' ? 'Invoices' : h.kind === 'team' ? 'Team notes and history' : h.kind);
+  const fold = (h, l) => `<section><div class="chap"><h2>${esc(h)}</h2><span>${l.length}</span></div><div class="list">${p['m_' + h] ? l.map(x => x.rid ? `<button class="row" data-a="openRecipe" data-r="${x.rid}"><span class="sev ${x.sev}" style="margin-top:0"></span><span class="main"><div class="name" style="font-weight:500;font-size:17px">${esc(x.title)}</div>${x.why ? `<div class="meta">${esc(x.why)}</div>` : ''}</span><span class="chev">›</span></button>` : `<div class="row"><span class="sev ${x.sev}" style="margin-top:0"></span><span class="main"><div class="name" style="font-weight:500;font-size:17px">${esc(x.title)}</div><div class="meta">${esc(x.why || '')}${x.date ? ' · ' + shortDay(dayOf(x.date)) : ''}</div></span></div>`).join('') : `<button class="more" data-a="more" data-k="m_${esc(h)}">Show ${l.length}</button>`}</div></section>`;
   return `<div class="page" style="--c:var(--today)">${backBtn()}
-    ${head(all ? "Brigade · L'Ufficio" : 'Today', plural(og.team.length + og.critical.length + (all ? og.warning.length + og.other.length : 0), 'open item'))}
-    ${block('From the team', og.team, 12)}
-    ${block('Critical recipe data', og.critical, 12)}
-    ${all ? Object.entries(types).sort((a, b) => b[1].length - a[1].length).map(([k, l]) => block(ISSUE[k] || k.replace(/_/g, ' '), l, 5)).join('') : `<button class="lnk" data-a="go" data-s="decisions" data-scope="all">See all ${og.warning.length + og.other.length} housekeeping items ›</button>`}
-    ${roNote('Resolve these in L\'Ufficio; this view updates on the next refresh.')}
+    ${head(today ? 'Today' : "Brigade · L'Ufficio and invoices", list.length ? `${list.length} need${list.length === 1 ? 's' : ''} you` : 'Nothing needs you', 'Checked against Brigade\'s data just now.')}
+    ${sec('Blocking', red)}${sec('To review', amber)}
+    ${today ? `<button class="lnk" data-a="go" data-s="decisions" data-scope="all">All open reviews, history and out-of-date alerts ›</button>` : `
+      ${T.stale.length ? fold('Out of date: already fixed', T.stale.map(x => ({ sev: 'green', title: x.title, why: x.why, rid: x.rid }))) : ''}
+      ${Object.entries(hist).sort((a, b) => b[1].length - a[1].length).map(([h, l]) => fold(h, l)).join('')}`}
+    <p class="note" style="font-size:14px">Read-only version: decisions are made in Brigade. When Brigade changes, this list updates on the next refresh.</p>
   </div>`;
 } };
 
@@ -165,7 +273,8 @@ SCREENS.restaurant = { title: () => 'Restaurant', c: '--rest', render() {
   const s = n('sugg'), act = s ? s.rows.filter(r => ['do_first', 'prep_today', 'count_first'].includes(r.status)).length : '…';
   const dno = n('vendors') ? new Set(n('vendors').filter(v => v.do_not_order).map(v => v.ingredient_id)).size : 0;
   const last = n('sales') && n('sales')[0];
-  const og = n('office') ? officeGroups(n('office')) : null;
+  need('bom'); const T = n('office') && n('recipes') && n('bom') && n('invwarn') ? triage() : null;
+  const dec = T ? T.decisions.filter(d => d.area !== 'invoice') : null, inv = T ? T.decisions.filter(d => d.area === 'invoice') : null;
   const tile = (s, ic, lbl, val, cls = '', scope = '') => `<button class="big ${cls}" data-a="go" data-s="${s}" ${scope ? `data-scope="${scope}"` : ''}>${ICON[ic]}<div><div class="lbl">${lbl}</div><div class="val">${val}</div></div></button>`;
   const row = (s, name, meta) => `<button class="row" data-a="go" data-s="${s}"><span class="main"><div class="name">${name}</div><div class="meta">${meta}</div></span><span class="chev">›</span></button>`;
   return `<div class="page" style="--c:var(--rest)">
@@ -175,8 +284,8 @@ SCREENS.restaurant = { title: () => 'Restaurant', c: '--rest', render() {
       ${tile('r-recipes', 'book', 'Recipes', `<b>${n('recipes') ? n('recipes').length : '…'}</b> recipes`)}
       ${tile('r-ing', 'box', 'Ingredients', `<b>${n('ingredients') ? n('ingredients').length : '…'}</b>${dno ? ` · ${dno} do not order` : ''}`)}
       ${tile('r-sales', 'sales', 'Sales', last ? `<b>${money(last.net_sales)}</b> ${shortDay(last.sale_date)}` : '…')}
-      ${tile('decisions', 'alert', "L'Ufficio", og ? `<b>${og.team.length + og.critical.length + og.warning.length + og.other.length}</b> open` : '…', og && (og.team.length + og.critical.length) ? 'alert' : '', 'all')}
-      ${tile('r-inv', 'doc', 'Invoices', n('invwarn') ? `<b>${n('invwarn').length}</b> questions open` : '…', n('invwarn') && n('invwarn').length ? 'alert' : '')}
+      ${tile('decisions', 'alert', 'Decisions', dec ? (dec.length ? `<b>${dec.length}</b> to look at` : 'All clear') : '…', dec && dec.some(d => d.sev === 'red') ? 'alert' : '', 'all')}
+      ${tile('r-inv', 'doc', 'Invoices', inv ? (inv.length ? `<b>${inv.filter(d => d.sev === 'red').length}</b> unreadable · ${inv.filter(d => d.sev === 'amber').length} to check` : 'All clear') : '…', inv && inv.some(d => d.sev === 'red') ? 'alert' : '')}
     </div>
     <div class="list">
       ${row('r-brief', 'Briefing', 'Today\'s points from Brigade')}
@@ -229,11 +338,13 @@ SCREENS['r-sales'] = { title: () => 'Sales', c: '--rest', render() {
 } };
 SCREENS['r-inv'] = { title: () => 'Invoices', c: '--rest', render() {
   if (!need('invwarn', 'docs')) return `<div class="page">${backBtn()}${waiting('invwarn', 'docs')}</div>`;
-  const w = BD.peek('invwarn'), d = BD.peek('docs');
-  return `<div class="page" style="--c:var(--rest)">${backBtn()}${head('Restaurant', 'Invoices')}
-    <section><div class="chap"><h2>Questions open</h2><span>${w.length}</span></div><div class="list">${w.slice(0, 40).map(x => `<div class="row"><span class="main"><div class="name">${esc(cut(x.question || x.message || x.item_description, 100))}</div><div class="meta">${esc(x.vendor || '')} · ${esc(x.document_number || '')} · ${x.document_date ? shortDay(x.document_date) : ''}</div></span>${x.severity === 'critical' || x.severity === 'error' ? '<span class="dotw"></span>' : ''}</div>`).join('') || '<div class="row"><span class="main">None open.</span></div>'}</div></section>
-    <section><div class="chap"><h2>Documents · last 30 days</h2><span>${d.length}</span></div><div class="list">${d.slice(0, 40).map(x => `<div class="row"><span class="main"><div class="name">${esc(x.vendor || 'Vendor')} · ${esc(x.document_number || x.document_type || '')}</div><div class="meta">${x.document_date ? shortDay(x.document_date) : ''} · ${esc(x.status || '')}</div></span></div>`).join('')}</div></section>
-    ${roNote('Answer invoice questions in Brigade.')}
+  const cards = invoiceCards(), d = BD.peek('docs'), raw = BD.peek('invwarn').length;
+  const red = cards.filter(c => c.sev === 'red'), amber = cards.filter(c => c.sev === 'amber'), info = cards.filter(c => c.sev === 'neutral');
+  return `<div class="page" style="--c:var(--rest)">${backBtn()}${head('Restaurant', 'Invoices', `${raw} open warnings in Brigade, grouped into ${red.length + amber.length + info.length} invoice${red.length + amber.length + info.length === 1 ? '' : 's'}.`)}
+    ${red.length ? `<section><div class="chap"><h2>Could not be read</h2><span>${red.length}</span></div><div class="list">${red.map(decCard).join('')}</div></section>` : ''}
+    ${amber.length ? `<section><div class="chap"><h2>Delivered differently</h2><span>${amber.length}</span></div><div class="list">${amber.map(decCard).join('')}</div></section>` : ''}
+    ${info.length ? `<section><h2>For information</h2><div class="list">${info.map(decCard).join('')}</div></section>` : ''}
+    <section><div class="chap"><h2>Documents · last 30 days</h2><span>${d.length}</span></div><div class="list">${d.slice(0, 40).map(x => `<div class="row"><span class="main"><div class="name">${esc(vendorShort(x.vendor))} · ${esc(x.document_number || x.document_type || '')}</div><div class="meta">${x.document_date ? shortDay(x.document_date) : ''} · ${esc(x.status || '')}</div></span>${x.status === 'error' ? '<span class="dotr"></span>' : ''}</div>`).join('')}</div></section>
   </div>`;
 } };
 SCREENS['r-brief'] = { title: () => 'Briefing', c: '--rest', render() {
@@ -374,11 +485,14 @@ SCREENS.recipe = { title: p => { const r = byId(BD.peek('recipes') || [])[p.id];
   const stepsHtml = steps && steps.length ? steps.map(s => `<div class="step"><span class="n">${s.step_number}</span><span>${s.title ? `<b>${esc(s.title)}</b><br>` : ''}${esc(s.instruction_en || '')}${s.timer_seconds ? `<br><span class="muted" style="font-size:15px">Timer ${Math.round(s.timer_seconds / 60)} min</span>` : ''}</span></div>`).join('')
     : r && (r.procedure_en || r.procedure) ? `<div class="pre">${esc(r.procedure_en || r.procedure)}</div>` : r === undefined || steps === undefined ? '<div class="skel">Loading…</div>' : '<div class="row"><span class="main"><div class="meta">No procedure in Brigade.</div></span></div>';
   const fc = num(base.food_cost_pct), c = num(cost);
+  const fix = p.focus && BD.peek('office') && BD.peek('invwarn') ? triage().decisions.find(d => d.rid === p.id && d.focus === p.focus) : null;
+  const hlY = fix && fix.focus === 'yield' ? 'hl' : '', hlB = fix && fix.focus === 'bom' ? 'hl' : '';
   return `<div class="page" style="--c:var(--rest)">${backBtn()}
     <div><div class="eyebrow">${esc(cat(base.category))}${base.prep_time_minutes ? ' · ' + base.prep_time_minutes + ' min' : ''}</div><h1>${esc(base.title)}</h1></div>
-    <div class="facts">${base.yield_text ? `<span>Yield <b>${esc(base.yield_text)}</b></span>` : ''}${base.base_servings ? `<span>Servings <b>${base.base_servings}</b></span>` : ''}${base.base_weight_g ? `<span>Batch <b>${fmt(base.base_weight_g / 1000)} kg</b></span>` : ''}${base.shelf_life_days ? `<span>Shelf life <b>${base.shelf_life_days} d</b></span>` : ''}${base.selling_price ? `<span>Price <b>${money(base.selling_price)}</b></span>` : ''}${fc !== null ? `<span>Food cost <b>${fmt(fc)}%</b></span>` : ''}${c !== null ? `<span>Recipe cost <b>${money(c)}</b></span>` : ''}</div>
+    ${fix ? `<div class="fixbox ${fix.sev}"><div class="h">To fix: ${esc(fix.title)}</div><div>${esc(fix.why)}</div>${fix.now ? `<div><b>Now:</b> ${esc(fix.now)}</div>` : ''}<div><b>Missing:</b> ${esc(fix.missing)}</div><div>${brigadeBtn('Fix in Brigade')}</div></div>` : ''}
+    <div class="facts ${hlY}">${!base.yield_text && !base.base_servings && !base.base_weight_g ? '<span class="wtx">No yield</span>' : ''}${base.yield_text ? `<span>Yield <b>${esc(base.yield_text)}</b></span>` : ''}${base.base_servings ? `<span>Servings <b>${base.base_servings}</b></span>` : ''}${base.base_weight_g ? `<span>Batch <b>${fmt(base.base_weight_g / 1000)} kg</b></span>` : ''}${base.shelf_life_days ? `<span>Shelf life <b>${base.shelf_life_days} d</b></span>` : ''}${base.selling_price ? `<span>Price <b>${money(base.selling_price)}</b></span>` : ''}${fc !== null ? `<span>Food cost <b>${fmt(fc)}%</b></span>` : ''}${c !== null ? `<span>Recipe cost <b>${money(c)}</b></span>` : ''}</div>
     ${evs.length ? `<div class="list">${evs.map(evRow).join('')}</div>` : ''}
-    <section><div class="chap"><h2>Components</h2><span>${comps.length ? comps.length : ''}</span></div>
+    <section class="${hlB}"><div class="chap"><h2>Components</h2><span>${comps.length ? comps.length : ''}</span></div>
       <div class="qbtns" style="margin-bottom:10px">${[0.5, 1, 2, 3].map(k => `<button class="${k === x ? 'on' : ''}" data-a="scale" data-x="${k}">×${k}</button>`).join('')}</div>
       <div class="list">${compHtml || (r === undefined ? '<div class="skel">Loading…</div>' : '<div class="row"><span class="main"><div class="meta">No components in Brigade.</div></span></div>')}</div>
       ${x !== 1 ? '<p class="note" style="font-size:14px">Scaled on this screen only. The recipe in Brigade is unchanged.</p>' : ''}</section>
@@ -505,7 +619,7 @@ function openTab(kind, ref, entry) {
   remember();
   const origin = S.active === 'home' ? { w: S.world, label: titleOf(cur()) } : { tab: S.active, label: titleOf(tabById(S.active).stack[0]) };
   let t = S.tabs.find(x => x.kind === kind && x.ref === ref);
-  if (t && t.id !== S.active) t.origin = origin;
+  if (t && t.id !== S.active) { t.origin = origin; t.stack.length = 1; Object.assign(t.stack[0].p, { focus: entry.p.focus || '' }); t.stack[0].y = 0; }
   if (!t) { t = { id: 't' + (S.seq++), kind, ref, stack: [entry], origin }; S.tabs.push(t); if (S.tabs.length > 8) S.tabs.shift(); }
   S.active = t.id; closeSheet(); render();
 }
@@ -531,7 +645,7 @@ const A = {
   go(el) { remember(); const p = {}; ['scope', 'd'].forEach(k => { if (el.dataset[k] !== undefined) p[k] = el.dataset[k]; }); stack().push({ s: el.dataset.s, p }); render(); },
   back() { const s = stack(); if (s.length > 1) { s.pop(); render(); } },
   openEvent(el) { openTab('event', el.dataset.id, { s: 'event', p: { id: el.dataset.id } }); },
-  openRecipe(el) { openTab('recipe', el.dataset.r, { s: 'recipe', p: { id: el.dataset.r, from: el.dataset.from || '' } }); },
+  openRecipe(el) { openTab('recipe', el.dataset.r, { s: 'recipe', p: { id: el.dataset.r, from: el.dataset.from || '', focus: el.dataset.focus || '' } }); },
   openIng(el) { openTab('ing', el.dataset.id, { s: 'ing', p: { id: el.dataset.id } }); },
   openPrep(el) { openTab('prep', el.dataset.id, { s: 'prep', p: { id: +el.dataset.id } }); },
   seg(el) { cur().p.seg = el.dataset.k; render(true); },

@@ -232,3 +232,18 @@ h2{font-family:var(--fd);font-size:15px;margin:0 0 10px;font-weight:800;letter-s
 .err{padding:16px;border-radius:16px;background:var(--warn-bg);color:var(--tx)}
 .big.off{opacity:.55}
 .more{font-weight:700;color:var(--today);padding:14px 16px;width:100%;text-align:center;border-top:1px solid var(--line)}
+
+/* decisions: severity has meaning — red blocks, amber reviews, grey informs, green is done */
+:root{--red:#c62828}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--red:#f87171}}
+:root[data-theme="dark"]{--red:#f87171}
+.sev{width:12px;height:12px;border-radius:50%;margin-top:7px;flex:0 0 auto;background:var(--txm)}
+.sev.red{background:var(--red)} .sev.amber{background:var(--warn)} .sev.green{background:var(--ok)}
+.dec .top{display:flex;gap:12px;align-items:flex-start}
+.dec .lines{margin:0;padding-left:20px;font-size:17px;display:flex;flex-direction:column;gap:4px}
+.dec .links .btn{min-height:46px}
+.dotr{width:12px;height:12px;border-radius:50%;background:var(--red);flex:0 0 auto}
+.fixbox{display:flex;flex-direction:column;gap:8px;padding:16px;border-radius:18px;background:var(--warn-bg);border:2px solid var(--warn)}
+.fixbox.red{border-color:var(--red)}
+.fixbox .h{font-weight:800;font-size:18px}
+.hl{outline:3px solid var(--warn);outline-offset:6px;border-radius:14px}

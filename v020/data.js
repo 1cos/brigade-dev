@@ -29,7 +29,7 @@
 
   /* Each dataset: one read. Columns are chosen on purpose (no PINs, no birth dates, no client contacts). */
   const D = {
-    recipes:   () => all('recipes?select=id,title,category,yield_text,menu_group,pos_name,selling_price,food_cost_pct,base_servings,base_weight_g,prep_time_minutes,shelf_life_days&order=title'),
+    recipes:   () => all('recipes?select=id,title,category,yield_text,menu_group,pos_name,selling_price,food_cost_pct,base_servings,base_weight_g,base_weight,weight_unit,serving_qty,serving_unit,prep_time_minutes,shelf_life_days&order=title'),
     bom:       () => all('recipe_bom?select=parent_recipe_id,component_type,item_id,sub_recipe_id,quantity,unit,notes,prep_task_id,sort_order&order=parent_recipe_id,sort_order'),
     ingredients: () => all('ingredients?select=id,name,category,base_unit,notes,active,measure_type,name_it,avg_unit_weight_g,yield_factor&order=name'),
     vendors:   () => all('ingredient_vendors?select=ingredient_id,vendor,vendor_sku,purchase_unit,pack_description,unit_price,price_per_100g,price_per_each,last_invoice_date,price_type,active,do_not_order,do_not_order_reason'),
@@ -45,8 +45,14 @@
       return { date, rows: list };
     },
     events:    () => all('events?select=id,name,event_date,event_time,guest_count,menu_type,location,room_name,status,service_style,notes,event_recipes,tripleseat_id,last_synced_at&event_date=gte.' + addDays(today(), -14) + '&order=event_date,event_time'),
-    office:    () => get('office_items?select=id,created_at,source,from_user,title,summary,body,status,severity,issue_type,recipe_id,recipe_name,ingredient_id,ingredient_name,vendor_name,price_change_pct,suggested_action,station&status=eq.open&is_demo=not.is.true&order=created_at.desc&limit=600'),
-    invwarn:   () => all('invoice_warnings?select=id,vendor,document_date,document_number,item_description,message,question,status,severity&status=neq.resolved&order=document_date.desc'),
+    office:    () => get('office_items?select=id,created_at,source,from_user,title,summary,body,status,severity,issue_type,chef_action,last_seen_at,recipe_id,recipe_name,ingredient_id,ingredient_name,vendor_name,price_change_pct,suggested_action,station&status=eq.open&is_demo=not.is.true&order=created_at.desc&limit=600'),
+    invwarn:   async () => {                       // open invoice warnings + the status of their document (imported / pending / error / ignored)
+      const w = await all('invoice_warnings?select=id,document_id,vendor,document_date,document_number,code,item_description,message,question,status,severity,created_at&status=neq.resolved&order=document_date.desc');
+      const ids = [...new Set(w.map(x => x.document_id).filter(Boolean))];
+      const st = {};
+      for (let i = 0; i < ids.length; i += 80) (await get('vendor_documents?select=id,status&id=in.(' + ids.slice(i, i + 80).join(',') + ')')).forEach(d => { st[d.id] = d.status; });
+      return w.map(x => Object.assign(x, { doc_status: st[x.document_id] || null }));
+    },
     docs:      () => all('vendor_documents?select=id,vendor,document_type,document_number,document_date,status&document_date=gte.' + addDays(today(), -30) + '&order=document_date.desc'),
     sales:     () => get('pos_daily_summary?select=sale_date,day_of_week,bill_count,net_sales,gross_sales&order=sale_date.desc&limit=14'),
     salesItems: async () => {
