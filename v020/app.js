@@ -91,6 +91,14 @@ function cateringFor(recipeId, d0, d1) { return eventsFrom(d0, d1).filter(e => e
    Severity: red = real block / unreadable import / essential data missing · amber = review · neutral = info · green = done */
 const ageDays = iso => (Date.now() - new Date(String(iso).length === 10 ? iso + 'T12:00:00Z' : iso).getTime()) / 864e5;
 const dayOf = d => !d ? '' : String(d).length === 10 ? d : dCDT(d);
+/* how many portions one batch makes: from the yield text, or batch weight ÷ portion weight; null if unknown */
+function batchPortions(r) {
+  const p = portionsFromText(r.yield_text);
+  if (p) return Math.round(p);
+  const u = String(r.serving_unit || '').toLowerCase(), q = num(r.serving_qty), w = num(r.base_weight_g);
+  if ((u === 'g' || u === 'ml') && q > 0 && w > 0) { const k = w / q; return k > 1.5 ? Math.round(k) : 1; }
+  return null;
+}
 const portionsFromText = t => { const m = String(t || '').match(/(\d+(?:[.,]\d+)?)\s*(porzion|porzin|portion|serv)/i); return m ? parseFloat(m[1].replace(',', '.')) : null; };
 function yieldOf(r) {
   const parts = [], p = num(r.base_servings) || portionsFromText(r.yield_text);
@@ -169,9 +177,13 @@ function triage() {
     if (r && /archiv/i.test(r.category || '')) return stale.push({ title: name, why: 'The recipe is archived.', rid: r.id });
     if (seen[o.recipe_id + it]) return; seen[o.recipe_id + it] = 1;
     if (it === 'missing_base_servings') {
-      const y = yieldOf(r);
-      if (y.has) return stale.push({ title: `${name} · yield`, why: `Already has ${y.text}. The yield is set, so nothing is missing.`, rid: r.id });
-      return out.push({ sev: 'red', area: 'recipe', today: true, date: o.created_at, rid: r.id, focus: 'yield', title: `${name} has no yield`, why: `${soldText(o)} Without a yield Brigade cannot cost a portion or plan the prep.`.trim(), now: portionOf(r) ? `Portion is ${portionOf(r)}, but no batch weight or number of portions` : 'No batch weight and no number of portions', missing: 'The yield: batch weight in kg, or number of portions', cta: recipeBtn(r.id, 'Open recipe', 'yield') });
+      /* Brigade's stock deduction reads the number of portions; when it is empty, one sale = the whole recipe.
+         That is fine for a plated dish (recipe = 1 portion) and wrong for a batch recipe sold by the portion. */
+      const y = yieldOf(r), bf = batchPortions(r), sold = !!soldText(o);
+      if (bf === 1) return stale.push({ title: `${name} · portions`, why: `The recipe is one portion${y.text ? ' (' + y.text + ')' : ''}, so each sale deducts the right amount.`, rid: r.id });
+      if (bf > 1) return out.push({ sev: sold ? 'red' : 'amber', area: 'recipe', today: sold, date: o.created_at, rid: r.id, focus: 'yield', title: `${name}: each sale deducts a whole batch`, why: `${soldText(o)} The recipe makes about ${bf} portions${y.text ? ' (' + y.text + ')' : ''}, but Brigade has no number of portions, so stock goes down by a full batch for every plate.`.trim(), now: y.text || 'Batch recipe', missing: `Number of portions in the batch (about ${bf})`, cta: recipeBtn(r.id, 'Open recipe', 'yield') });
+      if (y.has) return out.push({ sev: 'amber', area: 'recipe', today: false, date: o.created_at, rid: r.id, focus: 'yield', title: `${name}: one portion or a batch?`, why: `Has ${y.text}, but it is not clear how many portions that is. If it is a batch, each sale deducts too much stock.`, now: y.text, missing: 'Number of portions, if it is a batch', cta: recipeBtn(r.id, 'Open recipe', 'yield') });
+      return out.push({ sev: 'amber', area: 'recipe', today: false, date: o.created_at, rid: r.id, focus: 'yield', title: `${name} has no yield`, why: `${soldText(o)} Brigade treats it as one portion. Confirm the yield so cost and stock stay right.`.trim(), now: portionOf(r) ? `Portion is ${portionOf(r)}` : 'No yield', missing: 'The yield: batch weight in kg, or number of portions', cta: recipeBtn(r.id, 'Open recipe', 'yield') });
     }
     if (it === 'bom_empty' || it === 'empty_bom') {
       if (bomN[o.recipe_id]) return stale.push({ title: `${name} · ingredients`, why: `Now has ${plural(bomN[o.recipe_id], 'component')}.`, rid: r.id });
