@@ -92,6 +92,14 @@ function cateringFor(recipeId, d0, d1) { return eventsFrom(d0, d1).filter(e => e
 const ageDays = iso => (Date.now() - new Date(String(iso).length === 10 ? iso + 'T12:00:00Z' : iso).getTime()) / 864e5;
 const dayOf = d => !d ? '' : String(d).length === 10 ? d : dCDT(d);
 /* how many portions one batch makes: from the yield text, or batch weight ÷ portion weight; null if unknown */
+/* canonical yield from Brigade (view recipe_yield) */
+const yieldsMap = () => byId(BD.peek('yields') || []);
+function yieldText(cy) {
+  const parts = [];
+  if (num(cy.portions) > 0) parts.push(plural(Math.round(num(cy.portions) * 100) / 100, 'portion'));
+  if (num(cy.yield_qty) > 0) parts.push(`batch ${fmt(num(cy.yield_qty) / 1000)} ${cy.yield_dim === 'volume' ? 'L' : 'kg'}`);
+  return parts.join(' · ') || 'no yield';
+}
 function batchPortions(r) {
   const p = portionsFromText(r.yield_text);
   if (p) return Math.round(p);
@@ -157,7 +165,7 @@ function invoiceCards() {
 
 let TRI = null, TRI_KEY = '';
 function triage() {
-  const key = ['office', 'recipes', 'bom', 'invwarn'].map(n => (BD.store[n] || {}).at).join('|');
+  const key = ['office', 'recipes', 'bom', 'invwarn', 'yields'].map(n => (BD.store[n] || {}).at).join('|');
   if (TRI && key === TRI_KEY) return TRI;
   const rec = byId(BD.peek('recipes') || []), bomN = {}, seen = {}, out = [], stale = [], history = [];
   (BD.peek('bom') || []).forEach(b => { bomN[b.parent_recipe_id] = (bomN[b.parent_recipe_id] || 0) + 1; });
@@ -177,12 +185,12 @@ function triage() {
     if (r && /archiv/i.test(r.category || '')) return stale.push({ title: name, why: 'The recipe is archived.', rid: r.id });
     if (seen[o.recipe_id + it]) return; seen[o.recipe_id + it] = 1;
     if (it === 'missing_base_servings') {
-      /* Brigade's stock deduction reads the number of portions; when it is empty, one sale = the whole recipe.
-         That is fine for a plated dish (recipe = 1 portion) and wrong for a batch recipe sold by the portion. */
-      const y = yieldOf(r), bf = batchPortions(r), sold = !!soldText(o);
-      if (bf === 1) return stale.push({ title: `${name} · portions`, why: `The recipe is one portion${y.text ? ' (' + y.text + ')' : ''}, so each sale deducts the right amount.`, rid: r.id });
-      if (bf > 1) return out.push({ sev: sold ? 'red' : 'amber', area: 'recipe', today: sold, date: o.created_at, rid: r.id, focus: 'yield', title: `${name}: each sale deducts a whole batch`, why: `${soldText(o)} The recipe makes about ${bf} portions${y.text ? ' (' + y.text + ')' : ''}, but Brigade has no number of portions, so stock goes down by a full batch for every plate.`.trim(), now: y.text || 'Batch recipe', missing: `Number of portions in the batch (about ${bf})`, cta: recipeBtn(r.id, 'Open recipe', 'yield') });
-      if (y.has) return out.push({ sev: 'amber', area: 'recipe', today: false, date: o.created_at, rid: r.id, focus: 'yield', title: `${name}: one portion or a batch?`, why: `Has ${y.text}, but it is not clear how many portions that is. If it is a batch, each sale deducts too much stock.`, now: y.text, missing: 'Number of portions, if it is a batch', cta: recipeBtn(r.id, 'Open recipe', 'yield') });
+      /* YIELD01: portions come from Brigade's canonical view recipe_yield (same logic as FC05). */
+      const cy = yieldsMap()[r.id] || {}, sold = !!soldText(o), y = yieldText(cy);
+      if (num(r.base_servings) > 0) return stale.push({ title: `${name} · portions`, why: `Now set: ${plural(num(r.base_servings), 'portion')}.`, rid: r.id });
+      if (num(cy.portions) > 1) return out.push({ sev: sold ? 'red' : 'amber', area: 'recipe', today: sold, date: o.created_at, rid: r.id, focus: 'yield', title: `${name}: each sale deducts a whole batch`, why: `${soldText(o)} The batch makes ${fmt(cy.portions)} portions, but the stock deduction still reads only the old portions field. Fixed when the new deduction bot is live.`.trim(), now: y, missing: 'The new deduction bot live (no Chef input needed)', cta: recipeBtn(r.id, 'Open recipe', 'yield') });
+      if (num(cy.portions) === 1) return stale.push({ title: `${name} · portions`, why: 'The recipe is one portion, so each sale deducts the right amount.', rid: r.id });
+      if (cy.has_yield) return out.push({ sev: 'amber', area: 'recipe', today: false, date: o.created_at, rid: r.id, focus: 'yield', title: `${name}: one portion or a batch?`, why: `Has ${y}, but not how many portions that makes. If it is a batch, each sale deducts too much stock.`, now: y, missing: 'Number of portions, if it is a batch', cta: recipeBtn(r.id, 'Open recipe', 'yield') });
       return out.push({ sev: 'amber', area: 'recipe', today: false, date: o.created_at, rid: r.id, focus: 'yield', title: `${name} has no yield`, why: `${soldText(o)} Brigade treats it as one portion. Confirm the yield so cost and stock stay right.`.trim(), now: portionOf(r) ? `Portion is ${portionOf(r)}` : 'No yield', missing: 'The yield: batch weight in kg, or number of portions', cta: recipeBtn(r.id, 'Open recipe', 'yield') });
     }
     if (it === 'bom_empty' || it === 'empty_bom') {
@@ -219,7 +227,7 @@ SCREENS.today = { title: () => 'Today', c: '--today', render() {
   const t = BD.today(), h = BD.hourCDT();
   const greet = h < 12 ? 'Good morning, Chef.' : h < 17 ? 'Good afternoon, Chef.' : 'Good evening, Chef.';
   const top = `<div class="greet"><div class="eyebrow">${dayName(t)}</div><h1>${greet}</h1>`;
-  if (!need('sugg', 'prep', 'events', 'office', 'preplog', 'reports', 'recipes', 'bom', 'invwarn')) return `<div class="page">${top}</div>${waiting('sugg', 'prep', 'events', 'office', 'preplog', 'reports', 'recipes', 'bom', 'invwarn')}</div>`;
+  if (!need('sugg', 'prep', 'events', 'office', 'preplog', 'reports', 'recipes', 'bom', 'invwarn', 'yields')) return `<div class="page">${top}</div>${waiting('sugg', 'prep', 'events', 'office', 'preplog', 'reports', 'recipes', 'bom', 'invwarn', 'yields')}</div>`;
   const sugg = BD.peek('sugg'), prep = byId(BD.peek('prep')), tom = BD.addDays(t, 1);
   const rows = sugg.rows.filter(r => prep[r.prep_task_id]).map(r => ({ r, p: prep[r.prep_task_id] }));
   const chap = st => rows.filter(x => x.r.status === st);
@@ -262,7 +270,7 @@ function evRow(e) {
 
 /* ============ DECISIONS (one queue; everything else links here) ============ */
 SCREENS.decisions = { title: () => 'Decisions', c: '--today', render(p) {
-  if (!need('office', 'recipes', 'bom', 'invwarn')) return `<div class="page">${backBtn()}${waiting('office', 'invwarn')}</div>`;
+  if (!need('office', 'recipes', 'bom', 'invwarn', 'yields')) return `<div class="page">${backBtn()}${waiting('office', 'invwarn', 'yields')}</div>`;
   const T = triage(), today = p.scope === 'today', list = today ? T.decisions.filter(d => d.today) : T.decisions;
   const red = list.filter(d => d.sev === 'red'), amber = list.filter(d => d.sev === 'amber');
   const sec = (h, l) => l.length ? `<section><div class="chap"><h2>${h}</h2><span>${l.length}</span></div><div class="list">${l.map(decCard).join('')}</div></section>` : '';
@@ -285,7 +293,7 @@ SCREENS.restaurant = { title: () => 'Restaurant', c: '--rest', render() {
   const s = n('sugg'), act = s ? s.rows.filter(r => ['do_first', 'prep_today', 'count_first'].includes(r.status)).length : '…';
   const dno = n('vendors') ? new Set(n('vendors').filter(v => v.do_not_order).map(v => v.ingredient_id)).size : 0;
   const last = n('sales') && n('sales')[0];
-  need('bom'); const T = n('office') && n('recipes') && n('bom') && n('invwarn') ? triage() : null;
+  need('bom'); need('yields'); const T = n('office') && n('recipes') && n('bom') && n('invwarn') && n('yields') ? triage() : null;
   const dec = T ? T.decisions.filter(d => d.area !== 'invoice') : null, inv = T ? T.decisions.filter(d => d.area === 'invoice') : null;
   const tile = (s, ic, lbl, val, cls = '', scope = '') => `<button class="big ${cls}" data-a="go" data-s="${s}" ${scope ? `data-scope="${scope}"` : ''}>${ICON[ic]}<div><div class="lbl">${lbl}</div><div class="val">${val}</div></div></button>`;
   const row = (s, name, meta) => `<button class="row" data-a="go" data-s="${s}"><span class="main"><div class="name">${name}</div><div class="meta">${meta}</div></span><span class="chev">›</span></button>`;
@@ -479,7 +487,7 @@ SCREENS.event = { title: p => { const e = (BD.peek('events') || []).find(x => x.
 const DET = {};
 function det(kind, id) { const k = kind + ':' + id; if (!(k in DET)) { DET[k] = undefined; BD.detail(kind, id).then(v => { DET[k] = v === undefined ? null : v; rerender(); }).catch(() => { DET[k] = null; rerender(); }); } return DET[k]; }
 SCREENS.recipe = { title: p => { const r = byId(BD.peek('recipes') || [])[p.id]; return r ? r.title : 'Recipe'; }, c: '--rest', render(p) {
-  if (!need('recipes', 'bom', 'ingredients', 'prep', 'events')) return `<div class="page">${backBtn()}${waiting('recipes', 'bom')}</div>`;
+  if (!need('recipes', 'bom', 'ingredients', 'prep', 'events', 'yields')) return `<div class="page">${backBtn()}${waiting('recipes', 'bom', 'yields')}</div>`;
   const rec = byId(BD.peek('recipes')), ing = byId(BD.peek('ingredients')), r = det('recipe', p.id), steps = det('steps', p.id), cost = det('cost', p.id);
   const base = rec[p.id]; if (!base) return `<div class="page">${backBtn()}<p class="note">Recipe not found in Brigade.</p></div>`;
   const x = num(p.x) || 1, comps = components(p.id).sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
@@ -502,7 +510,12 @@ SCREENS.recipe = { title: p => { const r = byId(BD.peek('recipes') || [])[p.id];
   return `<div class="page" style="--c:var(--rest)">${backBtn()}
     <div><div class="eyebrow">${esc(cat(base.category))}${base.prep_time_minutes ? ' · ' + base.prep_time_minutes + ' min' : ''}</div><h1>${esc(base.title)}</h1></div>
     ${fix ? `<div class="fixbox ${fix.sev}"><div class="h">To fix: ${esc(fix.title)}</div><div>${esc(fix.why)}</div>${fix.now ? `<div><b>Now:</b> ${esc(fix.now)}</div>` : ''}<div><b>Missing:</b> ${esc(fix.missing)}</div><div>${brigadeBtn('Fix in Brigade')}</div></div>` : ''}
-    <div class="facts ${hlY}">${!base.yield_text && !base.base_servings && !base.base_weight_g ? '<span class="wtx">No yield</span>' : ''}${base.yield_text ? `<span>Yield <b>${esc(base.yield_text)}</b></span>` : ''}${base.base_servings ? `<span>Servings <b>${base.base_servings}</b></span>` : ''}${base.base_weight_g ? `<span>Batch <b>${fmt(base.base_weight_g / 1000)} kg</b></span>` : ''}${base.shelf_life_days ? `<span>Shelf life <b>${base.shelf_life_days} d</b></span>` : ''}${base.selling_price ? `<span>Price <b>${money(base.selling_price)}</b></span>` : ''}${fc !== null ? `<span>Food cost <b>${fmt(fc)}%</b></span>` : ''}${c !== null ? `<span>Recipe cost <b>${money(c)}</b></span>` : ''}</div>
+    <div class="facts ${hlY}">${(() => { const cy = yieldsMap()[p.id] || {};
+      return !cy.has_yield ? '<span class="wtx">No yield</span>'
+        : (num(cy.portions) > 0 ? `<span>Makes <b>${plural(Math.round(num(cy.portions) * 100) / 100, 'portion')}</b>${cy.portions_source && cy.portions_source !== 'base_servings' ? ' <span class="muted">(calculated)</span>' : ''}</span>` : '')
+        + (num(cy.yield_qty) > 0 ? `<span>Batch <b>${fmt(num(cy.yield_qty) / 1000)} ${cy.yield_dim === 'volume' ? 'L' : 'kg'}</b></span>` : '')
+        + (cy.conflict ? '<span class="wtx">Yield note disagrees</span>' : ''); })()}${base.shelf_life_days ? `<span>Shelf life <b>${base.shelf_life_days} d</b></span>` : ''}${base.selling_price ? `<span>Price <b>${money(base.selling_price)}</b></span>` : ''}${fc !== null ? `<span>Food cost <b>${fmt(fc)}%</b></span>` : ''}${c !== null ? `<span>Recipe cost <b>${money(c)}</b></span>` : ''}</div>
+    ${base.yield_text && base.yield_text.trim() ? `<p class="note" style="font-size:15px"><b>Note:</b> ${esc(base.yield_text.trim().replace(/\s+/g, ' '))}</p>` : ''}
     ${evs.length ? `<div class="list">${evs.map(evRow).join('')}</div>` : ''}
     <section class="${hlB}"><div class="chap"><h2>Components</h2><span>${comps.length ? comps.length : ''}</span></div>
       <div class="qbtns" style="margin-bottom:10px">${[0.5, 1, 2, 3].map(k => `<button class="${k === x ? 'on' : ''}" data-a="scale" data-x="${k}">×${k}</button>`).join('')}</div>
