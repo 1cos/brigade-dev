@@ -179,7 +179,7 @@ const REASON_LABEL = {
   ai_copy: 'Chef AI copies of team messages', praise: 'Team notes and praise', old_note: 'Team notes and praise',
   yield_resolved: 'Out of date: already fixed', bom_now_present: 'Out of date: already fixed', portion_optional: 'Portion size not set (optional)',
   pos_link_unknown: 'Not asked: POS link', stock_untrusted: 'Not asked: stock counts',
-  excluded: 'Walmart receipts kept out of the kitchen', imported_with_notes: 'Imported invoices with notes', legacy_record: 'Old records',
+  deferred_by_chef: 'Deferred by Chef', excluded: 'Walmart receipts kept out of the kitchen', imported_with_notes: 'Imported invoices with notes', legacy_record: 'Old records',
   return_pickup_slip: 'Return pick-up slips (not invoices)', walmart_waiting_revision: 'Walmart: waiting for the updated invoice', other: 'Other',
 };
 const REASON_WHY = {
@@ -390,22 +390,22 @@ function completenessRows() {
   need('attention');
   const rec = byId(BD.peek('recipes') || []);
   return (BD.peek('attention') || []).filter(a => a.origin === 'office' && a.attention === 'backlog' && a.recipe_id && rec[a.recipe_id])
-    .map(a => ({ kind: a.family === 'missing_photo' ? 'photo' : a.family === 'missing_procedure' ? 'procedure' : 'portions', r: rec[a.recipe_id] }));
+    .map(a => ({ kind: a.reason === 'deferred_by_chef' ? 'deferred' : a.family === 'missing_photo' ? 'photo' : a.family === 'missing_procedure' ? 'procedure' : 'portions', r: rec[a.recipe_id] }));
 }
 function completenessRow() {
   const c = completenessRows(); if (!c.length) return '';
-  const k = groupBy(c, x => x.kind), parts = [k.photo && `${k.photo.length} without a photo`, k.procedure && `${k.procedure.length} without a procedure`, k.portions && `${k.portions.length} without portions per batch`].filter(Boolean);
+  const k = groupBy(c, x => x.kind), parts = [k.deferred && `${k.deferred.length} deferred by Chef`, k.photo && `${k.photo.length} without a photo`, k.procedure && `${k.procedure.length} without a procedure`, k.portions && `${k.portions.length} without portions per batch`].filter(Boolean);
   return `<div class="list"><button class="row" data-a="go" data-s="r-complete"><span class="main"><div class="name">Completeness</div><div class="meta">${esc(parts.join(' · '))}</div></span><span class="chev">›</span></button></div>`;
 }
 SCREENS['r-complete'] = { title: () => 'Completeness', c: '--rest', render(p) {
   if (!need('attention', 'recipes')) return `<div class="page">${backBtn()}${waiting('attention', 'recipes')}</div>`;
   const k = groupBy(completenessRows(), x => x.kind);
-  const LBL = { photo: 'Missing photo', procedure: 'Missing procedure', portions: 'Portions per batch not set' };
-  const WHY = { photo: 'Helps the team recognise the plate.', procedure: 'Helps a new cook make it the same way.', portions: 'Optional. The batch size is set; portions help plan prep from sales.' };
+  const LBL = { deferred: 'Deferred by Chef — to complete', photo: 'Missing photo', procedure: 'Missing procedure', portions: 'Portions per batch not set' };
+  const WHY = { deferred: 'Known and still open: the yield is not decided yet. Kept out of Today on purpose; nothing was filled in.', photo: 'Helps the team recognise the plate.', procedure: 'Helps a new cook make it the same way.', portions: 'Optional. The batch size is set; portions help plan prep from sales.' };
   const sec = kind => { const l = (k[kind] || []).sort((a, b) => a.r.title.localeCompare(b.r.title)); if (!l.length) return '';
     return `<section><div class="chap"><h2>${LBL[kind]}</h2><span>${l.length}</span></div><p class="note" style="margin:0 0 8px">${WHY[kind]}</p><div class="list">${p['m_' + kind] ? l.map(x => `<button class="row" data-a="openRecipe" data-r="${x.r.id}"><span class="main"><div class="name" style="font-weight:500;font-size:17px">${esc(x.r.title)}</div><div class="meta">${esc(cat(x.r.category))}</div></span><span class="chev">›</span></button>`).join('') : `<button class="more" data-a="more" data-k="m_${kind}">Show ${l.length}</button>`}</div></section>`; };
   return `<div class="page" style="--c:var(--rest)">${backBtn()}${head('Restaurant · Recipes', 'Completeness', 'Not urgent. Nothing here counts as a decision.')}
-    ${sec('photo')}${sec('procedure')}${sec('portions')}
+    ${sec('deferred')}${sec('photo')}${sec('procedure')}${sec('portions')}
     ${roNote('Add photos and procedures in Brigade.')}</div>`;
 } };
 SCREENS['r-ing'] = { title: () => 'Ingredients', c: '--rest', render(p) {
