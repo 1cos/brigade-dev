@@ -125,15 +125,21 @@ const recipeBtn = (id, label, focus) => `<button class="btn" data-a="openRecipe"
 const brigadeBtn = label => `<a class="btn ghost" href="${BRIGADE_URL}" target="_blank" rel="noopener">${label} ↗</a>`;
 const ISSUE = { missing_photo: 'Recipes without a photo', missing_procedure: 'Recipes without a written procedure', missing_pos_name: 'Recipes without a POS name', null_stock: 'Prep without a stock count' };
 
+/* "Hardie's #07137898": how an invoice is named everywhere */
+function invoiceLabels() {
+  const m = {};
+  (BD.peek('invwarn') || []).forEach(x => { if (x.document_id && !m[x.document_id]) m[x.document_id] = `${vendorShort(x.vendor)}${x.document_number ? ' #' + x.document_number : ''}`; });
+  return m;
+}
 function invoiceCards() {
   const byDoc = groupBy(BD.peek('invwarn') || [], x => x.document_id || x.id), cards = [], excluded = [];
   Object.values(byDoc).forEach(list => {
-    const f = list[0], when = f.document_date, vendor = vendorShort(f.vendor);
+    const f = list[0], when = f.document_date, vendor = vendorShort(f.vendor), docId = f.document_id;
     const label = `${vendor}${f.document_number ? ' #' + f.document_number : ''}`;
     if (list.some(x => x.code === 'BUYER-BAR-001')) { excluded.push(f); return; }
     const broken = list.find(x => /PARSE_ERROR|UNKNOWN_DOC_TYPE/.test(x.code || ''));
     if (broken) {
-      cards.push({ sev: 'red', area: 'invoice', today: ageDays(when || f.created_at) <= 14, date: when || f.created_at, title: `${vendor} invoice could not be read`, now: label,
+      cards.push({ docId, sev: 'red', area: 'invoice', today: ageDays(when || f.created_at) <= 14, date: when || f.created_at, title: `${vendor} invoice could not be read`, now: label,
         why: broken.code === 'PARSE_ERROR' ? 'No lines were found in the document, so prices and stock were not updated.' : 'Brigade did not recognise this document, so nothing was imported.',
         missing: 'A readable copy of the invoice', cta: brigadeBtn('Open invoices in Brigade') });
       return;
@@ -154,7 +160,7 @@ function invoiceCards() {
     extra.filter(x => !used.has(x)).forEach(x => lines.push(`${nice(x.item)}: ${x.got} received, not ordered`));
     if (!lines.length) return;
     const subs = lines.filter(l => l.includes('→')).length;
-    cards.push({ sev: 'amber', area: 'invoice', today: false, date: when, now: label, lines,
+    cards.push({ docId, sev: 'amber', area: 'invoice', today: false, date: when, now: label, lines,
       title: subs === lines.length ? `${vendor} substituted ${plural(subs, 'item')}` : subs ? `${vendor} substituted ${subs} and shorted ${lines.length - subs}` : `${vendor} did not ship ${plural(lines.length, 'item')}`,
       why: f.doc_status === 'pending' ? 'The invoice is waiting for review in Brigade.' : 'The invoice is already imported. Check stock and prices for these lines.',
       cta: brigadeBtn('Review in Brigade') });
@@ -163,61 +169,99 @@ function invoiceCards() {
   return cards.sort((a, b) => (dayOf(b.date)).localeCompare(dayOf(a.date)));
 }
 
+/* ATTENTION01 — WHAT NEEDS CHEF comes from ONE place: Brigade's view attention_items.
+   It classifies every open signal (L'Ufficio + invoices) against today's data:
+   action_now (Today) · needs_chef (Decisions, not today) · backlog (its workspace) · info (history) · data_quality_unknown.
+   The badge in Brigade, Today, Decisions and the Restaurant tiles all count the same thing: distinct decisions.
+   This file only writes the words. */
+const REASON_LABEL = {
+  snoozed: 'Snoozed', acted_on: "Already handled in L'Ufficio", recipe_gone: 'Recipe no longer in Brigade', recipe_archived: 'Recipe archived',
+  ai_copy: 'Chef AI copies of team messages', praise: 'Team notes and praise', old_note: 'Team notes and praise',
+  yield_resolved: 'Out of date: already fixed', bom_now_present: 'Out of date: already fixed', portion_optional: 'Portion size not set (optional)',
+  pos_link_unknown: 'Not asked: POS link', stock_untrusted: 'Not asked: stock counts',
+  excluded: 'Walmart receipts kept out of the kitchen', imported_with_notes: 'Imported invoices with notes', legacy_record: 'Old records',
+  return_pickup_slip: 'Return pick-up slips (not invoices)', walmart_waiting_revision: 'Walmart: waiting for the updated invoice', other: 'Other',
+};
+const REASON_WHY = {
+  yield_resolved: 'The yield is set now; the alert will close on its own.', bom_now_present: 'The recipe has its ingredients now.',
+  portion_optional: 'Optional. Only used to plan prep from sales.',
+  pos_link_unknown: 'Depends on whether the dish is sold on its own. Not asked until it matters.',
+  stock_untrusted: 'Depends on stock counts the team enters, which are not reliable right now. Brigade does not ask you anything.',
+  return_pickup_slip: 'Hardie\'s picked up a return. The credit arrives as a separate credit memo.',
+  walmart_waiting_revision: 'Walmart sent only the total. The version with the items usually follows and replaces it.',
+  legacy_record: 'A broken copy of an order that was already imported under the right number.',
+};
+const attentionMap = () => groupBy(BD.peek('attention') || [], a => a.item_id);
+const isAction = a => a.attention === 'action_now' || a.attention === 'needs_chef';
+
 let TRI = null, TRI_KEY = '';
 function triage() {
-  const key = ['office', 'recipes', 'bom', 'invwarn', 'yields'].map(n => (BD.store[n] || {}).at).join('|');
+  const key = ['office', 'recipes', 'bom', 'invwarn', 'yields', 'attention'].map(n => (BD.store[n] || {}).at).join('|');
   if (TRI && key === TRI_KEY) return TRI;
-  const rec = byId(BD.peek('recipes') || []), bomN = {}, seen = {}, out = [], stale = [], history = [];
+  const rec = byId(BD.peek('recipes') || []), off = byId(BD.peek('office') || []), bomN = {}, out = [], stale = [], history = [], completeness = [];
   (BD.peek('bom') || []).forEach(b => { bomN[b.parent_recipe_id] = (bomN[b.parent_recipe_id] || 0) + 1; });
-  (BD.peek('office') || []).forEach(o => {
-    if (['tell_chef', 'operation_note', 'sous_chef_chat'].includes(o.source)) {
-      const msg = String(o.body || o.summary || o.title || '').trim(), who = o.from_user || 'Team';
-      if (o.chef_action === 'done') return history.push({ sev: 'green', kind: 'team', date: o.created_at, title: cut(msg, 100), why: `${who} · marked done, still open in L'Ufficio` });
-      if (who === 'Chef AI') return;                                          // an AI summary of a message already listed
-      if (/great service|good service|^⭐|⭐$/i.test(msg)) return history.push({ sev: 'neutral', kind: 'team', date: o.created_at, title: cut(msg, 100), why: who });
-      if (ageDays(o.created_at) > 14) return history.push({ sev: 'neutral', kind: 'team', date: o.created_at, title: cut(msg, 100), why: `${who} · older than 2 weeks` });
-      if (/^proposta/i.test(o.title || '')) return out.push({ sev: 'amber', area: 'team', today: true, date: o.created_at, title: `Sous Chef proposal for ${nice(o.recipe_name || 'a recipe')}`, why: msg, missing: 'Your approval', cta: brigadeBtn("Approve in L'Ufficio"), cta2: o.recipe_id ? recipeBtn(o.recipe_id, 'Open recipe') : '' });
-      const prod = /\b(i made|i did|made|ho fatto)\b[^.]*\d/i.test(msg);
-      return out.push({ sev: 'amber', area: 'team', today: true, date: o.created_at, title: prod ? `${who} reported production` : `${who}: ${cut(msg, 70)}`, why: msg, missing: prod ? 'Check it is recorded as production' : 'Your answer', cta: brigadeBtn(prod ? 'Check in Brigade' : "Answer in L'Ufficio") });
+  const att = BD.peek('attention') || [], inv = byId(invoiceCards(), 'docId');
+  const rname = id => (rec[id] || {}).title || 'Recipe';
+
+  /* decisions: one card per decision_key */
+  Object.entries(groupBy(att.filter(isAction), a => a.decision_key || a.item_id)).forEach(([k, rows]) => {
+    const a = rows[0], o = off[a.item_id] || {}, today = a.attention === 'action_now', base = { today, date: a.created_at, cls: a.attention };
+    const msg = x => String(x.body || x.summary || x.title || '').trim();
+    switch (a.reason) {
+      case 'no_yield': return out.push({ ...base, sev: 'red', area: 'recipe', rid: a.recipe_id, focus: 'yield', title: `${rname(a.recipe_id)} has no yield`,
+        why: `${soldText(o)} Brigade does not know how much one batch makes, so food cost and stock count it as one portion.`.trim(), missing: 'The yield: batch weight in kg, or number of portions', cta: recipeBtn(a.recipe_id, 'Open recipe', 'yield') });
+      case 'no_ingredients': return out.push({ ...base, sev: 'red', area: 'recipe', rid: a.recipe_id, focus: 'bom', title: `${rname(a.recipe_id)} has no ingredients`,
+        why: `${soldText(o)} Food cost and prep forecast cannot see this dish.`.trim(), missing: 'Its ingredients and sub-recipes', cta: recipeBtn(a.recipe_id, 'Open recipe', 'bom') });
+      case 'portions_unknown': { const cy = yieldsMap()[a.recipe_id] || {};
+        return out.push({ ...base, sev: 'amber', area: 'recipe', rid: a.recipe_id, focus: 'yield', title: `${rname(a.recipe_id)}: one portion or a batch?`, now: yieldText(cy),
+          why: `${soldText(o)} It has a batch size but not how many portions it makes. If it is a batch, each sale deducts too much.`.trim(), missing: 'How many portions one batch makes', cta: recipeBtn(a.recipe_id, 'Open recipe', 'yield') }); }
+      case 'bom_maybe_incomplete': { const ids = [...new Set(rows.map(x => x.recipe_id))].filter(Boolean);
+        return out.push({ ...base, sev: 'amber', area: 'recipe', title: `${plural(ids.length, 'dish')} list only a few ingredients`,
+          why: 'Brigade cannot tell whether these lists are complete. If something is missing, the food cost looks too low.',
+          missing: 'Check each list once and add what is missing', recipes: ids.map(id => ({ id, label: `${rname(id)} · ${plural(bomN[id] || 0, 'ingredient')}` })) }); }
+      case 'recipe_proposal': return out.push({ ...base, sev: 'amber', area: 'team', title: `Sous Chef proposal for ${nice(o.recipe_name || rname(a.recipe_id))}`, why: msg(o),
+        missing: 'Your answer. Approving switches on with protected recipe saving; until then you can read or reject it.', cta: brigadeBtn("Open in L'Ufficio"), cta2: a.recipe_id ? recipeBtn(a.recipe_id, 'Open recipe') : '' });
+      case 'old_team_message': { const items = rows.map(x => off[x.item_id]).filter(Boolean).sort((x, y) => x.created_at < y.created_at ? -1 : 1);
+        const d0 = items.length ? shortDay(dayOf(items[0].created_at)) : '', d1 = items.length ? shortDay(dayOf(items[items.length - 1].created_at)) : '';
+        return out.push({ ...base, date: '', sev: 'amber', area: 'team', title: `${plural(rows.length, 'team message')} never closed`, now: d0 && d1 ? `${d0} – ${d1}` : '',
+          why: 'Older than two weeks. Some ask for recipe changes, some report production. Archive what is already handled, answer the rest.',
+          lines: items.map(x => `${x.from_user || 'Team'}: ${cut(msg(x), 90)}`), missing: 'One review', cta: brigadeBtn("Open L'Ufficio") }); }
+      case 'team_message': { const prod = /\b(i made|i did|made|ho fatto)\b[^.]*\d/i.test(msg(o));
+        return out.push({ ...base, sev: 'amber', area: 'team', title: prod ? `${o.from_user || 'Team'} reported production` : `${o.from_user || 'Team'}: ${cut(msg(o), 70)}`, why: msg(o),
+          missing: prod ? 'Check it is recorded as production' : 'Your answer', cta: brigadeBtn(prod ? 'Check in Brigade' : "Answer in L'Ufficio") }); }
+      case 'invoice_stuck_in_review': case 'revision_after_import': case 'unreadable_invoice': case 'walmart_revision_missing': {
+        const c = inv[a.document_id] || {}, label = invoiceLabels()[a.document_id] || 'Invoice';
+        const T = { invoice_stuck_in_review: [`${label} is waiting in review`, 'Some quantities differ from the order, so Brigade cannot book it on its own. Until then its cost is not counted.', 'Your check in Vendor Review'],
+          revision_after_import: [`${label}: updated after it was imported`, 'Walmart sent a new version of an invoice that is already booked. Nothing was changed.', 'Check whether the items differ'],
+          unreadable_invoice: [`${label} could not be read`, 'No lines were found in the document, so prices and stock were not updated.', 'A readable copy of the invoice'],
+          walmart_revision_missing: [`${label}: the updated invoice never arrived`, 'Walmart sent only the total more than a week ago.', 'The invoice with the items'] }[a.reason];
+        return out.push({ ...base, sev: a.reason === 'invoice_stuck_in_review' || a.reason === 'revision_after_import' ? 'amber' : 'red', area: 'invoice', docId: a.document_id,
+          title: T[0], why: T[1], lines: c.lines, missing: T[2], cta: brigadeBtn('Open invoices in Brigade') }); }
+      default: return out.push({ ...base, sev: 'amber', area: 'other', title: cut(o.title || a.family, 80), why: 'Brigade does not know how to read this alert yet.', missing: 'Your look', cta: brigadeBtn("Open L'Ufficio") });
     }
-    const r = rec[o.recipe_id], it = o.issue_type || '', name = r ? r.title : nice(o.recipe_name || 'Recipe');
-    if (o.recipe_id && !r) return stale.push({ title: o.title, why: 'The recipe is no longer in Brigade.' });
-    if (r && /archiv/i.test(r.category || '')) return stale.push({ title: name, why: 'The recipe is archived.', rid: r.id });
-    if (seen[o.recipe_id + it]) return; seen[o.recipe_id + it] = 1;
-    if (it === 'missing_base_servings') {
-      /* YIELD01: portions come from Brigade's canonical view recipe_yield (same logic as FC05). */
-      const cy = yieldsMap()[r.id] || {}, sold = !!soldText(o), y = yieldText(cy);
-      if (num(r.base_servings) > 0) return stale.push({ title: `${name} · portions`, why: `Now set: ${plural(num(r.base_servings), 'portion')}.`, rid: r.id });
-      if (num(cy.portions) > 1) return out.push({ sev: sold ? 'red' : 'amber', area: 'recipe', today: sold, date: o.created_at, rid: r.id, focus: 'yield', title: `${name}: each sale deducts a whole batch`, why: `${soldText(o)} The batch makes ${fmt(cy.portions)} portions, but the stock deduction still reads only the old portions field. Fixed when the new deduction bot is live.`.trim(), now: y, missing: 'The new deduction bot live (no Chef input needed)', cta: recipeBtn(r.id, 'Open recipe', 'yield') });
-      if (num(cy.portions) === 1) return stale.push({ title: `${name} · portions`, why: 'The recipe is one portion, so each sale deducts the right amount.', rid: r.id });
-      if (cy.has_yield) return out.push({ sev: 'amber', area: 'recipe', today: false, date: o.created_at, rid: r.id, focus: 'yield', title: `${name}: one portion or a batch?`, why: `Has ${y}, but not how many portions that makes. If it is a batch, each sale deducts too much stock.`, now: y, missing: 'Number of portions, if it is a batch', cta: recipeBtn(r.id, 'Open recipe', 'yield') });
-      return out.push({ sev: 'amber', area: 'recipe', today: false, date: o.created_at, rid: r.id, focus: 'yield', title: `${name} has no yield`, why: `${soldText(o)} Brigade treats it as one portion. Confirm the yield so cost and stock stay right.`.trim(), now: portionOf(r) ? `Portion is ${portionOf(r)}` : 'No yield', missing: 'The yield: batch weight in kg, or number of portions', cta: recipeBtn(r.id, 'Open recipe', 'yield') });
-    }
-    if (it === 'bom_empty' || it === 'empty_bom') {
-      if (bomN[o.recipe_id]) return stale.push({ title: `${name} · ingredients`, why: `Now has ${plural(bomN[o.recipe_id], 'component')}.`, rid: r.id });
-      return out.push({ sev: 'red', area: 'recipe', today: true, date: o.created_at, rid: r.id, focus: 'bom', title: `${name} has no ingredients`, why: `${soldText(o)} Food cost and prep forecast cannot see this dish.`.trim(), now: 'No components', missing: 'Its ingredients and sub-recipes', cta: recipeBtn(r.id, 'Open recipe', 'bom') });
-    }
-    if (it === 'bom_partial') {
-      const n = bomN[o.recipe_id] || 0;
-      if (n >= 4) return stale.push({ title: `${name} · ingredients`, why: `Now has ${n} components.`, rid: r.id });
-      return out.push({ sev: 'amber', area: 'recipe', today: false, date: o.created_at, rid: r.id, focus: 'bom', title: `${name} may be missing ingredients`, why: `${soldText(o)} Only ${plural(n, 'component')} listed, so its food cost may look too low.`.trim(), now: plural(n, 'component'), missing: 'Check every ingredient is listed', cta: recipeBtn(r.id, 'Open recipe', 'bom') });
-    }
-    if (it === 'missing_serving_fields') {
-      if (r && r.serving_qty && r.serving_unit) return stale.push({ title: `${name} · portion`, why: `The portion is ${portionOf(r)}.`, rid: r.id });
-      return history.push({ sev: 'neutral', kind: 'Portion size not set (optional)', date: o.created_at, title: name, why: 'Optional. Only used to plan prep from sales.', rid: r && r.id });
-    }
-    history.push({ sev: 'neutral', kind: ISSUE[it] || 'Other checks', date: o.created_at, title: name, rid: r && r.id });
   });
-  invoiceCards().forEach(c => (c.sev === 'neutral' ? history : out).push(c));
-  const rank = { red: 0, amber: 1 };
-  out.sort((a, b) => rank[a.sev] - rank[b.sev] || dayOf(b.date).localeCompare(dayOf(a.date)));
-  TRI_KEY = key; TRI = { decisions: out, stale, history };
+
+  /* backlog: recipe completeness lives in Restaurant → Recipes; invoices in review live in Invoices */
+  att.filter(a => a.attention === 'backlog' && a.origin === 'office').forEach(a => completeness.push({ kind: a.reason === 'recipe_completeness' ? (a.family === 'missing_photo' ? 'photo' : 'procedure') : 'portions', rid: a.recipe_id, title: rname(a.recipe_id) }));
+
+  /* info and data quality unknown: history, grouped by reason */
+  att.filter(a => a.attention === 'info' || a.attention === 'data_quality_unknown').forEach(a => {
+    const o = off[a.item_id] || {}, c = inv[a.document_id] || {};
+    const title = a.origin === 'invoice' ? (invoiceLabels()[a.document_id] || 'Invoice') : a.recipe_id ? rname(a.recipe_id) : cut(String(o.body || o.summary || o.title || ''), 100);
+    const row = { sev: a.attention === 'info' ? 'neutral' : 'amber', kind: REASON_LABEL[a.reason] || 'Other', date: a.created_at, title, why: REASON_WHY[a.reason] || (o.from_user ? o.from_user : ''), rid: a.recipe_id, area: a.origin === 'invoice' ? 'invoice' : 'office' };
+    (a.reason === 'yield_resolved' || a.reason === 'bom_now_present' ? stale : history).push(row);
+  });
+
+  const rank = { action_now: 0, needs_chef: 1 }, srank = { red: 0, amber: 1 };
+  out.sort((a, b) => rank[a.cls] - rank[b.cls] || srank[a.sev] - srank[b.sev] || dayOf(b.date).localeCompare(dayOf(a.date)));
+  TRI_KEY = key; TRI = { decisions: out, stale, history, completeness };
   return TRI;
 }
 function decCard(d) {
   return `<div class="dec"><div class="top"><span class="sev ${d.sev}"></span><div style="flex:1;min-width:0"><div class="name">${esc(d.title)}</div><div class="meta">${d.now ? esc(d.now) + ' · ' : ''}${d.date ? shortDay(dayOf(d.date)) : ''}</div></div></div>
     ${d.why ? `<div class="q">${esc(d.why)}</div>` : ''}
     ${d.lines ? `<ul class="lines">${d.lines.map(l => `<li>${esc(l)}</li>`).join('')}</ul>` : ''}
+    ${d.recipes ? `<div class="list">${d.recipes.map(x => `<button class="row" data-a="openRecipe" data-r="${x.id}" data-focus="bom"><span class="main"><div class="name" style="font-weight:500;font-size:17px">${esc(x.label)}</div></span><span class="chev">›</span></button>`).join('')}</div>` : ''}
     ${d.missing ? `<div class="meta"><b>Missing:</b> ${esc(d.missing)}</div>` : ''}
     ${d.cta || d.cta2 ? `<div class="links">${d.cta || ''}${d.cta2 || ''}</div>` : ''}</div>`;
 }
@@ -227,7 +271,7 @@ SCREENS.today = { title: () => 'Today', c: '--today', render() {
   const t = BD.today(), h = BD.hourCDT();
   const greet = h < 12 ? 'Good morning, Chef.' : h < 17 ? 'Good afternoon, Chef.' : 'Good evening, Chef.';
   const top = `<div class="greet"><div class="eyebrow">${dayName(t)}</div><h1>${greet}</h1>`;
-  if (!need('sugg', 'prep', 'events', 'office', 'preplog', 'reports', 'recipes', 'bom', 'invwarn', 'yields')) return `<div class="page">${top}</div>${waiting('sugg', 'prep', 'events', 'office', 'preplog', 'reports', 'recipes', 'bom', 'invwarn', 'yields')}</div>`;
+  if (!need('sugg', 'prep', 'events', 'office', 'preplog', 'reports', 'recipes', 'bom', 'invwarn', 'yields', 'attention')) return `<div class="page">${top}</div>${waiting('sugg', 'prep', 'events', 'office', 'preplog', 'reports', 'recipes', 'bom', 'invwarn', 'yields', 'attention')}</div>`;
   const sugg = BD.peek('sugg'), prep = byId(BD.peek('prep')), tom = BD.addDays(t, 1);
   const rows = sugg.rows.filter(r => prep[r.prep_task_id]).map(r => ({ r, p: prep[r.prep_task_id] }));
   const chap = st => rows.filter(x => x.r.status === st);
@@ -270,16 +314,18 @@ function evRow(e) {
 
 /* ============ DECISIONS (one queue; everything else links here) ============ */
 SCREENS.decisions = { title: () => 'Decisions', c: '--today', render(p) {
-  if (!need('office', 'recipes', 'bom', 'invwarn', 'yields')) return `<div class="page">${backBtn()}${waiting('office', 'invwarn', 'yields')}</div>`;
+  if (!need('office', 'recipes', 'bom', 'invwarn', 'yields', 'attention')) return `<div class="page">${backBtn()}${waiting('office', 'invwarn', 'yields', 'attention')}</div>`;
   const T = triage(), today = p.scope === 'today', list = today ? T.decisions.filter(d => d.today) : T.decisions;
-  const red = list.filter(d => d.sev === 'red'), amber = list.filter(d => d.sev === 'amber');
+  const now = list.filter(d => d.cls === 'action_now'), later = list.filter(d => d.cls === 'needs_chef');
+  const comp = T.completeness.length;
   const sec = (h, l) => l.length ? `<section><div class="chap"><h2>${h}</h2><span>${l.length}</span></div><div class="list">${l.map(decCard).join('')}</div></section>` : '';
-  const hist = groupBy(T.history, h => h.area === 'invoice' ? 'Invoices' : h.kind === 'team' ? 'Team notes and history' : h.kind);
+  const hist = groupBy(T.history, h => h.kind);
   const fold = (h, l) => `<section><div class="chap"><h2>${esc(h)}</h2><span>${l.length}</span></div><div class="list">${p['m_' + h] ? l.map(x => x.rid ? `<button class="row" data-a="openRecipe" data-r="${x.rid}"><span class="sev ${x.sev}" style="margin-top:0"></span><span class="main"><div class="name" style="font-weight:500;font-size:17px">${esc(x.title)}</div>${x.why ? `<div class="meta">${esc(x.why)}</div>` : ''}</span><span class="chev">›</span></button>` : `<div class="row"><span class="sev ${x.sev}" style="margin-top:0"></span><span class="main"><div class="name" style="font-weight:500;font-size:17px">${esc(x.title)}</div><div class="meta">${esc(x.why || '')}${x.date ? ' · ' + shortDay(dayOf(x.date)) : ''}</div></span></div>`).join('') : `<button class="more" data-a="more" data-k="m_${esc(h)}">Show ${l.length}</button>`}</div></section>`;
   return `<div class="page" style="--c:var(--today)">${backBtn()}
     ${head(today ? 'Today' : "Brigade · L'Ufficio and invoices", list.length ? `${list.length} need${list.length === 1 ? 's' : ''} you` : 'Nothing needs you', 'Checked against Brigade\'s data just now.')}
-    ${sec('Blocking', red)}${sec('To review', amber)}
-    ${today ? `<button class="lnk" data-a="go" data-s="decisions" data-scope="all">All open reviews, history and out-of-date alerts ›</button>` : `
+    ${sec('Act now', now)}${sec('Your decision, not today', later)}
+    ${today ? `<button class="lnk" data-a="go" data-s="decisions" data-scope="all">${later.length ? `${plural(later.length, 'decision')} for later, ` : ''}history and out-of-date alerts ›</button>` : `
+      ${comp ? `<div class="list"><button class="row" data-a="go" data-s="r-complete"><span class="main"><div class="name">Recipe completeness</div><div class="meta">Missing photos and procedures. Not urgent, kept in Restaurant → Recipes.</div></span><span class="chev">›</span></button></div>` : ''}
       ${T.stale.length ? fold('Out of date: already fixed', T.stale.map(x => ({ sev: 'green', title: x.title, why: x.why, rid: x.rid }))) : ''}
       ${Object.entries(hist).sort((a, b) => b[1].length - a[1].length).map(([h, l]) => fold(h, l)).join('')}`}
     <p class="note" style="font-size:14px">Read-only version: decisions are made in Brigade. When Brigade changes, this list updates on the next refresh.</p>
@@ -288,13 +334,15 @@ SCREENS.decisions = { title: () => 'Decisions', c: '--today', render(p) {
 
 /* ============ RESTAURANT ============ */
 SCREENS.restaurant = { title: () => 'Restaurant', c: '--rest', render() {
-  need('sugg', 'prep', 'recipes', 'ingredients', 'vendors', 'sales', 'office', 'invwarn');
+  need('sugg', 'prep', 'recipes', 'ingredients', 'vendors', 'sales', 'office', 'invwarn', 'attention');
   const n = x => BD.peek(x);
   const s = n('sugg'), act = s ? s.rows.filter(r => ['do_first', 'prep_today', 'count_first'].includes(r.status)).length : '…';
   const dno = n('vendors') ? new Set(n('vendors').filter(v => v.do_not_order).map(v => v.ingredient_id)).size : 0;
   const last = n('sales') && n('sales')[0];
-  need('bom'); need('yields'); const T = n('office') && n('recipes') && n('bom') && n('invwarn') && n('yields') ? triage() : null;
-  const dec = T ? T.decisions.filter(d => d.area !== 'invoice') : null, inv = T ? T.decisions.filter(d => d.area === 'invoice') : null;
+  need('bom'); need('yields'); need('attention'); const T = n('office') && n('recipes') && n('bom') && n('invwarn') && n('yields') && n('attention') ? triage() : null;
+  /* same count as the Decisions screen and the badge in Brigade: distinct decisions from attention_items */
+  const dec = T ? T.decisions : null, att = n('attention') || [];
+  const invNow = att.filter(a => a.origin === 'invoice' && isAction(a)).length, invQueue = att.filter(a => a.origin === 'invoice' && a.attention === 'backlog').length;
   const tile = (s, ic, lbl, val, cls = '', scope = '') => `<button class="big ${cls}" data-a="go" data-s="${s}" ${scope ? `data-scope="${scope}"` : ''}>${ICON[ic]}<div><div class="lbl">${lbl}</div><div class="val">${val}</div></div></button>`;
   const row = (s, name, meta) => `<button class="row" data-a="go" data-s="${s}"><span class="main"><div class="name">${name}</div><div class="meta">${meta}</div></span><span class="chev">›</span></button>`;
   return `<div class="page" style="--c:var(--rest)">
@@ -304,8 +352,8 @@ SCREENS.restaurant = { title: () => 'Restaurant', c: '--rest', render() {
       ${tile('r-recipes', 'book', 'Recipes', `<b>${n('recipes') ? n('recipes').length : '…'}</b> recipes`)}
       ${tile('r-ing', 'box', 'Ingredients', `<b>${n('ingredients') ? n('ingredients').length : '…'}</b>${dno ? ` · ${dno} do not order` : ''}`)}
       ${tile('r-sales', 'sales', 'Sales', last ? `<b>${money(last.net_sales)}</b> ${shortDay(last.sale_date)}` : '…')}
-      ${tile('decisions', 'alert', 'Decisions', dec ? (dec.length ? `<b>${dec.length}</b> to look at` : 'All clear') : '…', dec && dec.some(d => d.sev === 'red') ? 'alert' : '', 'all')}
-      ${tile('r-inv', 'doc', 'Invoices', inv ? (inv.length ? `<b>${inv.filter(d => d.sev === 'red').length}</b> unreadable · ${inv.filter(d => d.sev === 'amber').length} to check` : 'All clear') : '…', inv && inv.some(d => d.sev === 'red') ? 'alert' : '')}
+      ${tile('decisions', 'alert', 'Decisions', dec ? (dec.length ? `<b>${dec.length}</b> to decide` : 'All clear') : '…', dec && dec.some(d => d.cls === 'action_now') ? 'alert' : '', 'all')}
+      ${tile('r-inv', 'doc', 'Invoices', T ? (invNow || invQueue ? `${invNow ? `<b>${invNow}</b> need you` : ''}${invNow && invQueue ? ' · ' : ''}${invQueue ? `${invQueue} in review` : ''}` : 'All clear') : '…', invNow ? 'alert' : '')}
     </div>
     <div class="list">
       ${row('r-brief', 'Briefing', 'Today\'s points from Brigade')}
@@ -333,9 +381,33 @@ SCREENS['r-recipes'] = { title: () => 'Recipes', c: '--rest', render(p) {
   const g = groupBy(list, r => cat(r.category));
   return `<div class="page" style="--c:var(--rest)">${backBtn()}${head('Restaurant', 'Recipes', `${BD.peek('recipes').length} in Brigade`)}
     <input id="q" class="search" type="search" placeholder="Find a recipe" value="${esc(p.q || '')}" autocomplete="off">
+    ${completenessRow()}
     ${Object.keys(g).sort().map(k => `<section><h2>${esc(k)} · ${g[k].length}</h2><div class="list">${g[k].map(r => `<button class="row" data-a="openRecipe" data-r="${r.id}"><span class="main"><div class="name">${esc(r.title)}</div><div class="meta">${esc([r.yield_text, r.menu_group].filter(Boolean).join(' · ') || ' ')}</div></span><span class="chev">›</span></button>`).join('')}</div></section>`).join('') || '<p class="note">No recipe matches.</p>'}
   </div>`;
 }, after: searchBind };
+/* ATTENTION01 — recipe completeness: a quiet checklist, never a decision and never in Today or the badge */
+function completenessRows() {
+  need('attention');
+  const rec = byId(BD.peek('recipes') || []);
+  return (BD.peek('attention') || []).filter(a => a.origin === 'office' && a.attention === 'backlog' && a.recipe_id && rec[a.recipe_id])
+    .map(a => ({ kind: a.family === 'missing_photo' ? 'photo' : a.family === 'missing_procedure' ? 'procedure' : 'portions', r: rec[a.recipe_id] }));
+}
+function completenessRow() {
+  const c = completenessRows(); if (!c.length) return '';
+  const k = groupBy(c, x => x.kind), parts = [k.photo && `${k.photo.length} without a photo`, k.procedure && `${k.procedure.length} without a procedure`, k.portions && `${k.portions.length} without portions per batch`].filter(Boolean);
+  return `<div class="list"><button class="row" data-a="go" data-s="r-complete"><span class="main"><div class="name">Completeness</div><div class="meta">${esc(parts.join(' · '))}</div></span><span class="chev">›</span></button></div>`;
+}
+SCREENS['r-complete'] = { title: () => 'Completeness', c: '--rest', render(p) {
+  if (!need('attention', 'recipes')) return `<div class="page">${backBtn()}${waiting('attention', 'recipes')}</div>`;
+  const k = groupBy(completenessRows(), x => x.kind);
+  const LBL = { photo: 'Missing photo', procedure: 'Missing procedure', portions: 'Portions per batch not set' };
+  const WHY = { photo: 'Helps the team recognise the plate.', procedure: 'Helps a new cook make it the same way.', portions: 'Optional. The batch size is set; portions help plan prep from sales.' };
+  const sec = kind => { const l = (k[kind] || []).sort((a, b) => a.r.title.localeCompare(b.r.title)); if (!l.length) return '';
+    return `<section><div class="chap"><h2>${LBL[kind]}</h2><span>${l.length}</span></div><p class="note" style="margin:0 0 8px">${WHY[kind]}</p><div class="list">${p['m_' + kind] ? l.map(x => `<button class="row" data-a="openRecipe" data-r="${x.r.id}"><span class="main"><div class="name" style="font-weight:500;font-size:17px">${esc(x.r.title)}</div><div class="meta">${esc(cat(x.r.category))}</div></span><span class="chev">›</span></button>`).join('') : `<button class="more" data-a="more" data-k="m_${kind}">Show ${l.length}</button>`}</div></section>`; };
+  return `<div class="page" style="--c:var(--rest)">${backBtn()}${head('Restaurant · Recipes', 'Completeness', 'Not urgent. Nothing here counts as a decision.')}
+    ${sec('photo')}${sec('procedure')}${sec('portions')}
+    ${roNote('Add photos and procedures in Brigade.')}</div>`;
+} };
 SCREENS['r-ing'] = { title: () => 'Ingredients', c: '--rest', render(p) {
   if (!need('ingredients', 'vendors')) return `<div class="page">${backBtn()}${waiting('ingredients', 'vendors')}</div>`;
   const vg = groupBy(BD.peek('vendors'), v => v.ingredient_id), q = (p.q || '').toLowerCase();
@@ -357,13 +429,23 @@ SCREENS['r-sales'] = { title: () => 'Sales', c: '--rest', render() {
   </div>`;
 } };
 SCREENS['r-inv'] = { title: () => 'Invoices', c: '--rest', render() {
-  if (!need('invwarn', 'docs')) return `<div class="page">${backBtn()}${waiting('invwarn', 'docs')}</div>`;
-  const cards = invoiceCards(), d = BD.peek('docs'), raw = BD.peek('invwarn').length;
-  const red = cards.filter(c => c.sev === 'red'), amber = cards.filter(c => c.sev === 'amber'), info = cards.filter(c => c.sev === 'neutral');
-  return `<div class="page" style="--c:var(--rest)">${backBtn()}${head('Restaurant', 'Invoices', `${raw} open warnings in Brigade, grouped into ${red.length + amber.length + info.length} invoice${red.length + amber.length + info.length === 1 ? '' : 's'}.`)}
-    ${red.length ? `<section><div class="chap"><h2>Could not be read</h2><span>${red.length}</span></div><div class="list">${red.map(decCard).join('')}</div></section>` : ''}
-    ${amber.length ? `<section><div class="chap"><h2>Delivered differently</h2><span>${amber.length}</span></div><div class="list">${amber.map(decCard).join('')}</div></section>` : ''}
-    ${info.length ? `<section><h2>For information</h2><div class="list">${info.map(decCard).join('')}</div></section>` : ''}
+  if (!need('invwarn', 'docs', 'attention')) return `<div class="page">${backBtn()}${waiting('invwarn', 'docs', 'attention')}</div>`;
+  /* ATTENTION01: where each invoice goes is decided by attention_items; the cards only describe it */
+  const d = BD.peek('docs'), raw = BD.peek('invwarn').length, labels = invoiceLabels(), cards = byId(invoiceCards(), 'docId');
+  const att = (BD.peek('attention') || []).filter(a => a.origin === 'invoice');
+  const card = a => { const c = cards[a.document_id] || {}, info = a.attention === 'info' || a.attention === 'data_quality_unknown', label = labels[a.document_id] || c.now || 'Invoice';
+    const own = info && (REASON_WHY[a.reason] || !c.title);   // no card of its own, or a reason that explains it better
+    return { ...c, sev: isAction(a) ? (a.attention === 'action_now' ? 'red' : 'amber') : info ? 'neutral' : 'amber',
+      now: own ? '' : label, title: own ? `${label} · ${REASON_LABEL[a.reason] || 'For information'}` : (c.title || label), why: own ? (REASON_WHY[a.reason] || '') : c.why }; };
+  const needs = att.filter(isAction), queue = att.filter(a => a.attention === 'backlog');
+  const excluded = att.filter(a => a.reason === 'excluded'), info = att.filter(a => !isAction(a) && a.attention !== 'backlog' && a.reason !== 'excluded');
+  const T = needs.length ? byId(triage().decisions.filter(x => x.area === 'invoice'), 'docId') : {};
+  const sec = (h, l, f) => l.length ? `<section><div class="chap"><h2>${h}</h2><span>${l.length}</span></div><div class="list">${l.map(f).map(decCard).join('')}</div></section>` : '';
+  return `<div class="page" style="--c:var(--rest)">${backBtn()}${head('Restaurant', 'Invoices', `${raw} open warnings in Brigade, on ${plural(att.length, 'invoice')}`)}
+    ${sec('Needs you', needs, a => T[a.document_id] || card(a))}
+    ${sec('Waiting in review', queue, card)}
+    ${sec('For information', info, card)}
+    ${excluded.length ? `<section><div class="list">${decCard({ sev: 'neutral', title: `${plural(excluded.length, 'Walmart receipt')} kept out of the kitchen`, why: 'Bought by a non-kitchen buyer, so excluded on purpose.' })}</div></section>` : ''}
     <section><div class="chap"><h2>Documents · last 30 days</h2><span>${d.length}</span></div><div class="list">${d.slice(0, 40).map(x => `<div class="row"><span class="main"><div class="name">${esc(vendorShort(x.vendor))} · ${esc(x.document_number || x.document_type || '')}</div><div class="meta">${x.document_date ? shortDay(x.document_date) : ''} · ${esc(x.status || '')}</div></span>${x.status === 'error' ? '<span class="dotr"></span>' : ''}</div>`).join('')}</div></section>
   </div>`;
 } };
@@ -505,7 +587,7 @@ SCREENS.recipe = { title: p => { const r = byId(BD.peek('recipes') || [])[p.id];
   const stepsHtml = steps && steps.length ? steps.map(s => `<div class="step"><span class="n">${s.step_number}</span><span>${s.title ? `<b>${esc(s.title)}</b><br>` : ''}${esc(s.instruction_en || '')}${s.timer_seconds ? `<br><span class="muted" style="font-size:15px">Timer ${Math.round(s.timer_seconds / 60)} min</span>` : ''}</span></div>`).join('')
     : r && (r.procedure_en || r.procedure) ? `<div class="pre">${esc(r.procedure_en || r.procedure)}</div>` : r === undefined || steps === undefined ? '<div class="skel">Loading…</div>' : '<div class="row"><span class="main"><div class="meta">No procedure in Brigade.</div></span></div>';
   const fc = num(base.food_cost_pct), c = num(cost);
-  const fix = p.focus && BD.peek('office') && BD.peek('invwarn') ? triage().decisions.find(d => d.rid === p.id && d.focus === p.focus) : null;
+  const fix = p.focus && BD.peek('office') && BD.peek('invwarn') && BD.peek('attention') ? triage().decisions.find(d => d.rid === p.id && d.focus === p.focus) : null;
   const hlY = fix && fix.focus === 'yield' ? 'hl' : '', hlB = fix && fix.focus === 'bom' ? 'hl' : '';
   return `<div class="page" style="--c:var(--rest)">${backBtn()}
     <div><div class="eyebrow">${esc(cat(base.category))}${base.prep_time_minutes ? ' · ' + base.prep_time_minutes + ' min' : ''}</div><h1>${esc(base.title)}</h1></div>

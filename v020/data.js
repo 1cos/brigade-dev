@@ -31,6 +31,7 @@
   const D = {
     recipes:   () => all('recipes?select=id,title,category,yield_text,menu_group,pos_name,selling_price,food_cost_pct,base_servings,base_weight_g,base_weight,weight_unit,serving_qty,serving_unit,prep_time_minutes,shelf_life_days&order=title'),
     yields:    () => all('recipe_yield?select=id,portions,portions_source,yield_qty,yield_dim,has_yield,conflict'),   // canonical yield (YIELD01)
+    attention: () => all('attention_items?select=origin,item_id,source,family,attention,reason,decision_key,recipe_id,document_id,created_at'),   // what needs Chef (ATTENTION01)
     bom:       () => all('recipe_bom?select=parent_recipe_id,component_type,item_id,sub_recipe_id,quantity,unit,notes,prep_task_id,sort_order&order=parent_recipe_id,sort_order'),
     ingredients: () => all('ingredients?select=id,name,category,base_unit,notes,active,measure_type,name_it,avg_unit_weight_g,yield_factor&order=name'),
     vendors:   () => all('ingredient_vendors?select=ingredient_id,vendor,vendor_sku,purchase_unit,pack_description,unit_price,price_per_100g,price_per_each,last_invoice_date,price_type,active,do_not_order,do_not_order_reason'),
