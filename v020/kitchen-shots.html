@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Kitchen Demo Screens</title>
+<style>
+:root{--bg:#f2f5fa;--card:#fff;--tx:#14233b;--tx2:#4a5d7a;--line:#d9e1ee;--warn:#7c2d12}
+@media (prefers-color-scheme:dark){:root{--bg:#0d1420;--card:#172131;--tx:#eef2f8;--tx2:#b3c0d4;--line:#2a3850;color-scheme:dark}}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.4 -apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-serif;padding:16px}
+.wrap{max-width:900px;margin:0 auto}
+.demo{background:var(--warn);color:#fff;font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:8px 12px;border-radius:10px}
+h1{font-size:24px;margin:14px 0 4px}h2{font-size:18px;margin:26px 0 8px}
+p{color:var(--tx2);margin:4px 0}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+figure{margin:0;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:8px}
+figure img{width:100%;max-height:640px;object-fit:cover;object-position:top;border-radius:10px;display:block}
+figcaption{font-size:13px;font-weight:700;margin:6px 4px 2px}
+a{color:#1d4ed8;font-weight:700}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="demo">Demo · dati fittizi · utenti simulati · non collegata a Brigade</div>
+  <h1>Brigade V020 — cuoco e Chef a confronto</h1>
+  <p>Prova interattiva: <a href="kitchen-demo.html">kitchen-demo.html</a> (tocca un nome, qualsiasi PIN di 4 cifre). Questa simulazione mostra l'esperienza, non dimostra la sicurezza dei permessi.</p>
+
+  <h2>1 · Entrata</h2>
+  <div class="pair">
+    <figure><img src="kitchen-shots/01-login.jpg" alt="Login"><figcaption>Chi lavora? Nome + PIN</figcaption></figure>
+    <figure><img src="kitchen-shots/05-cook-report.jpg" alt="Segnala"><figcaption>Cuoco · Segnala un problema</figcaption></figure>
+  </div>
+
+  <h2>2 · La prima schermata</h2>
+  <div class="pair">
+    <figure><img src="kitchen-shots/02-cook-today.jpg" alt="Cuoco oggi"><figcaption>Cuoco (Pasta Station) · Il mio turno</figcaption></figure>
+    <figure><img src="kitchen-shots/06-max-today.jpg" alt="Max oggi"><figcaption>Max · Today con la segnalazione del team</figcaption></figure>
+  </div>
+
+  <h2>3 · La stessa ricetta</h2>
+  <div class="pair">
+    <figure><img src="kitchen-shots/04-cook-recipe.jpg" alt="Ricetta cuoco"><figcaption>Cuoco · quantità e metodo, niente prezzi</figcaption></figure>
+    <figure><img src="kitchen-shots/07-max-recipe.jpg" alt="Ricetta Max"><figcaption>Max · prezzo, food cost, costo ricetta</figcaption></figure>
+  </div>
+
+  <h2>4 · Lavoro e catering</h2>
+  <div class="pair">
+    <figure><img src="kitchen-shots/03-cook-prep.jpg" alt="Prep"><figcaption>Cuoco · prep: Start / Done</figcaption></figure>
+    <figure><img src="kitchen-shots/08-cook-catering.jpg" alt="Catering"><figcaption>Cuoco · catering: solo cosa cucinare</figcaption></figure>
+  </div>
+</div>
+</body>
+</html>
