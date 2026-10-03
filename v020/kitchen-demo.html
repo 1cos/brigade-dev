@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f2f5fa">
+<title>Brigade V020 Kitchen Demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&display=swap">
+<link rel="stylesheet" href="styles.css">
+<style>
+  .demo{background:#7c2d12;color:#fff;font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:6px 16px;display:flex;justify-content:space-between;gap:8px;align-items:center}
+  .demo button{color:#fff;text-decoration:underline;font-weight:800;font-size:12px;letter-spacing:.06em}
+  .who{display:flex;align-items:center;gap:10px;padding:8px 16px 10px}
+  .avatar{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;font-weight:800;color:#fff;background:var(--rest);flex:0 0 auto}
+  .who .n{font-weight:700}.who .r{font-size:13px;color:var(--tx2)}
+  .who .sw{margin-left:auto;font-size:14px;font-weight:700;color:var(--today);min-height:44px;display:flex;align-items:center}
+  .pin{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .pin button{height:64px;border-radius:16px;background:var(--surf);border:1px solid var(--line);font-size:26px;font-weight:700;text-align:center}
+  .dots{display:flex;gap:12px;justify-content:center;margin:6px 0 4px}.dots i{width:14px;height:14px;border-radius:50%;border:2px solid var(--tx2)}.dots i.on{background:var(--tx2)}
+  .people{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .people button{background:var(--surf);border:1px solid var(--line);border-radius:16px;padding:14px;display:flex;gap:10px;align-items:center;min-height:64px}
+  .act{display:flex;gap:10px}.act button{flex:1;height:52px;border-radius:14px;font-weight:700;text-align:center}
+  .primary{background:var(--rest);color:#fff}.ghost{background:var(--surf2);color:var(--tx)}
+  .reasons{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .reasons button{min-height:56px;border-radius:14px;background:var(--surf);border:1.5px solid var(--line);padding:10px;font-weight:650;text-align:center}
+  .reasons button.on{border-color:var(--warn);background:var(--warn-bg)}
+  textarea{width:100%;min-height:90px;border-radius:14px;border:1px solid var(--line);padding:12px;font:inherit;background:var(--surf);color:var(--tx)}
+  .lock{font-size:14px;color:var(--txm)}
+  #wrap{max-width:640px;margin:0 auto}
+  .k-tabs{display:flex;gap:8px;overflow-x:auto;padding:0 16px 10px}
+  .k-tab{flex:0 0 auto;height:40px;padding:0 12px;border-radius:12px;background:var(--surf);border:1.5px solid var(--line);font-weight:650;font-size:15px;display:flex;align-items:center;gap:6px}
+  .k-tab.on{border-color:var(--rest)}
+  .bottom{position:sticky;bottom:0;background:var(--surf);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(4,1fr);padding:6px 8px calc(6px + env(safe-area-inset-bottom,0px))}
+  .bottom button{display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 0;font-size:13px;font-weight:700;color:var(--txm);border-radius:12px}
+  .bottom button.on{color:var(--c);background:var(--surf2)}
+  .bottom svg{width:26px;height:26px}
+  .toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:var(--tx);color:var(--bg);padding:12px 18px;border-radius:14px;font-weight:650;z-index:50}
+</style>
+</head>
+<body>
+<div id="wrap">
+  <div class="demo"><span>Demo · fictitious data · simulated users · not connected to Brigade</span><button id="reset">Reset</button></div>
+  <div id="app"></div>
+</div>
+<script src="kitchen-demo.js"></script>
+</body>
+</html>
