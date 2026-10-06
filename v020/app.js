@@ -85,6 +85,20 @@ const roNote = what => `<p class="note">Read-only version. ${what} <a class="lnk
 function suggMap() { const s = BD.peek('sugg'); return s ? byId(s.rows, 'prep_task_id') : {}; }
 function eventsFrom(d0, d1) { return (BD.peek('events') || []).filter(e => e.event_date >= d0 && e.event_date <= d1); }
 function evRecipes(e) { return Array.isArray(e.event_recipes) ? e.event_recipes : []; }
+/* TS08: the menu to cook is the Tripleseat document. event_recipes / notes are an old Brigade copy nobody updates. */
+function tsMenu(e) { if (!e.tripleseat_id) return null; need('tsmenus'); const m = BD.peek('tsmenus'); return m ? (m[String(e.tripleseat_id)] || null) : undefined; }
+function tsMenuHtml(m) {
+  let sec = null;
+  const rows = m.lines.map(l => {
+    const h = l.section && l.section !== sec ? `<div class="row"><span class="main"><div class="meta"><b>${esc(l.section)}</b></div></span></div>` : '';
+    sec = l.section;
+    const q = l.quantity != null && l.quantity !== '' ? `<span class="right">×${esc(l.quantity)}</span>` : '';
+    return h + `<div class="row"><span class="main"><div class="name">${esc(l.name)}</div>${l.details ? `<div class="meta">${esc(l.details)}</div>` : ''}</span>${q}</div>`;
+  }).join('');
+  const at = m.received_at ? new Date(m.received_at).toLocaleString('en-US', { timeZone: 'America/Chicago', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : '—';
+  return `<section><h2>Menu from Tripleseat</h2><div class="list">${rows || '<div class="row"><span class="main"><div class="meta">The Tripleseat document has no kitchen lines yet.</div></span></div>'}</div>
+    <p class="note" style="font-size:14px">Updated by itself from Tripleseat · version ${esc(m.version)} · ${esc(at)}. ×N = quantity on that line, not the guest count.</p></section>`;
+}
 function cateringFor(recipeId, d0, d1) { return eventsFrom(d0, d1).filter(e => evRecipes(e).some(r => r.recipe_id === recipeId)); }
 /* ============ TRIAGE: Brigade signals → human decisions ============
    Every guardian alert is re-checked against today's data. Out-of-date alerts are not shown as decisions.
@@ -308,8 +322,8 @@ SCREENS.today = { title: () => 'Today', c: '--today', render() {
   </div>`;
 } };
 function evRow(e) {
-  const recs = evRecipes(e).length;
-  return `<button class="row" data-a="openEvent" data-id="${e.id}"><span class="dotc"></span><span class="main"><div class="name">${esc(e.name)}</div><div class="meta">${shortDay(e.event_date)}${e.event_time ? ' · ' + esc(String(e.event_time).slice(0, 5)) : ''}${e.guest_count ? ' · ' + e.guest_count + ' guests' : ''}${recs ? ' · ' + plural(recs, 'dish') : ''}</div></span><span class="right ${/prospect|tentative/.test(e.status || '') ? 'wtx' : 'muted'}">${esc(e.status || '')}</span><span class="chev">›</span></button>`;
+  const m = tsMenu(e), recs = m ? 0 : (e.tripleseat_id ? 0 : evRecipes(e).length);
+  return `<button class="row" data-a="openEvent" data-id="${e.id}"><span class="dotc"></span><span class="main"><div class="name">${esc(e.name)}</div><div class="meta">${shortDay(e.event_date)}${e.event_time ? ' · ' + esc(String(e.event_time).slice(0, 5)) : ''}${e.guest_count ? ' · ' + e.guest_count + ' guests' : ''}${m ? ' · Tripleseat menu, ' + plural(m.lines.length, 'line') : recs ? ' · ' + plural(recs, 'dish') : ''}</div></span><span class="right ${/prospect|tentative/.test(e.status || '') ? 'wtx' : 'muted'}">${esc(e.status || '')}</span><span class="chev">›</span></button>`;
 }
 
 /* ============ DECISIONS (one queue; everything else links here) ============ */
@@ -537,8 +551,12 @@ SCREENS.event = { title: p => { const e = (BD.peek('events') || []).find(x => x.
   if (!e) return `<div class="page">${backBtn()}<p class="note">This event is no longer in the next or last 14 days.</p></div>`;
   const seg = p.seg || 'plan', dishes = evRecipes(e);
   let body = '';
-  if (seg === 'plan') body = `${dishes.length ? `<div class="list">${dishes.map(r => dishRow(r, e)).join('')}</div>` : '<p class="note">No dishes linked to this event in Brigade yet.</p>'}
-    ${e.notes ? `<section><h2>Notes from Tripleseat</h2><div class="list"><div class="pre">${esc(e.notes)}</div></div></section>` : ''}`;
+  const m = tsMenu(e);
+  if (seg === 'plan' && e.tripleseat_id) body = `${m ? tsMenuHtml(m) : m === undefined ? (BD.error('tsmenus') ? '<p class="note">Tripleseat menu not loaded. <button class="lnk" data-a="refresh">Try again</button></p>' : '<div class="skel">Loading the Tripleseat menu…</div>') : '<p class="note">No menu document in Tripleseat for this event yet.</p>'}
+    ${dishes.length ? `<section><h2>Old Brigade copy (not updated)</h2><p class="note" style="font-size:14px">Imported earlier, never updated. Cook from the Tripleseat menu above.</p><div class="list">${dishes.map(r => dishRow(r, e)).join('')}</div></section>` : ''}
+    ${e.notes ? `<section><h2>Old Brigade notes (not updated)</h2><div class="list"><div class="pre">${esc(e.notes)}</div></div></section>` : ''}`;
+  else if (seg === 'plan') body = `${dishes.length ? `<div class="list">${dishes.map(r => dishRow(r, e)).join('')}</div>` : '<p class="note">No dishes linked to this event in Brigade yet.</p>'}
+    ${e.notes ? `<section><h2>Notes</h2><div class="list"><div class="pre">${esc(e.notes)}</div></div></section>` : ''}`;
   else if (seg === 'production') {
     const prep = BD.peek('prep'), rec = byId(BD.peek('recipes'));
     body = dishes.filter(r => r.recipe_id).map(r => {
@@ -559,7 +577,7 @@ SCREENS.event = { title: p => { const e = (BD.peek('events') || []).find(x => x.
   }
   return `<div class="page" style="--c:var(--cat)">${backBtn()}
     <div><div class="eyebrow">${dayName(e.event_date)}${e.event_time ? ' · ' + esc(String(e.event_time).slice(0, 5)) : ''}</div><h1>${esc(e.name)}</h1>
-      <div class="sub">${[e.guest_count ? e.guest_count + ' guests' : '', e.room_name || e.location, e.service_style || e.menu_type].filter(Boolean).map(esc).join(' · ')}</div>
+      <div class="sub">${[e.guest_count ? e.guest_count + (e.tripleseat_id ? ' event guests (Tripleseat)' : ' guests') : '', e.room_name || e.location, e.service_style || e.menu_type].filter(Boolean).map(esc).join(' · ')}</div>
       <div class="meta muted" style="margin-top:6px;font-size:15px">${e.tripleseat_id ? 'Tripleseat #' + esc(e.tripleseat_id) : 'Entered in Brigade'}${e.last_synced_at ? ' · synced ' + shortDay(dCDT(e.last_synced_at)) : ''} · <span class="${/prospect|tentative/.test(e.status || '') ? 'wtx' : ''}">${esc(e.status || '')}</span></div></div>
     <div class="seg">${[['plan', 'Plan'], ['production', 'Production'], ['shopping', 'Shopping'], ['cost', 'Cost']].map(([k, l]) => `<button class="${seg === k ? 'on' : ''}" data-a="seg" data-k="${k}">${l}</button>`).join('')}</div>
     ${body}</div>`;

@@ -47,6 +47,8 @@
       return { date, rows: list };
     },
     events:    () => all('events?select=id,name,event_date,event_time,guest_count,menu_type,location,room_name,status,service_style,notes,event_recipes,tripleseat_id,last_synced_at&event_date=gte.' + addDays(today(), -14) + '&order=event_date,event_time'),
+    // TS08: current Tripleseat menu per event (latest document version; kitchen lines only, no prices)
+    tsmenus:   () => get('rpc/ts_event_menus_kitchen?p_from=' + addDays(today(), -14)),
     office:    () => get('office_items?select=id,created_at,source,from_user,title,summary,body,status,severity,issue_type,chef_action,last_seen_at,recipe_id,recipe_name,ingredient_id,ingredient_name,vendor_name,price_change_pct,suggested_action,station&status=eq.open&is_demo=not.is.true&order=created_at.desc&limit=600'),
     invwarn:   async () => {                       // open invoice warnings + the status of their document (imported / pending / error / ignored)
       const w = await all('invoice_warnings?select=id,document_id,vendor,document_date,document_number,code,item_description,message,question,status,severity,created_at&status=neq.resolved&order=document_date.desc');
