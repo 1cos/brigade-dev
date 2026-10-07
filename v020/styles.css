@@ -247,3 +247,11 @@ h2{font-family:var(--fd);font-size:15px;margin:0 0 10px;font-weight:800;letter-s
 .fixbox.red{border-color:var(--red)}
 .fixbox .h{font-weight:800;font-size:18px}
 .hl{outline:3px solid var(--warn);outline-offset:6px;border-radius:14px}
+
+/* CAT02 link flow (simulation) */
+.simtag{display:inline-block;font-size:11px;font-weight:800;letter-spacing:.06em;padding:2px 7px;border-radius:7px;background:var(--warn-bg,#fff4e5);color:var(--warn)}
+.lkq{display:flex;gap:8px;margin-top:8px}.lkq .lk-qty{flex:1;min-width:0}.lkq .lk-unit{width:auto;flex:0 0 auto}
+.lk-qty.bad{border-color:var(--warn)}
+.lkact{display:flex;gap:10px;margin-top:16px}.lkact button{flex:1;height:52px;border-radius:14px;font-weight:700;text-align:center}
+.lkact .primary{background:var(--cat,#7c3aed);color:#fff}.lkact .ghost{background:var(--surf2);color:var(--tx)}
+.row[disabled]{opacity:.55}

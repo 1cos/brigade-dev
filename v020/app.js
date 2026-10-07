@@ -114,10 +114,45 @@ function tsGuests(e, k) {
   return `<p class="note" style="font-size:14px">${e.guest_count ? `<b>${e.guest_count}</b> event guests` : 'Guests not set'}${pk.length ? ' · package line ' + pk.join(', ') : ''}. Neither is a portion count for a single dish.</p>`;
 }
 function dishLinkRow(d, e) {
-  const c = CL.candidates(d.name, BD.peek('recipes') || []);
+  const c = CL.candidates(d.name, BD.peek('recipes') || []), sim = simGet(e.id, d.name);
+  const btn = `<button class="lnk" data-a="linkDish" data-ev="${e.id}" data-dish="${esc(d.name)}">${sim.length ? 'Change link' : 'Link recipe'} ›</button>`;
+  if (sim.length) return `<div class="row"><span class="main"><div class="name">${esc(d.name)}</div>
+    <div class="meta"><span class="simtag">SIMULATION</span> ${simText(sim)}</div><div class="meta">${btn}</div></span></div>`;
   return `<div class="row"><span class="main"><div class="name">${esc(d.name)}</div>
     <div class="meta"><span class="wtx">Recipe to link</span> · <span class="wtx">quantity to confirm</span>${d.quantity != null ? ' · menu line ×' + esc(d.quantity) : ''}</div>
+    <div class="meta">${btn}</div>
     <div class="meta">${c.length ? 'Possible Brigade recipes, by name (to confirm): ' + c.map(x => `<button class="lnk" data-a="openRecipe" data-r="${x.id}" data-from="event:${e.id}">${esc(x.title)}</button>`).join(' · ') : 'No Brigade recipe with this name: to create, or to link by hand.'}</div></span></div>`;
+}
+/* CAT02 — link flow, SIMULATION ONLY: saved in this browser (localStorage), never in Brigade. */
+const SIM_KEY = 'v020-cat02-sim';
+const SIM_UNITS = [['portions', 'portions'], ['kg', 'kg'], ['pieces', 'pieces'], ['trays', 'trays']];
+function simAll() { try { return JSON.parse(localStorage.getItem(SIM_KEY)) || {}; } catch (x) { return {}; } }
+function simGet(evId, dish) { return ((simAll()[evId] || {})[dish]) || []; }
+function simSet(evId, dish, items) { const a = simAll(); a[evId] = a[evId] || {}; if (items.length) a[evId][dish] = items; else delete a[evId][dish]; try { localStorage.setItem(SIM_KEY, JSON.stringify(a)); } catch (x) {} }
+const simText = it => it.map(x => `${esc(x.title)} · ${fmt(x.qty)} ${esc(x.unit)}`).join(' + ');
+let LINK = null;                                    // { ev, dish, items, q }
+const DRAFT = {};
+function linkSheet() {
+  const L = LINK, rec = BD.peek('recipes') || [];
+  const q = (L.q || '').trim().toLowerCase();
+  const res = q.length >= 2 ? rec.filter(r => String(r.title).toLowerCase().includes(q)).slice(0, 12).map(r => ({ id: r.id, title: r.title, menu_group: r.menu_group })) : CL.candidates(L.dish, rec, 5);
+  const picked = new Set(L.items.map(x => x.recipe_id));
+  sheet(`<div class="page"><div class="eyebrow">Link a dish · simulation</div><h1 style="font-size:24px">${esc(L.dish)}</h1>
+    <p class="note" style="font-size:14px"><b>Simulation.</b> Nothing is saved in Brigade: the link stays on this device only, to try the flow.</p>
+    <section><h2>Recipes for this dish</h2>${L.items.length ? `<div class="list">${L.items.map((x, i) => `<div class="row"><span class="main"><div class="name">${esc(x.title)}</div>
+        <div class="lkq"><input class="search lk-qty" data-i="${i}" type="number" inputmode="decimal" min="0" step="any" placeholder="How much" value="${x.qty ?? ''}">
+        <select class="search lk-unit" data-i="${i}">${SIM_UNITS.map(([k, l]) => `<option value="${k}" ${x.unit === k ? 'selected' : ''}>${l}</option>`).join('')}</select></div>
+        <div class="meta"><button class="lnk" data-a="openRecipe" data-r="${x.recipe_id}" data-from="event:${L.ev}">Open recipe to check ›</button> · <button class="lnk" data-a="linkDrop" data-i="${i}">Remove</button></div></span></div>`).join('')}</div>`
+      : '<p class="note" style="font-size:14px">Pick one or more recipes below. A board or a combo can have several components, each with its own quantity.</p>'}</section>
+    <section><h2>${q.length >= 2 ? 'Recipes found' : 'Suggested by name (to confirm)'}</h2>
+      <input id="linkq" class="search" type="search" placeholder="Search a Brigade recipe" value="${esc(L.q || '')}" autocomplete="off">
+      <div class="list" style="margin-top:10px">${res.map(r => `<button class="row" data-a="linkPick" data-r="${r.id}" ${picked.has(r.id) ? 'disabled' : ''}><span class="main"><div class="name">${esc(r.title)}</div>${r.menu_group ? `<div class="meta">${esc(r.menu_group)}</div>` : ''}</span><span class="right ${picked.has(r.id) ? 'muted' : 'wtx'}">${picked.has(r.id) ? 'added' : '+ add'}</span></button>`).join('') || '<div class="row"><span class="main"><div class="meta">No recipe found.</div></span></div>'}</div></section>
+    <p class="note" style="font-size:14px">Guests are not portions: write how much of this dish the kitchen makes.</p>
+    <div class="lkact"><button class="ghost" data-a="linkCancel">Cancel</button><button class="primary" data-a="linkSave">Save link (simulation)</button></div></div>`);
+  const i = $('linkq'); let t;
+  i.addEventListener('input', () => { clearTimeout(t); t = setTimeout(() => { LINK.q = i.value; linkSheet(); const n = $('linkq'); n.focus(); n.setSelectionRange(n.value.length, n.value.length); }, 220); });
+  $('sheet').querySelectorAll('.lk-qty').forEach(el => el.addEventListener('input', () => { LINK.items[+el.dataset.i].qty = el.value; el.classList.remove('bad'); }));
+  $('sheet').querySelectorAll('.lk-unit').forEach(el => el.addEventListener('change', () => { LINK.items[+el.dataset.i].unit = el.value; }));
 }
 function tsDecide(k) {
   return `<section><h2>What Chef needs to decide</h2><div class="list">
@@ -553,7 +588,7 @@ SCREENS['c-shop'] = { title: () => 'Shopping', c: '--cat', render() {
 } };
 function dishRow(r, e) {
   const fc = num(r.food_cost);
-  const inner = `<span class="main"><div class="name">${esc(r.recipe_title || r.name || 'Dish')}</div><div class="meta">${r.portions ? r.portions + ' portions' : ''}${fc !== null ? ' · food cost ' + money(fc) : ''}${r.note ? ' · ' + esc(cut(r.note, 60)) : ''}</div></span>`;
+  const inner = `<span class="main"><div class="name">${esc(r.recipe_title || r.name || 'Dish')}</div><div class="meta">${r.portions ? r.portions + ' pax (Brigade editor)' : ''}${fc !== null ? ' · menu food cost ' + fmt(fc) + '%' : ''}${r.note ? ' · ' + esc(cut(r.note, 60)) : ''}</div></span>`;
   return r.recipe_id ? `<button class="row" data-a="openRecipe" data-r="${r.recipe_id}" data-from="event:${e.id}">${inner}<span class="chev">›</span></button>` : `<div class="row">${inner}<span class="right wtx">Not linked</span></div>`;
 }
 function components(recipeId) { return (BD.peek('bom') || []).filter(b => b.parent_recipe_id === recipeId); }
@@ -590,9 +625,12 @@ SCREENS.event = { title: p => { const e = (BD.peek('events') || []).find(x => x.
     const k = tsKitchen(e);
     if (!k) body = k === undefined ? tsWait(e) : '<p class="note">No menu document in Tripleseat for this event yet.</p>';
     else if (!k.dishes.length) body = '<p class="note">The Tripleseat menu has no dishes for the kitchen yet.</p>';
-    else if (seg === 'production') body = `<p class="note" style="font-size:14px"><b>Not ready to plan.</b> Each dish needs its Brigade recipe and a quantity. Then preps and components appear here.</p>
-      ${tsGuests(e, k)}<section><h2>Dishes from Tripleseat · 0 of ${k.dishes.length} ready</h2><div class="list">${k.dishes.map(d => dishLinkRow(d, e)).join('')}</div></section>
-      ${k.beverages.length ? `<p class="note" style="font-size:14px">${plural(k.beverages.length, 'drink line')} left out: not kitchen work.</p>` : ''}${tsDecide(k)}`;
+    else if (seg === 'production') { const nSim = k.dishes.filter(d => simGet(e.id, d.name).length).length, br = evRecipes(e).filter(r => r.recipe_id);
+      body = `<p class="note" style="font-size:14px"><b>Not ready to plan.</b> Each dish needs its Brigade recipe and a quantity. Then preps and components appear here.</p>
+      ${br.length ? `<section><h2>Linked in Brigade (Calendar › Edit)</h2><div class="list">${br.map(r => dishRow(r, e)).join('')}</div><p class="note" style="font-size:14px">Saved from Brigade's event editor. Its "Pax" fills in the guest count by itself: check it is the real quantity.</p></section>` : ''}
+      ${tsGuests(e, k)}<section><h2>Dishes from Tripleseat · ${nSim ? `${nSim} linked in simulation, ` : ''}0 of ${k.dishes.length} saved in Brigade</h2><div class="list">${k.dishes.map(d => dishLinkRow(d, e)).join('')}</div></section>
+      ${k.beverages.length ? `<p class="note" style="font-size:14px">${plural(k.beverages.length, 'drink line')} left out: not kitchen work.</p>` : ''}
+      ${nSim ? `<section><h2>Link summary · simulation</h2><div class="list">${k.dishes.map(d => { const x = simGet(e.id, d.name); return `<div class="row"><span class="main"><div class="name">${esc(d.name)}</div><div class="meta">${x.length ? simText(x) : '<span class="wtx">not linked</span>'}</div></span></div>`; }).join('')}</div><p class="note" style="font-size:14px">Only on this device. Saving in Brigade needs Chef's GO.</p></section>` : ''}${tsDecide(k)}`; }
     else if (seg === 'shopping') body = `<p class="note"><b>Shopping list not calculable yet.</b> Ingredients and amounts come from linked recipes and confirmed quantities: 0 of ${plural(k.dishes.length, 'dish')} ready.</p>
       <section><h2>Waiting for</h2><div class="list">${k.dishes.map(d => `<div class="row"><span class="main"><div class="name">${esc(d.name)}</div></span><span class="right wtx">to link</span></div>`).join('')}</div></section>
       <p class="note" style="font-size:14px">When a dish is linked, its ingredients will show with three states: amount needed, amount unknown (recipe incomplete), and stock only where Brigade really knows it.</p>`;
@@ -820,6 +858,16 @@ const A = {
   openIng(el) { openTab('ing', el.dataset.id, { s: 'ing', p: { id: el.dataset.id } }); },
   openPrep(el) { openTab('prep', el.dataset.id, { s: 'prep', p: { id: +el.dataset.id } }); },
   seg(el) { cur().p.seg = el.dataset.k; render(true); },
+  linkDish(el) { const k = el.dataset.ev + '|' + el.dataset.dish; LINK = { ev: el.dataset.ev, dish: el.dataset.dish, items: DRAFT[k] || JSON.parse(JSON.stringify(simGet(el.dataset.ev, el.dataset.dish))), q: '' }; DRAFT[k] = LINK.items; linkSheet(); },
+  linkPick(el) { const r = byId(BD.peek('recipes'))[el.dataset.r]; if (r && !LINK.items.some(x => x.recipe_id === r.id)) LINK.items.push({ recipe_id: r.id, title: r.title, qty: '', unit: 'portions' }); LINK.q = ''; linkSheet(); },
+  linkDrop(el) { LINK.items.splice(+el.dataset.i, 1); linkSheet(); },
+  linkCancel() { delete DRAFT[LINK.ev + '|' + LINK.dish]; LINK = null; closeSheet(); },
+  linkSave() {
+    const bad = LINK.items.filter(x => !(num(x.qty) > 0));
+    if (bad.length) { const n = $('sheet').querySelector('.lk-qty[data-i="' + LINK.items.indexOf(bad[0]) + '"]'); if (n) { n.focus(); n.classList.add('bad'); } return; }
+    simSet(LINK.ev, LINK.dish, LINK.items.map(x => ({ recipe_id: x.recipe_id, title: x.title, qty: num(x.qty), unit: x.unit })));
+    delete DRAFT[LINK.ev + '|' + LINK.dish]; LINK = null; closeSheet(); render(true);
+  },
   scale(el) { cur().p.x = +el.dataset.x; render(true); },
   more(el) { cur().p[el.dataset.k] = 1; render(true); },
   refresh() { Object.keys(BD.store).forEach(n => BD.load(n, true).catch(() => {})); Object.keys(DET).forEach(k => delete DET[k]); renderLive(); },
