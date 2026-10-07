@@ -83,6 +83,9 @@ const roNote = what => `<p class="note">Read-only version. ${what} <a class="lnk
 
 /* ============ SHARED DERIVATIONS ============ */
 function suggMap() { const s = BD.peek('sugg'); return s ? byId(s.rows, 'prep_task_id') : {}; }
+/* the bot labels its rows with the service day just closed (run at ~02:00 CT for the day ahead): show when the plan was made */
+function planMadeAt() { const s = BD.peek('sugg'); return s && s.rows.length ? s.rows.reduce((m, r) => r.generated_at > m ? r.generated_at : m, '') : ''; }
+function planMade() { const g = planMadeAt(); return g ? `made ${shortDay(dCDT(g))} ${tFmt(g)}` : 'no plan'; }
 function eventsFrom(d0, d1) { return (BD.peek('events') || []).filter(e => e.event_date >= d0 && e.event_date <= d1); }
 function evRecipes(e) { return Array.isArray(e.event_recipes) ? e.event_recipes : []; }
 /* TS08: the menu to cook is the Tripleseat document. event_recipes / notes are an old Brigade copy nobody updates. */
@@ -100,6 +103,28 @@ function tsMenuHtml(m) {
     <p class="note" style="font-size:14px">Updated by itself from Tripleseat · version ${esc(m.version)} · ${esc(at)}. ×N = quantity on that line, not the guest count.</p></section>`;
 }
 function cateringFor(recipeId, d0, d1) { return eventsFrom(d0, d1).filter(e => evRecipes(e).some(r => r.recipe_id === recipeId)); }
+/* CAT01: for a Tripleseat event the dishes come from the Tripleseat menu. Brigade has no link from a menu line to a recipe
+   and no confirmed quantity per dish, so Production / Shopping / Cost show what is missing instead of an empty page.
+   Candidates are suggestions from the name only: never a link, never a portion count. */
+const CL = window.CateringLink;
+function tsKitchen(e) { const m = tsMenu(e); return m ? CL.kitchenDishes(m) : m; }
+function tsWait(e) { return BD.error('tsmenus') ? '<p class="note">Tripleseat menu not loaded. <button class="lnk" data-a="refresh">Try again</button></p>' : '<div class="skel">Loading the Tripleseat menu…</div>'; }
+function tsGuests(e, k) {
+  const pk = k.packages.filter(p => p.quantity != null && p.quantity !== '').map(p => `“${esc(cut(p.name, 40))}” ×${esc(p.quantity)}`);
+  return `<p class="note" style="font-size:14px">${e.guest_count ? `<b>${e.guest_count}</b> event guests` : 'Guests not set'}${pk.length ? ' · package line ' + pk.join(', ') : ''}. Neither is a portion count for a single dish.</p>`;
+}
+function dishLinkRow(d, e) {
+  const c = CL.candidates(d.name, BD.peek('recipes') || []);
+  return `<div class="row"><span class="main"><div class="name">${esc(d.name)}</div>
+    <div class="meta"><span class="wtx">Recipe to link</span> · <span class="wtx">quantity to confirm</span>${d.quantity != null ? ' · menu line ×' + esc(d.quantity) : ''}</div>
+    <div class="meta">${c.length ? 'Possible Brigade recipes, by name (to confirm): ' + c.map(x => `<button class="lnk" data-a="openRecipe" data-r="${x.id}" data-from="event:${e.id}">${esc(x.title)}</button>`).join(' · ') : 'No Brigade recipe with this name: to create, or to link by hand.'}</div></span></div>`;
+}
+function tsDecide(k) {
+  return `<section><h2>What Chef needs to decide</h2><div class="list">
+    <div class="row"><span class="main"><div class="name">Which Brigade recipe is each dish</div><div class="meta">${plural(k.dishes.length, 'dish')} on the menu, 0 linked. Brigade has no place yet that stores this link for an event.</div></span></div>
+    <div class="row"><span class="main"><div class="name">How much of each dish</div><div class="meta">Portions or kg per dish. Guests are not portions: not everyone takes every dish.</div></span></div>
+  </div></section>`;
+}
 /* ============ TRIAGE: Brigade signals → human decisions ============
    Every guardian alert is re-checked against today's data. Out-of-date alerts are not shown as decisions.
    Severity: red = real block / unreadable import / essential data missing · amber = review · neutral = info · green = done */
@@ -291,8 +316,9 @@ SCREENS.today = { title: () => 'Today', c: '--today', render() {
   const chap = st => rows.filter(x => x.r.status === st);
   const doFirst = chap('do_first'), today = chap('prep_today'), count = chap('count_first'), defer = chap('defer_to_tomorrow');
   const open = [...doFirst, ...today].filter(x => !x.p.done);
-  const brief = sugg.date !== t
-    ? `The prep bot has not run today. The plan below is from <b>${shortDay(sugg.date || t)}</b>.`
+  const madeDay = dCDT(planMadeAt());
+  const brief = madeDay !== t
+    ? `No prep plan made today yet. The plan below was ${esc(planMade())}.`
     : open.length ? `Start with <b>${esc(open[0].p.name)}</b>. ${plural(open.length, 'prep')} to make today.` : 'Nothing urgent to make right now.';
   const needs = triage().decisions.filter(x => x.today), reds = needs.filter(x => x.sev === 'red').length;
   const evs = eventsFrom(t, tom);
@@ -383,7 +409,7 @@ SCREENS['r-prep'] = { title: () => 'Prep', c: '--rest', render(p) {
   const sm = suggMap(), cl = byId(BD.peek('prepclass'), 'prep_task_id'), q = (p.q || '').toLowerCase();
   const list = BD.peek('prep').filter(x => !q || x.name.toLowerCase().includes(q));
   const g = groupBy(list, x => (cl[x.id] && cl[x.id].canonical_station) || x.category || 'Other');
-  return `<div class="page" style="--c:var(--rest)">${backBtn()}${head('Restaurant', 'Prep', `${BD.peek('prep').length} active prep · plan of ${esc(BD.peek('sugg').date || '—')}`)}
+  return `<div class="page" style="--c:var(--rest)">${backBtn()}${head('Restaurant', 'Prep', `${BD.peek('prep').length} active prep · plan ${esc(planMade())}`)}
     <input id="q" class="search" type="search" placeholder="Find a prep" value="${esc(p.q || '')}" autocomplete="off">
     ${Object.keys(g).sort().map(k => `<section><h2>${esc(k)}</h2><div class="list">${g[k].map(x => { const r = sm[x.id]; const hot = r && ['do_first', 'prep_today', 'count_first'].includes(r.status);
       return `<button class="row ${x.done ? 'done' : ''}" data-a="openPrep" data-id="${x.id}"><span class="main"><div class="name">${esc(x.name)}</div><div class="meta">${x.current_stock != null ? 'Stock ' + fmt(x.current_stock) + ' ' + esc(x.unit || '') : 'No stock recorded'}</div></span><span class="right ${hot ? 'wtx' : 'muted'}">${r ? SUGG_LABEL[r.status] || r.status : ''}${hot && r.planned_output != null ? ' · ' + fmt(r.planned_output) + ' ' + esc(r.output_unit || '') : ''}</span></button>`; }).join('')}</div></section>`).join('')}
@@ -499,11 +525,12 @@ SCREENS['r-chat'] = { title: () => 'Chat', c: '--rest', render() {
 SCREENS.catering = { title: () => 'Catering', c: '--cat', render() {
   if (!need('events', 'recipes')) return `<div class="page">${head("Zeno's Catering", 'Catering')}${waiting('events')}</div>`;
   const t = BD.today(), ev = BD.peek('events'), up = ev.filter(e => e.event_date >= t), past = ev.filter(e => e.event_date < t).reverse();
-  const recs = new Set(up.flatMap(e => evRecipes(e).map(r => r.recipe_id)).filter(Boolean));
+  const recs = new Set(up.filter(e => !e.tripleseat_id).flatMap(e => evRecipes(e).map(r => r.recipe_id)).filter(Boolean));
+  const tsd = up.map(tsKitchen).filter(Boolean).reduce((n, k) => n + k.dishes.length, 0);
   return `<div class="page" style="--c:var(--cat)">${head("Zeno's Catering", 'Catering')}
     <section><h2>Coming up</h2><div class="list">${up.map(evRow).join('') || '<div class="row"><span class="main"><div class="meta">No upcoming events in Brigade.</div></span></div>'}</div></section>
     <div class="grid">
-      <button class="big" data-a="go" data-s="c-prod">${ICON.fire}<div><div class="lbl">Production</div><div class="val"><b>${recs.size}</b> dishes ahead</div></div></button>
+      <button class="big" data-a="go" data-s="c-prod">${ICON.fire}<div><div class="lbl">Production</div><div class="val"><b>${recs.size + tsd}</b> dishes ahead${tsd ? ` · <span class="wtx">${tsd} to link</span>` : ''}</div></div></button>
       <button class="big" data-a="go" data-s="c-shop">${ICON.cart}<div><div class="lbl">Shopping</div><div class="val">Ingredients by event</div></div></button>
     </div>
     ${past.length ? `<section><h2>Last 14 days</h2><div class="list">${past.map(evRow).join('')}</div></section>` : ''}
@@ -514,7 +541,9 @@ SCREENS['c-prod'] = { title: () => 'Production', c: '--cat', render() {
   if (!need('events', 'recipes')) return `<div class="page">${backBtn()}${waiting('events')}</div>`;
   const t = BD.today(), up = BD.peek('events').filter(e => e.event_date >= t);
   return `<div class="page" style="--c:var(--cat)">${backBtn()}${head('Catering', 'Production')}
-    ${up.map(e => `<section><h2>${shortDay(e.event_date)} · ${esc(e.name)}</h2><div class="list">${evRecipes(e).map(r => dishRow(r, e)).join('') || '<div class="row"><span class="main"><div class="meta">No dishes linked yet.</div></span></div>'}</div></section>`).join('') || '<p class="note">Nothing coming up.</p>'}</div>`;
+    ${up.map(e => { const k = e.tripleseat_id ? tsKitchen(e) : null;
+      const rows = e.tripleseat_id ? (k ? k.dishes.map(d => `<button class="row" data-a="openEvent" data-id="${e.id}"><span class="main"><div class="name">${esc(d.name)}</div></span><span class="right wtx">to link</span></button>`).join('') : k === undefined ? '<div class="skel">Loading the Tripleseat menu…</div>' : '') : evRecipes(e).map(r => dishRow(r, e)).join('');
+      return `<section><h2>${shortDay(e.event_date)} · ${esc(e.name)}</h2><div class="list">${rows || '<div class="row"><span class="main"><div class="meta">No dishes for the kitchen yet.</div></span></div>'}</div></section>`; }).join('') || '<p class="note">Nothing coming up.</p>'}</div>`;
 } };
 SCREENS['c-shop'] = { title: () => 'Shopping', c: '--cat', render() {
   if (!need('events', 'bom', 'ingredients', 'vendors', 'recipes')) return `<div class="page">${backBtn()}${waiting('events', 'bom')}</div>`;
@@ -557,6 +586,23 @@ SCREENS.event = { title: p => { const e = (BD.peek('events') || []).find(x => x.
     ${e.notes ? `<section><h2>Old Brigade notes (not updated)</h2><div class="list"><div class="pre">${esc(e.notes)}</div></div></section>` : ''}`;
   else if (seg === 'plan') body = `${dishes.length ? `<div class="list">${dishes.map(r => dishRow(r, e)).join('')}</div>` : '<p class="note">No dishes linked to this event in Brigade yet.</p>'}
     ${e.notes ? `<section><h2>Notes</h2><div class="list"><div class="pre">${esc(e.notes)}</div></div></section>` : ''}`;
+  else if (e.tripleseat_id && seg !== 'plan') {
+    const k = tsKitchen(e);
+    if (!k) body = k === undefined ? tsWait(e) : '<p class="note">No menu document in Tripleseat for this event yet.</p>';
+    else if (!k.dishes.length) body = '<p class="note">The Tripleseat menu has no dishes for the kitchen yet.</p>';
+    else if (seg === 'production') body = `<p class="note" style="font-size:14px"><b>Not ready to plan.</b> Each dish needs its Brigade recipe and a quantity. Then preps and components appear here.</p>
+      ${tsGuests(e, k)}<section><h2>Dishes from Tripleseat · 0 of ${k.dishes.length} ready</h2><div class="list">${k.dishes.map(d => dishLinkRow(d, e)).join('')}</div></section>
+      ${k.beverages.length ? `<p class="note" style="font-size:14px">${plural(k.beverages.length, 'drink line')} left out: not kitchen work.</p>` : ''}${tsDecide(k)}`;
+    else if (seg === 'shopping') body = `<p class="note"><b>Shopping list not calculable yet.</b> Ingredients and amounts come from linked recipes and confirmed quantities: 0 of ${plural(k.dishes.length, 'dish')} ready.</p>
+      <section><h2>Waiting for</h2><div class="list">${k.dishes.map(d => `<div class="row"><span class="main"><div class="name">${esc(d.name)}</div></span><span class="right wtx">to link</span></div>`).join('')}</div></section>
+      <p class="note" style="font-size:14px">When a dish is linked, its ingredients will show with three states: amount needed, amount unknown (recipe incomplete), and stock only where Brigade really knows it.</p>`;
+    else body = `<div class="grid"><div class="big"><div class="lbl">Not calculable</div><div class="val">ingredient cost · 0 of ${plural(k.dishes.length, 'dish')} ready</div></div>${e.guest_count ? `<div class="big"><div class="lbl num">${e.guest_count}</div><div class="val">event guests</div></div>` : ''}</div>
+      <p class="note">No cost is shown as $0: a missing recipe or quantity is “not known”, never zero.</p>
+      <section><h2>How the cost will be built</h2><div class="list">
+        <div class="row"><span class="main"><div class="name">Ingredients</div><div class="meta">Known prices (from invoices) and incomplete costs kept apart, dish by dish.</div></span><span class="right muted">—</span></div>
+        <div class="row"><span class="main"><div class="name">Contingency 10%</div><div class="meta">Its own line, applied once to the ingredient subtotal.</div></span><span class="right muted">—</span></div>
+      </div></section>`;
+  }
   else if (seg === 'production') {
     const prep = BD.peek('prep'), rec = byId(BD.peek('recipes'));
     body = dishes.filter(r => r.recipe_id).map(r => {
@@ -655,7 +701,7 @@ SCREENS.prep = { title: p => { const t = byId(BD.peek('prep') || [])[p.id]; retu
   const counts = BD.peek('counts').filter(c => c.prep_task_id === t.id).slice(0, 5), made = BD.peek('preplog').filter(l => l.prep_task_id === t.id).slice(0, 5);
   return `<div class="page" style="--c:var(--rest)">${backBtn()}
     ${head(esc((cl && cl.canonical_station) || t.category || 'Prep'), esc(t.name))}
-    ${r ? `<div class="list"><div class="row"><span class="main"><div class="eyebrow">Plan · ${esc(BD.peek('sugg').date)}</div><div class="name">${SUGG_LABEL[r.status] || esc(r.status)}${r.planned_output != null ? ' · ' + fmt(r.planned_output) + ' ' + esc(r.output_unit || t.unit || '') : ''}</div>${r.reason ? `<div class="meta">${esc(reasonEN(r.reason))}</div>` : ''}<div class="meta">${[r.current_stock != null ? 'Stock ' + fmt(r.current_stock) + ' ' + esc(r.stock_unit || '') : '', r.forecast != null ? 'Forecast ' + fmt(r.forecast) : '', r.coverage_days != null ? 'Covers ' + fmt(r.coverage_days) + ' d' : '', r.confidence ? 'Confidence ' + esc(r.confidence) : ''].filter(Boolean).join(' · ')}</div></span></div></div>` : '<p class="note">Not in today\'s prep plan.</p>'}
+    ${r ? `<div class="list"><div class="row"><span class="main"><div class="eyebrow">Plan · ${esc(planMade())}</div><div class="name">${SUGG_LABEL[r.status] || esc(r.status)}${r.planned_output != null ? ' · ' + fmt(r.planned_output) + ' ' + esc(r.output_unit || t.unit || '') : ''}</div>${r.reason ? `<div class="meta">${esc(reasonEN(r.reason))}</div>` : ''}<div class="meta">${[r.current_stock != null ? 'Stock ' + fmt(r.current_stock) + ' ' + esc(r.stock_unit || '') : '', r.forecast != null ? 'Forecast ' + fmt(r.forecast) : '', r.coverage_days != null ? 'Covers ' + fmt(r.coverage_days) + ' d' : '', r.confidence ? 'Confidence ' + esc(r.confidence) : ''].filter(Boolean).join(' · ')}</div></span></div></div>` : '<p class="note">Not in today\'s prep plan.</p>'}
     <div class="facts"><span>Stock <b>${t.current_stock != null ? fmt(t.current_stock) + ' ' + esc(t.unit || '') : 'not recorded'}</b></span>${t.container ? `<span>Container <b>${esc(t.container)}</b></span>` : ''}${t.min_cover_days ? `<span>Cover <b>${t.min_cover_days} d</b></span>` : ''}${cl && cl.production_family ? `<span>Family <b>${esc(cl.production_family.replace(/_/g, ' '))}</b></span>` : ''}</div>
     ${t.note ? `<p class="note">${esc(t.note)}</p>` : ''}
     ${rec ? `<div class="list"><button class="row" data-a="openRecipe" data-r="${rec.id}"><span class="main"><div class="name">${esc(rec.title)}</div><div class="meta">Recipe</div></span><span class="chev">›</span></button></div>` : ''}
@@ -792,4 +838,6 @@ document.addEventListener('click', ev => { const el = ev.target.closest('[data-a
 window.addEventListener('resize', layout);
 if (!SCREENS[cur().s]) S = fresh();
 render();
+{ const m = /[#&]ev=([0-9a-f-]{36})(?:&seg=(plan|production|shopping|cost))?/.exec(location.hash);
+  if (m) { openTab('event', m[1], { s: 'event', p: { id: m[1], seg: m[2] || 'plan' } }); } }
 })();
