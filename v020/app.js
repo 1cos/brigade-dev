@@ -109,56 +109,143 @@ function cateringFor(recipeId, d0, d1) { return eventsFrom(d0, d1).filter(e => e
 const CL = window.CateringLink;
 function tsKitchen(e) { const m = tsMenu(e); return m ? CL.kitchenDishes(m) : m; }
 function tsWait(e) { return BD.error('tsmenus') ? '<p class="note">Tripleseat menu not loaded. <button class="lnk" data-a="refresh">Try again</button></p>' : '<div class="skel">Loading the Tripleseat menu…</div>'; }
+/* ============ CAT03 — dish → recipe(s) + quantity, saved in Brigade by Chef ============
+   Read: catering_dish_links / catering_menu_aliases (public read, like the rest of V020).
+   Write: edge function catering-links with Brigade's own PIN session; admin/chef/manager only.
+   Suggestions (rules already decided in the sources, or Chef's saved rules) are never saved by themselves. */
+const CK = window.CateringKnowledge;
+const FN = ((window.BRIGADE_CONFIG || {}).url || '') + '/functions/v1/';
+const UNITS = [['portions', 'portions'], ['pieces', 'pieces'], ['kg', 'kg'], ['trays', 'trays']];
+const UNIT_LABEL = { portions: 'portions', pieces: 'pieces', kg: 'kg', trays: 'trays' };
+const tok = () => { try { return localStorage.getItem('brigade_token') || ''; } catch (x) { return ''; } };
+let ME = null, ME_AT = 0;
+async function api(action, payload) {
+  const r = await fetch(FN + 'catering-links', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(Object.assign({ brigade_token: tok(), action }, payload || {})) });
+  let d = {}; try { d = await r.json(); } catch (x) {}
+  if (r.status === 401) { ME = null; throw Object.assign(new Error('session'), { code: 'session' }); }
+  if (!r.ok || d.ok === false) throw Object.assign(new Error(d.error || 'HTTP ' + r.status), { code: d.error || 'error', detail: d });
+  return d;
+}
+async function whoAmI(force) {
+  if (!tok()) { ME = null; return null; }
+  if (ME && !force && Date.now() - ME_AT < 10 * 60 * 1000) return ME;
+  try { const d = await api('me'); ME = { name: d.user.name, can_edit: d.can_edit }; ME_AT = Date.now(); } catch (x) { ME = null; }
+  return ME;
+}
+const keyOf = d => CK.norm(d.section) + '|' + CK.norm(d.name);
+function lineKeys(dishes) { const seen = {}; return dishes.map(d => { const k = keyOf(d); seen[k] = (seen[k] || 0) + 1; return seen[k] > 1 ? k + '#' + seen[k] : k; }); }
+const catReady = () => Array.isArray(BD.peek('catlinks'));
+function evLinks(e) { const L = BD.peek('catlinks'); return Array.isArray(L) ? L.filter(x => x.event_id === e.id) : []; }
+function linkFor(e, key) { return evLinks(e).find(x => x.line_key === key) || null; }
+function aliasFor(text) { const A = BD.peek('cataliases'), n = CK.norm(text); return Array.isArray(A) ? A.find(a => a.alias_norm === n) || null : null; }
+function suggestionFor(text, e) { const a = aliasFor(text); return a ? { comps: CK.fromAlias(a, e.guest_count), open: [], alias: a } : CK.suggest(text, e.guest_count); }
+const compText = cs => cs.map(c => `${esc(c.title)} · ${c.qty != null ? fmt(c.qty) : '?'} ${esc(UNIT_LABEL[c.unit] || c.unit)}`).join(' + ');
+const TAG = { saved: '<span class="oktag">Saved</span>', chef_saved: '<span class="ruletag">Chef rule (saved)</span>', chef_rule: '<span class="ruletag">Chef rule</span>', suggested: '<span class="sugtag">Suggested · to confirm</span>', manual: '' };
+/* the same check the server does: which unit Brigade can turn into batches for this recipe */
+function convInfo(rid, unit, qty) {
+  const r = byId(BD.peek('recipes') || [])[rid] || {}, y = yieldsMap()[rid] || {}, n = num(y.portions), yq = num(y.yield_qty), q = num(qty);
+  const pz = /^(pz|pezzi|pezzo|each|piece|pieces|pcs)$/i.test(r.serving_unit || '');
+  if (unit === 'portions' || (unit === 'pieces' && pz)) return n ? { ok: true, text: q ? `${fmt(q / n)} batches of ${fmt(n)}` : `1 batch = ${fmt(n)}` } : { ok: false, text: 'portions per batch not declared in the recipe' };
+  if (unit === 'pieces') return { ok: false, text: 'the recipe portion is not counted in pieces' };
+  if (unit === 'kg') return y.yield_dim === 'mass' && yq ? { ok: true, text: q ? `${fmt(q * 1000 / yq)} batches of ${fmt(yq / 1000)} kg` : `1 batch = ${fmt(yq / 1000)} kg` } : { ok: false, text: 'recipe yield in kg not declared' };
+  return { ok: false, text: 'no conversion declared for trays' };
+}
 function tsGuests(e, k) {
   const pk = k.packages.filter(p => p.quantity != null && p.quantity !== '').map(p => `“${esc(cut(p.name, 40))}” ×${esc(p.quantity)}`);
-  return `<p class="note" style="font-size:14px">${e.guest_count ? `<b>${e.guest_count}</b> event guests` : 'Guests not set'}${pk.length ? ' · package line ' + pk.join(', ') : ''}. Neither is a portion count for a single dish.</p>`;
+  return `<p class="note" style="font-size:14px">${e.guest_count ? `<b>${e.guest_count}</b> event guests` : 'Guests not set'}${pk.length ? ' · package line ' + pk.join(', ') : ''}. Neither is a portion count for a single dish: each dish has its own quantity.</p>`;
 }
-function dishLinkRow(d, e) {
-  const c = CL.candidates(d.name, BD.peek('recipes') || []), sim = simGet(e.id, d.name);
-  const btn = `<button class="lnk" data-a="linkDish" data-ev="${e.id}" data-dish="${esc(d.name)}">${sim.length ? 'Change link' : 'Link recipe'} ›</button>`;
-  if (sim.length) return `<div class="row"><span class="main"><div class="name">${esc(d.name)}</div>
-    <div class="meta"><span class="simtag">SIMULATION</span> ${simText(sim)}</div><div class="meta">${btn}</div></span></div>`;
+function dishLinkRow(d, e, key) {
+  const L = linkFor(e, key), btn = `<button class="lnk" data-a="linkDish" data-ev="${e.id}" data-key="${esc(key)}">${L ? 'Edit' : 'Link recipe'} ›</button>`;
+  if (L) return `<div class="row"><span class="main"><div class="name">${esc(d.name)}</div>
+    <div class="meta">${TAG.saved} ${compText(L.components)}</div><div class="meta muted">by ${esc(L.confirmed_by)} · ${shortDay(dCDT(L.confirmed_at))}</div><div class="meta">${btn}</div></span></div>`;
+  const s = suggestionFor(d.name, e), st = s.comps.some(c => c.status === 'suggested') ? 'suggested' : s.comps.length ? s.comps[0].status : '';
   return `<div class="row"><span class="main"><div class="name">${esc(d.name)}</div>
-    <div class="meta"><span class="wtx">Recipe to link</span> · <span class="wtx">quantity to confirm</span>${d.quantity != null ? ' · menu line ×' + esc(d.quantity) : ''}</div>
-    <div class="meta">${btn}</div>
-    <div class="meta">${c.length ? 'Possible Brigade recipes, by name (to confirm): ' + c.map(x => `<button class="lnk" data-a="openRecipe" data-r="${x.id}" data-from="event:${e.id}">${esc(x.title)}</button>`).join(' · ') : 'No Brigade recipe with this name: to create, or to link by hand.'}</div></span></div>`;
+    <div class="meta"><span class="wtx">Not linked</span>${s.comps.length ? ` · ${TAG[st] || ''} ${compText(s.comps)}` : ''}</div>
+    ${s.open.length ? `<div class="meta">${s.open.map(o => 'Still to decide: ' + esc(o.ask)).join('<br>')}</div>` : ''}
+    <div class="meta">${btn}</div></span></div>`;
 }
-/* CAT02 — link flow, SIMULATION ONLY: saved in this browser (localStorage), never in Brigade. */
-const SIM_KEY = 'v020-cat02-sim';
-const SIM_UNITS = [['portions', 'portions'], ['kg', 'kg'], ['pieces', 'pieces'], ['trays', 'trays']];
-function simAll() { try { return JSON.parse(localStorage.getItem(SIM_KEY)) || {}; } catch (x) { return {}; } }
-function simGet(evId, dish) { return ((simAll()[evId] || {})[dish]) || []; }
-function simSet(evId, dish, items) { const a = simAll(); a[evId] = a[evId] || {}; if (items.length) a[evId][dish] = items; else delete a[evId][dish]; try { localStorage.setItem(SIM_KEY, JSON.stringify(a)); } catch (x) {} }
-const simText = it => it.map(x => `${esc(x.title)} · ${fmt(x.qty)} ${esc(x.unit)}`).join(' + ');
-let LINK = null;                                    // { ev, dish, items, q }
+/* ---- link sheet ---- */
+let LINK = null;                                 // { e, key, name, section, items, q, remember, note, busy, err, existing }
 const DRAFT = {};
 function linkSheet() {
-  const L = LINK, rec = BD.peek('recipes') || [];
-  const q = (L.q || '').trim().toLowerCase();
-  const res = q.length >= 2 ? rec.filter(r => String(r.title).toLowerCase().includes(q)).slice(0, 12).map(r => ({ id: r.id, title: r.title, menu_group: r.menu_group })) : CL.candidates(L.dish, rec, 5);
-  const picked = new Set(L.items.map(x => x.recipe_id));
-  sheet(`<div class="page"><div class="eyebrow">Link a dish · simulation</div><h1 style="font-size:24px">${esc(L.dish)}</h1>
-    <p class="note" style="font-size:14px"><b>Simulation.</b> Nothing is saved in Brigade: the link stays on this device only, to try the flow.</p>
-    <section><h2>Recipes for this dish</h2>${L.items.length ? `<div class="list">${L.items.map((x, i) => `<div class="row"><span class="main"><div class="name">${esc(x.title)}</div>
+  const L = LINK, rec = BD.peek('recipes') || [], q = (L.q || '').trim().toLowerCase();
+  const res = q.length >= 2 ? rec.filter(r => String(r.title).toLowerCase().includes(q)).slice(0, 12) : CL.candidates(L.name, rec, 5);
+  const picked = new Set(L.items.map(x => x.recipe_id)), open = L.open || [];
+  const signed = ME && ME.can_edit;
+  sheet(`<div class="page"><div class="eyebrow">${L.existing ? 'Edit link' : 'Link a dish'} · ${esc(L.e.name)}</div><h1 style="font-size:24px">${esc(L.name)}</h1>
+    <p class="note" style="font-size:14px">Tripleseat text kept as it is. ${L.e.guest_count ? L.e.guest_count + ' event guests: ' : ''}each recipe gets its own quantity.</p>
+    ${signed ? '' : `<p class="note" style="font-size:14px"><b>${tok() ? 'Your Brigade user cannot save catering links' : 'Sign in to save'}</b> — admin or chef, with your Brigade PIN. <button class="lnk" data-a="login">Sign in ›</button></p>`}
+    <section><h2>Recipes for this dish</h2>${L.items.length ? `<div class="list">${L.items.map((x, i) => { const cv = convInfo(x.recipe_id, x.unit, x.qty);
+      return `<div class="row"><span class="main"><div class="name">${esc(x.title)} ${TAG[x.status] || ''}</div>
+        ${x.rule ? `<details class="why"><summary>Why this quantity</summary><div>${esc(x.rule)}</div><div class="muted">${esc(x.source || '')}</div></details>` : ''}
         <div class="lkq"><input class="search lk-qty" data-i="${i}" type="number" inputmode="decimal" min="0" step="any" placeholder="How much" value="${x.qty ?? ''}">
-        <select class="search lk-unit" data-i="${i}">${SIM_UNITS.map(([k, l]) => `<option value="${k}" ${x.unit === k ? 'selected' : ''}>${l}</option>`).join('')}</select></div>
-        <div class="meta"><button class="lnk" data-a="openRecipe" data-r="${x.recipe_id}" data-from="event:${L.ev}">Open recipe to check ›</button> · <button class="lnk" data-a="linkDrop" data-i="${i}">Remove</button></div></span></div>`).join('')}</div>`
-      : '<p class="note" style="font-size:14px">Pick one or more recipes below. A board or a combo can have several components, each with its own quantity.</p>'}</section>
-    <section><h2>${q.length >= 2 ? 'Recipes found' : 'Suggested by name (to confirm)'}</h2>
+        <select class="search lk-unit" data-i="${i}">${UNITS.map(([k, l]) => `<option value="${k}" ${x.unit === k ? 'selected' : ''}>${l}</option>`).join('')}</select></div>
+        <div class="meta ${cv.ok ? '' : 'wtx'}">${cv.ok ? '→ ' + esc(cv.text) : 'Saved as written. Not calculable for shopping and cost: ' + esc(cv.text)}</div>
+        <div class="meta"><button class="lnk" data-a="openRecipe" data-r="${x.recipe_id}" data-from="event:${L.e.id}">Open recipe to check ›</button> · <button class="lnk" data-a="linkDrop" data-i="${i}">Remove</button></div></span></div>`; }).join('')}</div>`
+      : '<p class="note" style="font-size:14px">Pick one or more recipes below. A board or a combo can have several, each with its own quantity.</p>'}</section>
+    ${open.map(o => `<p class="note" style="font-size:14px"><b>Still to decide:</b> ${esc(o.ask)}<br><span class="muted">${esc(o.source)}</span></p>`).join('')}
+    <section><h2>${q.length >= 2 ? 'Recipes found' : 'Possible recipes, by name (to confirm)'}</h2>
       <input id="linkq" class="search" type="search" placeholder="Search a Brigade recipe" value="${esc(L.q || '')}" autocomplete="off">
       <div class="list" style="margin-top:10px">${res.map(r => `<button class="row" data-a="linkPick" data-r="${r.id}" ${picked.has(r.id) ? 'disabled' : ''}><span class="main"><div class="name">${esc(r.title)}</div>${r.menu_group ? `<div class="meta">${esc(r.menu_group)}</div>` : ''}</span><span class="right ${picked.has(r.id) ? 'muted' : 'wtx'}">${picked.has(r.id) ? 'added' : '+ add'}</span></button>`).join('') || '<div class="row"><span class="main"><div class="meta">No recipe found.</div></span></div>'}</div></section>
-    <p class="note" style="font-size:14px">Guests are not portions: write how much of this dish the kitchen makes.</p>
-    <div class="lkact"><button class="ghost" data-a="linkCancel">Cancel</button><button class="primary" data-a="linkSave">Save link (simulation)</button></div></div>`);
+    <label class="lkrem"><input type="checkbox" id="lkrem" ${L.remember ? 'checked' : ''}> Remember for next events: same recipes, quantity per guest</label>
+    ${L.err ? `<p class="note wtx" style="font-size:14px">${esc(L.err)}</p>` : ''}
+    <div class="lkact"><button class="ghost" data-a="linkCancel">Cancel</button><button class="primary" data-a="linkSave" ${L.busy ? 'disabled' : ''}>${L.busy ? 'Saving…' : 'Save'}</button></div>
+    ${L.existing ? '<p style="margin-top:10px;text-align:center"><button class="lnk wtx" data-a="linkRemove">Remove this link</button></p>' : ''}</div>`);
   const i = $('linkq'); let t;
   i.addEventListener('input', () => { clearTimeout(t); t = setTimeout(() => { LINK.q = i.value; linkSheet(); const n = $('linkq'); n.focus(); n.setSelectionRange(n.value.length, n.value.length); }, 220); });
   $('sheet').querySelectorAll('.lk-qty').forEach(el => el.addEventListener('input', () => { LINK.items[+el.dataset.i].qty = el.value; el.classList.remove('bad'); }));
-  $('sheet').querySelectorAll('.lk-unit').forEach(el => el.addEventListener('change', () => { LINK.items[+el.dataset.i].unit = el.value; }));
+  $('sheet').querySelectorAll('.lk-unit').forEach(el => el.addEventListener('change', () => { LINK.items[+el.dataset.i].unit = el.value; linkSheet(); }));
+  $('lkrem').addEventListener('change', ev => { LINK.remember = ev.target.checked; });
 }
-function tsDecide(k) {
-  return `<section><h2>What Chef needs to decide</h2><div class="list">
-    <div class="row"><span class="main"><div class="name">Which Brigade recipe is each dish</div><div class="meta">${plural(k.dishes.length, 'dish')} on the menu, 0 linked. Brigade has no place yet that stores this link for an event.</div></span></div>
-    <div class="row"><span class="main"><div class="name">How much of each dish</div><div class="meta">Portions or kg per dish. Guests are not portions: not everyone takes every dish.</div></span></div>
-  </div></section>`;
+/* ---- PIN sign-in: Brigade's own login (brigade-login), the session is Brigade's ---- */
+let PIN = '', AFTER_LOGIN = null;
+function loginSheet(msg) {
+  sheet(`<div class="page"><div class="eyebrow">Brigade</div><h1 style="font-size:24px">Sign in with your PIN</h1>
+    <p class="note" style="font-size:14px">The same PIN as Brigade. Only admin and chef can save catering links.</p>
+    <div class="dots">${[0, 1, 2, 3].map(i => `<i class="${i < PIN.length ? 'on' : ''}"></i>`).join('')}</div>
+    ${msg ? `<p class="note wtx" style="font-size:14px;text-align:center">${esc(msg)}</p>` : ''}
+    <div class="pin">${[1, 2, 3, 4, 5, 6, 7, 8, 9, '', 0, '⌫'].map(k => k === '' ? '<span></span>' : `<button data-a="pinKey" data-k="${k}">${k}</button>`).join('')}</div>
+    <div class="lkact"><button class="ghost" data-a="loginCancel">Cancel</button></div></div>`);
+}
+async function pinSubmit() {
+  const pin = PIN; PIN = '';
+  try {
+    const r = await fetch(FN + 'brigade-login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ pin }) });
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok) return loginSheet('Brigade is not answering. Try again in a moment.');
+    if (!d.ok || typeof d.token !== 'string') return loginSheet('Wrong PIN.');
+    try { localStorage.setItem('brigade_token', d.token); } catch (x) { return loginSheet('This browser cannot keep the session.'); }
+    await whoAmI(true); ME_CHECK = 'done';
+    const next = AFTER_LOGIN; AFTER_LOGIN = null;
+    if (next) next(); else { closeSheet(); render(true); }
+  } catch (x) { loginSheet('No connection.'); }
+}
+/* ---- Shopping / Cost: from the same saved links, through the server (cost is not public) ---- */
+const PLAN = {};
+function planFor(e) {
+  const p = PLAN[e.id];
+  if (p && (p.state === 'loading' || Date.now() - p.at < 5 * 60 * 1000)) return p;
+  PLAN[e.id] = { state: 'loading', at: Date.now() };
+  api('plan', { event_id: e.id }).then(d => { PLAN[e.id] = { state: 'ok', data: d, at: Date.now() }; rerender(); })
+    .catch(x => { PLAN[e.id] = { state: 'err', code: x.code, at: Date.now() }; rerender(); });
+  return PLAN[e.id];
+}
+const qtyText = (q, u) => { q = num(q); if (q === null) return '?'; if (u === 'g' && q >= 1000) return fmt(q / 1000) + ' kg'; if (u === 'ml' && q >= 1000) return fmt(q / 1000) + ' L'; return fmt(Math.round(q * 100) / 100) + ' ' + (u || ''); };
+let ME_CHECK = null;
+function planGate(e, what) {
+  if (tok() && !ME && !ME_CHECK) { ME_CHECK = whoAmI().finally(() => { ME_CHECK = 'done'; rerender(); }); }
+  if (tok() && !ME && ME_CHECK !== 'done') return '<div class="skel">Checking your Brigade sign-in…</div>';
+  if (!tok() || !ME) return `<p class="note">${what} comes from Brigade's cost engine and needs your Brigade sign-in. <button class="lnk" data-a="login">Sign in ›</button></p>`;
+  if (!ME.can_edit) return `<p class="note">${what}: only admin and chef can see it.</p>`;
+  return '';
+}
+function prodRecipe(rid, e) {
+  const prep = BD.peek('prep') || [], rec = byId(BD.peek('recipes'));
+  const subs = components(rid).filter(b => b.component_type === 'RECIPE' && b.sub_recipe_id);
+  const ids = [rid, ...subs.map(b => b.sub_recipe_id)], pt = prep.filter(x => ids.includes(x.recipe_id));
+  return subs.map(b => `<button class="row sub" data-a="openRecipe" data-r="${b.sub_recipe_id}" data-from="event:${e.id}"><span class="main"><div class="name">${esc((rec[b.sub_recipe_id] || {}).title || 'Sub-recipe')}</div><div class="meta">Component per batch · ${fmt(b.quantity)} ${esc(b.unit || '')}</div></span><span class="chev">›</span></button>`).join('')
+    + pt.map(x => `<button class="row sub" data-a="openPrep" data-id="${x.id}"><span class="main"><div class="name">${esc(x.name)}</div><div class="meta">Prep · stock ${x.current_stock != null ? fmt(x.current_stock) + ' ' + esc(x.unit || '') + ' (not verified)' : 'not recorded'}</div></span><span class="chev">›</span></button>`).join('');
 }
 /* ============ TRIAGE: Brigade signals → human decisions ============
    Every guardian alert is re-checked against today's data. Out-of-date alerts are not shown as decisions.
@@ -561,11 +648,13 @@ SCREENS.catering = { title: () => 'Catering', c: '--cat', render() {
   if (!need('events', 'recipes')) return `<div class="page">${head("Zeno's Catering", 'Catering')}${waiting('events')}</div>`;
   const t = BD.today(), ev = BD.peek('events'), up = ev.filter(e => e.event_date >= t), past = ev.filter(e => e.event_date < t).reverse();
   const recs = new Set(up.filter(e => !e.tripleseat_id).flatMap(e => evRecipes(e).map(r => r.recipe_id)).filter(Boolean));
-  const tsd = up.map(tsKitchen).filter(Boolean).reduce((n, k) => n + k.dishes.length, 0);
+  need('catlinks');
+  const tsAll = up.map(e => [e, tsKitchen(e)]).filter(x => x[1]), tsd = tsAll.reduce((n, [, k]) => n + k.dishes.length, 0);
+  const tsLinked = catReady() ? tsAll.reduce((n, [e, k]) => { const ks = lineKeys(k.dishes); return n + ks.filter(x => linkFor(e, x)).length; }, 0) : 0;
   return `<div class="page" style="--c:var(--cat)">${head("Zeno's Catering", 'Catering')}
     <section><h2>Coming up</h2><div class="list">${up.map(evRow).join('') || '<div class="row"><span class="main"><div class="meta">No upcoming events in Brigade.</div></span></div>'}</div></section>
     <div class="grid">
-      <button class="big" data-a="go" data-s="c-prod">${ICON.fire}<div><div class="lbl">Production</div><div class="val"><b>${recs.size + tsd}</b> dishes ahead${tsd ? ` · <span class="wtx">${tsd} to link</span>` : ''}</div></div></button>
+      <button class="big" data-a="go" data-s="c-prod">${ICON.fire}<div><div class="lbl">Production</div><div class="val"><b>${recs.size + tsd}</b> dishes ahead${tsd - tsLinked ? ` · <span class="wtx">${tsd - tsLinked} to link</span>` : ''}</div></div></button>
       <button class="big" data-a="go" data-s="c-shop">${ICON.cart}<div><div class="lbl">Shopping</div><div class="val">Ingredients by event</div></div></button>
     </div>
     ${past.length ? `<section><h2>Last 14 days</h2><div class="list">${past.map(evRow).join('')}</div></section>` : ''}
@@ -574,10 +663,12 @@ SCREENS.catering = { title: () => 'Catering', c: '--cat', render() {
 } };
 SCREENS['c-prod'] = { title: () => 'Production', c: '--cat', render() {
   if (!need('events', 'recipes')) return `<div class="page">${backBtn()}${waiting('events')}</div>`;
+  need('catlinks');
   const t = BD.today(), up = BD.peek('events').filter(e => e.event_date >= t);
   return `<div class="page" style="--c:var(--cat)">${backBtn()}${head('Catering', 'Production')}
     ${up.map(e => { const k = e.tripleseat_id ? tsKitchen(e) : null;
-      const rows = e.tripleseat_id ? (k ? k.dishes.map(d => `<button class="row" data-a="openEvent" data-id="${e.id}"><span class="main"><div class="name">${esc(d.name)}</div></span><span class="right wtx">to link</span></button>`).join('') : k === undefined ? '<div class="skel">Loading the Tripleseat menu…</div>' : '') : evRecipes(e).map(r => dishRow(r, e)).join('');
+      const ks = k ? lineKeys(k.dishes) : [];
+      const rows = e.tripleseat_id ? (k ? k.dishes.map((d, i) => { const L = catReady() && linkFor(e, ks[i]); return `<button class="row" data-a="openEvent" data-id="${e.id}"><span class="main"><div class="name">${esc(d.name)}</div>${L ? `<div class="meta">${compText(L.components)}</div>` : ''}</span><span class="right ${L ? 'muted' : 'wtx'}">${L ? 'linked' : 'to link'}</span></button>`; }).join('') : k === undefined ? '<div class="skel">Loading the Tripleseat menu…</div>' : '') : evRecipes(e).map(r => dishRow(r, e)).join('');
       return `<section><h2>${shortDay(e.event_date)} · ${esc(e.name)}</h2><div class="list">${rows || '<div class="row"><span class="main"><div class="meta">No dishes for the kitchen yet.</div></span></div>'}</div></section>`; }).join('') || '<p class="note">Nothing coming up.</p>'}</div>`;
 } };
 SCREENS['c-shop'] = { title: () => 'Shopping', c: '--cat', render() {
@@ -610,7 +701,8 @@ function ingRow(i) {
 
 /* ---- EVENT (tab) ---- */
 SCREENS.event = { title: p => { const e = (BD.peek('events') || []).find(x => x.id === p.id); return e ? e.name : 'Event'; }, c: '--cat', render(p) {
-  if (!need('events', 'recipes', 'bom', 'ingredients', 'vendors', 'prep')) return `<div class="page">${backBtn()}${waiting('events', 'bom')}</div>`;
+  if (!need('events', 'recipes', 'bom', 'ingredients', 'vendors', 'prep', 'yields')) return `<div class="page">${backBtn()}${waiting('events', 'bom')}</div>`;
+  need('catlinks', 'cataliases');
   const e = BD.peek('events').find(x => x.id === p.id);
   if (!e) return `<div class="page">${backBtn()}<p class="note">This event is no longer in the next or last 14 days.</p></div>`;
   const seg = p.seg || 'plan', dishes = evRecipes(e);
@@ -625,21 +717,41 @@ SCREENS.event = { title: p => { const e = (BD.peek('events') || []).find(x => x.
     const k = tsKitchen(e);
     if (!k) body = k === undefined ? tsWait(e) : '<p class="note">No menu document in Tripleseat for this event yet.</p>';
     else if (!k.dishes.length) body = '<p class="note">The Tripleseat menu has no dishes for the kitchen yet.</p>';
-    else if (seg === 'production') { const nSim = k.dishes.filter(d => simGet(e.id, d.name).length).length, br = evRecipes(e).filter(r => r.recipe_id);
-      body = `<p class="note" style="font-size:14px"><b>Not ready to plan.</b> Each dish needs its Brigade recipe and a quantity. Then preps and components appear here.</p>
-      ${br.length ? `<section><h2>Linked in Brigade (Calendar › Edit)</h2><div class="list">${br.map(r => dishRow(r, e)).join('')}</div><p class="note" style="font-size:14px">Saved from Brigade's event editor. Its "Pax" fills in the guest count by itself: check it is the real quantity.</p></section>` : ''}
-      ${tsGuests(e, k)}<section><h2>Dishes from Tripleseat · ${nSim ? `${nSim} linked in simulation, ` : ''}0 of ${k.dishes.length} saved in Brigade</h2><div class="list">${k.dishes.map(d => dishLinkRow(d, e)).join('')}</div></section>
-      ${k.beverages.length ? `<p class="note" style="font-size:14px">${plural(k.beverages.length, 'drink line')} left out: not kitchen work.</p>` : ''}
-      ${nSim ? `<section><h2>Link summary · simulation</h2><div class="list">${k.dishes.map(d => { const x = simGet(e.id, d.name); return `<div class="row"><span class="main"><div class="name">${esc(d.name)}</div><div class="meta">${x.length ? simText(x) : '<span class="wtx">not linked</span>'}</div></span></div>`; }).join('')}</div><p class="note" style="font-size:14px">Only on this device. Saving in Brigade needs Chef's GO.</p></section>` : ''}${tsDecide(k)}`; }
-    else if (seg === 'shopping') body = `<p class="note"><b>Shopping list not calculable yet.</b> Ingredients and amounts come from linked recipes and confirmed quantities: 0 of ${plural(k.dishes.length, 'dish')} ready.</p>
-      <section><h2>Waiting for</h2><div class="list">${k.dishes.map(d => `<div class="row"><span class="main"><div class="name">${esc(d.name)}</div></span><span class="right wtx">to link</span></div>`).join('')}</div></section>
-      <p class="note" style="font-size:14px">When a dish is linked, its ingredients will show with three states: amount needed, amount unknown (recipe incomplete), and stock only where Brigade really knows it.</p>`;
-    else body = `<div class="grid"><div class="big"><div class="lbl">Not calculable</div><div class="val">ingredient cost · 0 of ${plural(k.dishes.length, 'dish')} ready</div></div>${e.guest_count ? `<div class="big"><div class="lbl num">${e.guest_count}</div><div class="val">event guests</div></div>` : ''}</div>
-      <p class="note">No cost is shown as $0: a missing recipe or quantity is “not known”, never zero.</p>
-      <section><h2>How the cost will be built</h2><div class="list">
-        <div class="row"><span class="main"><div class="name">Ingredients</div><div class="meta">Known prices (from invoices) and incomplete costs kept apart, dish by dish.</div></span><span class="right muted">—</span></div>
-        <div class="row"><span class="main"><div class="name">Contingency 10%</div><div class="meta">Its own line, applied once to the ingredient subtotal.</div></span><span class="right muted">—</span></div>
-      </div></section>`;
+    else if (!catReady()) body = BD.error('catlinks') ? '<p class="note">Saved links not loaded. <button class="lnk" data-a="refresh">Try again</button></p>' : '<div class="skel">Loading saved links…</div>';
+    else {
+      const keys = lineKeys(k.dishes), links = evLinks(e), done = keys.filter(x => links.some(l => l.line_key === x)).length;
+      const orphans = links.filter(l => !keys.includes(l.line_key)), br = evRecipes(e).filter(r => r.recipe_id);
+      if (seg === 'production') body = `<p class="note" style="font-size:14px"><b>${done} of ${k.dishes.length} dishes linked.</b> ${done < k.dishes.length ? 'Link each dish to its recipe and quantity: suggestions come from Chef\'s rules, nothing is saved until you press Save.' : 'All dishes linked.'}</p>
+        ${tsGuests(e, k)}<section><h2>Dishes from Tripleseat</h2><div class="list">${k.dishes.map((d, i) => dishLinkRow(d, e, keys[i])).join('')}</div></section>
+        ${k.beverages.length ? `<p class="note" style="font-size:14px">${plural(k.beverages.length, 'drink line')} left out: not kitchen work.</p>` : ''}
+        ${links.length ? `<section><h2>What to make</h2>${links.filter(l => keys.includes(l.line_key)).map(l => `<div class="list" style="margin-bottom:10px">${l.components.map(c => { const cv = convInfo(c.recipe_id, c.unit, c.qty);
+            return `<button class="row" data-a="openRecipe" data-r="${c.recipe_id}" data-from="event:${e.id}"><span class="main"><div class="name">${esc(c.title)} · ${fmt(c.qty)} ${esc(UNIT_LABEL[c.unit] || c.unit)}</div><div class="meta">${esc(cut(l.original_text, 60))}</div><div class="meta ${cv.ok ? '' : 'wtx'}">${cv.ok ? esc(cv.text) : 'Batches not calculable: ' + esc(cv.text)}</div></span><span class="chev">›</span></button>` + prodRecipe(c.recipe_id, e); }).join('')}</div>`).join('')}</section>` : ''}
+        ${orphans.length ? `<section><h2>Saved for lines no longer in the Tripleseat menu</h2><div class="list">${orphans.map(l => `<div class="row"><span class="main"><div class="name">${esc(l.original_text)}</div><div class="meta">${compText(l.components)}</div></span></div>`).join('')}</div></section>` : ''}
+        ${br.length ? `<section><h2>Linked in Brigade's old editor (Calendar › Edit)</h2><div class="list">${br.map(r => dishRow(r, e)).join('')}</div><p class="note" style="font-size:14px">Its "Pax" fills in the guest count by itself: check it.</p></section>` : ''}`;
+      else {
+        const gate = planGate(e, seg === 'shopping' ? 'The shopping list' : 'The cost');
+        const p = gate ? null : links.length ? planFor(e) : null, d = p && p.state === 'ok' ? p.data : null;
+        const missing = k.dishes.filter((x, i) => !links.some(l => l.line_key === keys[i]));
+        const missNote = missing.length ? `<p class="note" style="font-size:14px"><span class="wtx">${plural(missing.length, 'dish')} not linked yet</span>: ${missing.map(x => esc(cut(x.name, 30))).join(', ')}. Not included.</p>` : '';
+        if (gate) body = gate + missNote;
+        else if (!links.length) body = '<p class="note">Nothing linked yet: link the dishes in Production first.</p>';
+        else if (!d) body = p.state === 'err' ? `<p class="note">Could not load (${esc(p.code || 'error')}). <button class="lnk" data-a="replan">Try again</button></p>` : '<div class="skel">Calculating…</div>';
+        else if (seg === 'shopping') { const s = d.shopping || {};
+          body = `${missNote}<p class="note" style="font-size:14px">From the saved quantities and the recipes in Brigade. Stock is not subtracted: Brigade's counts are not reliable yet.</p>
+            ${(s.known || []).length ? `<section><h2>To buy or prepare · amounts known</h2><div class="list">${s.known.map(x => `<button class="row" data-a="openIng" data-id="${x.ingredient_id}"><span class="main"><div class="name">${esc(x.name)}</div>${x.price_missing ? '<div class="meta wtx">no price in Brigade</div>' : ''}</span><span class="right">${esc(qtyText(x.qty, x.unit))}</span><span class="chev">›</span></button>`).join('')}</div></section>` : ''}
+            ${(s.unknown || []).length ? `<section><h2>Amount not calculable</h2><div class="list">${s.unknown.map(x => `<div class="row"><span class="main"><div class="name">${esc(x.name)}</div><div class="meta">${esc(qtyText(x.qty, x.unit))} in ${esc(x.via)} · ${esc(String(x.status).replace('non_calcolabile:', '').replace(/_/g, ' '))}</div></span></div>`).join('')}</div></section>` : ''}
+            ${(s.no_batches || []).length ? `<p class="note" style="font-size:14px"><span class="wtx">Saved, but Brigade cannot turn them into ingredients</span> (yield or portions missing in the recipe): ${s.no_batches.map(esc).join(', ')}.</p>` : ''}`; }
+        else { const c = d.cost || {}, lines = c.lines || [], nc = d.not_costed || [], complete = c.complete && !nc.length && !missing.length;
+          body = `<div class="grid"><div class="big"><div class="lbl ${complete ? 'num' : 'wtx'}">${complete ? money(c.total) : 'Incomplete'}</div><div class="val">${complete ? 'ingredients + 10% contingency' : 'cost not usable yet'}</div></div>${e.guest_count ? `<div class="big"><div class="lbl num">${e.guest_count}</div><div class="val">event guests</div></div>` : ''}</div>${missNote}
+            <section><h2>Dish by dish</h2><div class="list">${lines.map(l => `<div class="row"><span class="main"><div class="name">${esc(l.title)}</div><div class="meta">${l.portions_charged ? fmt(l.portions_charged) + ' portions' : l.qty_g ? qtyText(l.qty_g, 'g') : ''} · ${esc(l.semaforo || '')}</div>${l.cost == null ? `<div class="meta wtx">No usable cost: ${esc(((l.non_stimabili || []).map(x => x.componente || x.path).filter(Boolean).join(', ')) || 'recipe incomplete')}</div>` : ''}</span><span class="right ${l.cost == null ? 'wtx' : ''}">${l.cost == null ? 'unknown' : money(l.cost)}</span></div>`).join('')}
+              ${nc.map(x => `<div class="row"><span class="main"><div class="name">${esc(x.title)}</div><div class="meta wtx">${fmt(x.qty)} ${esc(UNIT_LABEL[x.unit] || x.unit)} · not costed: ${esc(x.why || '')}</div></span><span class="right wtx">unknown</span></div>`).join('')}</div></section>
+            <section><h2>Totals</h2><div class="list">
+              <div class="row"><span class="main"><div class="name">Ingredients${complete ? '' : ' · known part only'}</div></span><span class="right">${money(c.subtotal || 0)}</span></div>
+              <div class="row"><span class="main"><div class="name">Contingency 10%</div><div class="meta">Once, on the known ingredients. It does not cover the missing costs above.</div></span><span class="right">${money(c.markup || 0)}</span></div>
+              ${complete ? `<div class="row"><span class="main"><div class="name">Total</div></span><span class="right">${money(c.total)}</span></div>` : ''}</div></section>
+            <p class="note" style="font-size:14px">Prices: current invoice prices in Brigade (cost engine FC05).</p>`; }
+      }
+    }
   }
   else if (seg === 'production') {
     const prep = BD.peek('prep'), rec = byId(BD.peek('recipes'));
@@ -858,16 +970,49 @@ const A = {
   openIng(el) { openTab('ing', el.dataset.id, { s: 'ing', p: { id: el.dataset.id } }); },
   openPrep(el) { openTab('prep', el.dataset.id, { s: 'prep', p: { id: +el.dataset.id } }); },
   seg(el) { cur().p.seg = el.dataset.k; render(true); },
-  linkDish(el) { const k = el.dataset.ev + '|' + el.dataset.dish; LINK = { ev: el.dataset.ev, dish: el.dataset.dish, items: DRAFT[k] || JSON.parse(JSON.stringify(simGet(el.dataset.ev, el.dataset.dish))), q: '' }; DRAFT[k] = LINK.items; linkSheet(); },
-  linkPick(el) { const r = byId(BD.peek('recipes'))[el.dataset.r]; if (r && !LINK.items.some(x => x.recipe_id === r.id)) LINK.items.push({ recipe_id: r.id, title: r.title, qty: '', unit: 'portions' }); LINK.q = ''; linkSheet(); },
-  linkDrop(el) { LINK.items.splice(+el.dataset.i, 1); linkSheet(); },
-  linkCancel() { delete DRAFT[LINK.ev + '|' + LINK.dish]; LINK = null; closeSheet(); },
-  linkSave() {
-    const bad = LINK.items.filter(x => !(num(x.qty) > 0));
-    if (bad.length) { const n = $('sheet').querySelector('.lk-qty[data-i="' + LINK.items.indexOf(bad[0]) + '"]'); if (n) { n.focus(); n.classList.add('bad'); } return; }
-    simSet(LINK.ev, LINK.dish, LINK.items.map(x => ({ recipe_id: x.recipe_id, title: x.title, qty: num(x.qty), unit: x.unit })));
-    delete DRAFT[LINK.ev + '|' + LINK.dish]; LINK = null; closeSheet(); render(true);
+  linkDish(el) {
+    const e = (BD.peek('events') || []).find(x => x.id === el.dataset.ev), k = e && tsKitchen(e); if (!k) return;
+    const keys = lineKeys(k.dishes), i = keys.indexOf(el.dataset.key); if (i < 0) return;
+    const d = k.dishes[i], L = linkFor(e, keys[i]), dk = e.id + '|' + keys[i];
+    const s = L ? { comps: L.components.map(c => ({ recipe_id: c.recipe_id, title: c.title, unit: c.unit, qty: c.qty, status: 'saved', rule: c.basis && c.basis.rule, source: c.basis && c.basis.source })), open: [] } : suggestionFor(d.name, e);
+    LINK = { e, key: keys[i], name: d.name, section: d.section, items: DRAFT[dk] || s.comps.map(c => Object.assign({}, c)), open: s.open, q: '', remember: false, existing: !!L, err: '' };
+    DRAFT[dk] = LINK.items; linkSheet(); whoAmI().then(() => { if (LINK && $('sheet') && !$('sheet').hidden) linkSheet(); });
   },
+  linkPick(el) { const r = byId(BD.peek('recipes'))[el.dataset.r]; if (r && !LINK.items.some(x => x.recipe_id === r.id)) LINK.items.push({ recipe_id: r.id, title: r.title, qty: '', unit: 'portions', status: 'manual' }); LINK.q = ''; linkSheet(); },
+  linkDrop(el) { LINK.items.splice(+el.dataset.i, 1); linkSheet(); },
+  linkCancel() { if (LINK) delete DRAFT[LINK.e.id + '|' + LINK.key]; LINK = null; closeSheet(); },
+  async linkSave() {
+    const L = LINK; if (!L || L.busy) return;
+    if (!L.items.length) { L.err = 'Add at least one recipe.'; return linkSheet(); }
+    const bad = L.items.findIndex(x => !(num(x.qty) > 0));
+    if (bad >= 0) { const n = $('sheet').querySelector('.lk-qty[data-i="' + bad + '"]'); if (n) { n.focus(); n.classList.add('bad'); } return; }
+    await whoAmI();
+    if (!ME) { AFTER_LOGIN = () => linkSheet(); PIN = ''; return loginSheet(); }
+    if (!ME.can_edit) { L.err = 'Your Brigade user cannot save catering links (admin or chef only).'; return linkSheet(); }
+    L.busy = true; L.err = ''; linkSheet();
+    try {
+      await api('save', { event_id: L.e.id, line_key: L.key, original_text: L.name, section: L.section, remember: L.remember,
+        components: L.items.map(x => ({ recipe_id: x.recipe_id, unit: x.unit, qty: num(x.qty), basis: x.rule ? { rule: x.rule, source: x.source, status: x.status } : null })) });
+      delete DRAFT[L.e.id + '|' + L.key]; delete PLAN[L.e.id]; LINK = null; closeSheet();
+      await BD.load('catlinks', true).catch(() => {}); if (L.remember) BD.load('cataliases', true).catch(() => {});
+      render(true);
+    } catch (x) {
+      L.busy = false;
+      if (x.code === 'session') { AFTER_LOGIN = () => linkSheet(); PIN = ''; return loginSheet('Session expired: sign in again.'); }
+      L.err = { not_allowed: 'Your Brigade user cannot save catering links (admin or chef only).', qty_missing: 'Every recipe needs a quantity.', unit_not_allowed: 'Choose a unit.', recipe_not_found: 'One recipe no longer exists in Brigade.' }[x.code] || ('Not saved: ' + x.code);
+      linkSheet();
+    }
+  },
+  async linkRemove() {
+    const L = LINK; if (!L) return;
+    await whoAmI(); if (!ME) { AFTER_LOGIN = () => linkSheet(); PIN = ''; return loginSheet(); }
+    try { await api('remove', { event_id: L.e.id, line_key: L.key }); delete PLAN[L.e.id]; LINK = null; closeSheet(); await BD.load('catlinks', true).catch(() => {}); render(true); }
+    catch (x) { L.err = 'Not removed: ' + x.code; linkSheet(); }
+  },
+  login() { AFTER_LOGIN = LINK ? () => linkSheet() : null; PIN = ''; loginSheet(); },
+  loginCancel() { PIN = ''; if (LINK && AFTER_LOGIN) { const f = AFTER_LOGIN; AFTER_LOGIN = null; f(); } else { AFTER_LOGIN = null; closeSheet(); } },
+  pinKey(el) { const k = el.dataset.k; if (k === '⌫') PIN = PIN.slice(0, -1); else if (PIN.length < 4) PIN += k; loginSheet(); if (PIN.length === 4) pinSubmit(); },
+  replan() { const e = (BD.peek('events') || []).find(x => x.id === cur().p.id); if (e) delete PLAN[e.id]; render(true); },
   scale(el) { cur().p.x = +el.dataset.x; render(true); },
   more(el) { cur().p[el.dataset.k] = 1; render(true); },
   refresh() { Object.keys(BD.store).forEach(n => BD.load(n, true).catch(() => {})); Object.keys(DET).forEach(k => delete DET[k]); renderLive(); },

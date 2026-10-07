@@ -255,3 +255,12 @@ h2{font-family:var(--fd);font-size:15px;margin:0 0 10px;font-weight:800;letter-s
 .lkact{display:flex;gap:10px;margin-top:16px}.lkact button{flex:1;height:52px;border-radius:14px;font-weight:700;text-align:center}
 .lkact .primary{background:var(--cat,#7c3aed);color:#fff}.lkact .ghost{background:var(--surf2);color:var(--tx)}
 .row[disabled]{opacity:.55}
+
+/* CAT03 */
+.oktag,.ruletag,.sugtag{display:inline-block;font-size:11px;font-weight:800;letter-spacing:.04em;padding:2px 7px;border-radius:7px;vertical-align:1px}
+.oktag{background:var(--ok-bg);color:var(--ok)}.ruletag{background:var(--surf2);color:var(--today)}.sugtag{background:var(--warn-bg);color:var(--warn)}
+details.why{margin-top:4px;font-size:14px;color:var(--tx2)}details.why summary{color:var(--today);font-weight:700;cursor:pointer;min-height:32px;line-height:32px;display:block}details.why[open] summary{margin-bottom:2px}
+.lkrem{display:flex;gap:10px;align-items:center;margin-top:14px;font-size:15px;color:var(--tx2)}.lkrem input{width:22px;height:22px}
+.row.sub{min-height:52px;padding-left:28px}.row.sub .name{font-size:16px}
+.dots{display:flex;gap:12px;justify-content:center;margin:14px 0}.dots i{width:14px;height:14px;border-radius:50%;border:2px solid var(--tx2)}.dots i.on{background:var(--tx2)}
+.pin{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.pin button{height:62px;border-radius:16px;background:var(--surf);border:1px solid var(--line);font-size:26px;font-weight:700;text-align:center}

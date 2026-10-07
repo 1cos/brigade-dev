@@ -57,3 +57,24 @@ test('headings and drinks inside the Food section are not dishes', () => {
   assert.strictEqual(k.notes.length, 3);
   assert.strictEqual(k.beverages.length, 2);
 });
+
+// CAT03 — suggestions from Chef's rules (sources: thread "consuntivi" 30/09–01/10, census v1.4)
+const K = require('../catering-knowledge.js');
+test('Mason at 45 guests: Chef rules give these quantities, nothing for lasagna/parmigiana', () => {
+  const q = (d) => K.suggest(d, 45).comps.map(c => `${c.title}=${c.qty} ${c.unit}/${c.status}`);
+  assert.deepStrictEqual(q('Mini Tiramisu'), ['Tiramisu=20 portions/chef_rule']);                 // ceil(ceil(58.5)/3)
+  assert.deepStrictEqual(q('House salad'), ['House Salad=15 portions/chef_rule']);                 // 45/3
+  assert.deepStrictEqual(q('Penne cacio e pepe with chicken'), ['PENNE CACIO E PEPE Catering=45 portions/chef_rule', 'Grilled Chicken=1.5 kg/chef_rule']);
+  assert.deepStrictEqual(q('Penne Marinara'), ['PENNE ARRABBIATA BUFFET=45 portions/suggested']);  // "per questo evento" only
+  assert.deepStrictEqual(q('Tuscan Board with Bruschetta, caprese and cantalupe/Parma'),
+    ['TOMATO X BRUSCHETTA=1.77 kg/suggested', 'Caprese=59 pieces/suggested', 'PROSCIUTTO E MELONE=59 pieces/suggested']);
+  assert.deepStrictEqual(q('Beef Lasagna'), []);
+  assert.deepStrictEqual(q('Chicken parmigiana'), []);
+  assert.strictEqual(K.suggest('Beef Lasagna', 45).open.length, 1);
+  assert.strictEqual(K.suggest('Chicken parmigiana', 45).open.length, 1);
+});
+test('a rule Chef saved scales by guests and wins over the sources', () => {
+  const a = { components: [{ recipe_id: 'r', title: 'Tiramisu', unit: 'portions', per_guest: 20 / 45 }], source: 'V020 · Mason' };
+  assert.deepStrictEqual(K.fromAlias(a, 90).map(c => c.qty), [40]);
+  assert.strictEqual(K.fromAlias(a, 90)[0].status, 'chef_saved');
+});
