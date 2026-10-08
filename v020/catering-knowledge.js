@@ -68,9 +68,14 @@
   }
 
   /* A rule Chef saved in Brigade (catering_menu_aliases) beats the sources above. */
-  function fromAlias(alias, guests) {
-    const n = Number(guests) || 0;
+  function fromAlias(alias, guests, text) {
+    const n = Number(guests) || 0, src = text != null ? suggest(text, guests).comps : [];
     return (alias.components || []).map(c => {
+      if (c.association_only) {            // Chef confirmed the recipe, not a quantity: quantity stays a suggestion from the sources
+        const s = src.find(x => x.recipe_id === c.recipe_id);
+        return { recipe_id: c.recipe_id, title: c.title, unit: s ? s.unit : c.unit, qty: s ? s.qty : null, status: 'assoc',
+          rule: (s ? s.rule + ' · ' : '') + 'recipe confirmed by Chef, quantity to confirm', source: alias.source };
+      }
       const q = c.per_guest != null && n ? (c.unit === 'kg' ? kg(c.per_guest * n) : up(c.per_guest * n)) : c.qty;
       return { recipe_id: c.recipe_id, title: c.title, unit: c.unit, qty: q, status: 'chef_saved',
         rule: c.per_guest != null ? `${c.per_guest.toFixed(4).replace(/0+$/, '').replace(/\.$/, '')} ${c.unit} per guest` : 'same quantity', source: alias.source };

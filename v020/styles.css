@@ -264,3 +264,11 @@ details.why{margin-top:4px;font-size:14px;color:var(--tx2)}details.why summary{c
 .row.sub{min-height:52px;padding-left:28px}.row.sub .name{font-size:16px}
 .dots{display:flex;gap:12px;justify-content:center;margin:14px 0}.dots i{width:14px;height:14px;border-radius:50%;border:2px solid var(--tx2)}.dots i.on{background:var(--tx2)}
 .pin{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.pin button{height:62px;border-radius:16px;background:var(--surf);border:1px solid var(--line);font-size:26px;font-weight:700;text-align:center}
+
+/* CAT04 operational list */
+.ops{margin-top:10px;padding:10px 12px;border-radius:14px;background:var(--surf2)}
+.opsh{font-size:16px;margin-bottom:6px}
+.ol{display:flex;gap:8px;align-items:baseline;font-size:15px;padding:3px 0}.ol .oln{flex:1;min-width:0}.ol b{white-space:nowrap;font-variant-numeric:tabular-nums}
+.olk{font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;padding:1px 6px;border-radius:6px;white-space:nowrap}
+.olk.by{background:var(--surf);color:var(--tx2)}.olk.mk{background:var(--warn-bg);color:var(--warn)}
+.olnest{margin-left:14px;padding-left:10px;border-left:2px solid var(--line)}
