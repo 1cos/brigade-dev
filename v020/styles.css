@@ -272,3 +272,5 @@ details.why{margin-top:4px;font-size:14px;color:var(--tx2)}details.why summary{c
 .olk{font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;padding:1px 6px;border-radius:6px;white-space:nowrap}
 .olk.by{background:var(--surf);color:var(--tx2)}.olk.mk{background:var(--warn-bg);color:var(--warn)}
 .olnest{margin-left:14px;padding-left:10px;border-left:2px solid var(--line)}
+.catchip{display:inline-block;font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;padding:2px 7px;border-radius:7px;background:var(--surf2);color:var(--tx2);vertical-align:3px}
+.proptag{display:inline-block;font-size:11px;font-weight:800;letter-spacing:.04em;padding:2px 7px;border-radius:7px;background:var(--surf2);color:var(--tx);vertical-align:1px}

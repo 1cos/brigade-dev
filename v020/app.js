@@ -139,7 +139,32 @@ const catReady = () => Array.isArray(BD.peek('catlinks'));
 function evLinks(e) { const L = BD.peek('catlinks'); return Array.isArray(L) ? L.filter(x => x.event_id === e.id) : []; }
 function linkFor(e, key) { return evLinks(e).find(x => x.line_key === key) || null; }
 function aliasFor(text) { const A = BD.peek('cataliases'), n = CK.norm(text); return Array.isArray(A) ? A.find(a => a.alias_norm === n) || null : null; }
-function suggestionFor(text, e) { const a = aliasFor(text); return a ? { comps: CK.fromAlias(a, e.guest_count, text), open: [], alias: a } : CK.suggest(text, e.guest_count); }
+let PLANC = { key: null, map: {} };
+function eventPlan(e) {                             // proposals for the CURRENT menu and guests (recomputed when they change)
+  const k = tsKitchen(e); if (!k) return {};
+  const key = e.id + '|' + e.guest_count + '|' + k.dishes.map(d => d.name).join('§');
+  if (PLANC.key !== key) PLANC = { key, map: Object.fromEntries(CK.plan(k.dishes, e.guest_count).map(p => [p.name, p])) };
+  return PLANC.map;
+}
+function suggestionFor(text, e) {
+  const p = eventPlan(e)[text] || { comps: [], questions: [], category: CK.category(text) };
+  const open = p.questions.map(q => ({ ask: q, source: '' })), a = aliasFor(text);
+  if (a && (a.components || []).every(c => c.association_only)) {    // Chef confirmed the recipe only: quantity from the rules
+    const comps = a.components.map(c => { const x = p.comps.find(y => y.recipe_id === c.recipe_id);
+      return Object.assign({}, x || { recipe_id: c.recipe_id, title: c.title, unit: c.unit, qty: null, rule: '' }, { status: x && x.status === 'chef_rule' ? 'chef_rule' : 'assoc', rule: (x ? x.rule + ' · ' : '') + 'recipe confirmed by Chef', source: (x ? x.source + ' · ' : '') + a.source }); });
+    return { comps, open, plan: p, alias: a };
+  }
+  if (a) return { comps: CK.fromAlias(a, e.guest_count, text), open: [], plan: p, alias: a };
+  return { comps: p.comps, open, plan: p };
+}
+function reconfirm(L, s, e) {                       // what changed since Chef saved: guests, or the rule's proposal
+  const out = [], g = (L.components.find(c => c.basis && c.basis.guests) || {}).basis;
+  if (g && g.guests && e.guest_count && +g.guests !== +e.guest_count) out.push(`saved for ${g.guests} guests, now ${e.guest_count}`);
+  s.comps.forEach(pc => { if (pc.qty == null) return; const sc = L.components.find(c => c.recipe_id === pc.recipe_id), u = x => UNIT_LABEL[x] || x;
+    if (!sc) out.push(`the rule proposes ${pc.title} ${fmt(pc.qty)} ${u(pc.unit)}`);
+    else if (num(sc.qty) !== num(pc.qty) || sc.unit !== pc.unit) out.push(`${pc.title}: rule now ${fmt(pc.qty)} ${u(pc.unit)}, saved ${fmt(sc.qty)} ${u(sc.unit)}`); });
+  return out;
+}
 const compText = cs => cs.map(c => `${esc(c.title)} · ${c.qty != null ? fmt(c.qty) : '?'} ${esc(UNIT_LABEL[c.unit] || c.unit)}`).join(' + ');
 const TAG = { assoc: '<span class="ruletag">Recipe confirmed by Chef · quantity to confirm</span>', saved: '<span class="oktag">Saved</span>', chef_saved: '<span class="ruletag">Chef rule (saved)</span>', chef_rule: '<span class="ruletag">Chef rule</span>', suggested: '<span class="sugtag">Suggested · to confirm</span>', manual: '' };
 /* the same check the server does: which unit Brigade can turn into batches for this recipe */
@@ -158,19 +183,23 @@ function tsGuests(e, k) {
 function planDishes(e) {
   const k = tsKitchen(e); if (!k || !k.dishes.length || !catReady()) return '';
   const keys = lineKeys(k.dishes), done = keys.filter(x => linkFor(e, x)).length;
-  return `<section><h2>Kitchen · ${done} of ${k.dishes.length} dishes linked</h2><div class="list">${k.dishes.map((d, i) => dishLinkRow(d, e, keys[i])).join('')}</div>
-    <p class="note" style="font-size:14px">${e.guest_count ? e.guest_count + ' event guests. ' : ''}Amounts are the recipe in Brigade scaled to the saved quantity. Not added to the restaurant prep plan.</p></section>`;
+  return `<section><h2>Kitchen · ${done} of ${k.dishes.length} confirmed by Chef</h2><div class="list">${k.dishes.map((d, i) => dishLinkRow(d, e, keys[i])).join('')}</div>
+    <p class="note" style="font-size:14px">${e.guest_count ? e.guest_count + ' event guests. ' : ''}<b>Proposed</b> = Chef's rules applied to the current Tripleseat menu, recalculated when menu or guests change. <b>Saved</b> = confirmed by Chef. Amounts are the Brigade recipe scaled; not added to the restaurant prep plan.</p></section>`;
 }
 function dishLinkRow(d, e, key) {
-  const L = linkFor(e, key), btn = `<button class="lnk" data-a="linkDish" data-ev="${e.id}" data-key="${esc(key)}">${L ? 'Edit' : 'Link recipe'} ›</button>`;
-  if (L) return `<div class="row"><span class="main"><div class="name">${esc(d.name)}</div>
+  const L = linkFor(e, key), s = suggestionFor(d.name, e), p = s.plan || {};
+  const chip = `<span class="catchip">${esc(p.category || '')}${p.share ? ' · ' + fmt(p.share.std) + ' std' : ''}</span>`;
+  const btn = `<button class="lnk" data-a="linkDish" data-ev="${e.id}" data-key="${esc(key)}">${L ? 'Edit' : 'Confirm / change'} ›</button>`;
+  if (L) { const rc = reconfirm(L, s, e);
+    return `<div class="row"><span class="main"><div class="name">${esc(d.name)} ${chip}</div>
     <div class="meta">${TAG.saved} by ${esc(L.confirmed_by)} · ${shortDay(dCDT(L.confirmed_at))} · ${btn}</div>
-    ${L.components.map(c => opsHtml(c, e)).join('')}</span></div>`;
-  const s = suggestionFor(d.name, e), st = s.comps.some(c => c.status === 'assoc') ? 'assoc' : s.comps.some(c => c.status === 'suggested') ? 'suggested' : s.comps.length ? s.comps[0].status : '';
-  return `<div class="row"><span class="main"><div class="name">${esc(d.name)}</div>
-    <div class="meta"><span class="wtx">Not linked</span>${s.comps.length ? ` · ${TAG[st] || ''} ${compText(s.comps)}` : ''}</div>
-    ${s.open.length ? `<div class="meta">${s.open.map(o => 'Still to decide: ' + esc(o.ask)).join('<br>')}</div>` : ''}
-    <div class="meta">${btn}</div></span></div>`;
+    ${rc.length ? `<div class="meta wtx">To reconfirm: ${rc.map(esc).join(' · ')}</div>` : ''}
+    ${L.components.map(c => opsHtml(c, e)).join('')}</span></div>`; }
+  const st = s.comps.some(c => c.status === 'assoc') ? 'assoc' : s.comps.some(c => c.status === 'suggested') ? 'suggested' : s.comps.length ? 'chef_rule' : '';
+  return `<div class="row"><span class="main"><div class="name">${esc(d.name)} ${chip}</div>
+    <div class="meta">${s.comps.length ? `<span class="proptag">Proposed</span> ${TAG[st] || ''}` : '<span class="wtx">No quantity yet</span>'} · ${btn}</div>
+    ${s.open.map(o => `<div class="meta wtx">Missing: ${esc(o.ask)}</div>`).join('')}
+    ${s.comps.filter(c => c.qty != null).map(c => opsHtml(c, e)).join('')}</span></div>`;
 }
 /* ---- operational list: the recipe scaled to the saved quantity (read from Brigade's recipe, nothing invented) ---- */
 const r2 = x => Math.round(x * 100) / 100;
@@ -203,8 +232,8 @@ function scaledLines(rid, unit, qty, depth) {
   }).join('');
 }
 function opsHtml(c, e) {
-  const rule = String((c.basis && c.basis.rule) || ''), cooked = /cooked/i.test(rule) && c.unit === 'kg';
-  return `<div class="ops"><div class="opsh"><button class="lnk" data-a="openRecipe" data-r="${c.recipe_id}" data-from="event:${e.id}">${esc((byId(BD.peek('recipes') || [])[c.recipe_id] || {}).title || c.title)}</button> · <b>${fmt(c.qty)} ${esc(UNIT_LABEL[c.unit] || c.unit)}</b>${cooked ? ` cooked · raw ≈ ${r2(c.qty / 0.75)} kg (÷0.75, Chef)` : ''}</div>${scaledLines(c.recipe_id, c.unit, c.qty, 0)}</div>`;
+  const rule = String((c.basis && c.basis.rule) || c.rule || ''), src = String((c.basis && c.basis.source) || c.source || ''), cooked = /cooked/i.test(rule) && c.unit === 'kg';
+  return `<div class="ops"><div class="opsh"><button class="lnk" data-a="openRecipe" data-r="${c.recipe_id}" data-from="event:${e.id}">${esc((byId(BD.peek('recipes') || [])[c.recipe_id] || {}).title || c.title)}</button> · <b>${fmt(c.qty)} ${esc(UNIT_LABEL[c.unit] || c.unit)}</b>${cooked ? ` cooked · raw ≈ ${r2(c.qty / 0.75)} kg (÷0.75, Chef)` : ''}</div>${rule ? `<details class="why"><summary>Why</summary><div>${esc(rule)}</div>${src ? `<div class="muted">${esc(src)}</div>` : ''}</details>` : ''}${scaledLines(c.recipe_id, c.unit, c.qty, 0)}</div>`;
 }
 /* ---- link sheet ---- */
 let LINK = null;                                 // { e, key, name, section, items, q, remember, note, busy, err, existing }
@@ -762,7 +791,7 @@ SCREENS.event = { title: p => { const e = (BD.peek('events') || []).find(x => x.
     else {
       const keys = lineKeys(k.dishes), links = evLinks(e), done = keys.filter(x => links.some(l => l.line_key === x)).length;
       const orphans = links.filter(l => !keys.includes(l.line_key)), br = evRecipes(e).filter(r => r.recipe_id);
-      if (seg === 'production') body = `<p class="note" style="font-size:14px"><b>${done} of ${k.dishes.length} dishes linked.</b> ${done < k.dishes.length ? 'Link each dish to its recipe and quantity: suggestions come from Chef\'s rules, nothing is saved until you press Save.' : 'All dishes linked.'}</p>
+      if (seg === 'production') body = `<p class="note" style="font-size:14px"><b>${done} of ${k.dishes.length} confirmed by Chef.</b> ${done < k.dishes.length ? 'Link each dish to its recipe and quantity: suggestions come from Chef\'s rules, nothing is saved until you press Save.' : 'All dishes linked.'}</p>
         ${tsGuests(e, k)}<section><h2>Dishes from Tripleseat</h2><div class="list">${k.dishes.map((d, i) => dishLinkRow(d, e, keys[i])).join('')}</div></section>
         ${k.beverages.length ? `<p class="note" style="font-size:14px">${plural(k.beverages.length, 'drink line')} left out: not kitchen work.</p>` : ''}
         ${links.length ? `<section><h2>Preps and sub-recipes involved</h2><div class="list">${[...new Set(links.filter(l => keys.includes(l.line_key)).flatMap(l => l.components.map(c => c.recipe_id)))].map(rid => prodRecipe(rid, e)).join('') || '<div class="row"><span class="main"><div class="meta">No prep linked to these recipes.</div></span></div>'}</div><p class="note" style="font-size:14px">Stock shown is not verified. These quantities are not added to the restaurant prep plan.</p></section>` : ''}
@@ -1032,7 +1061,7 @@ const A = {
     L.busy = true; L.err = ''; linkSheet();
     try {
       await api('save', { event_id: L.e.id, line_key: L.key, original_text: L.name, section: L.section, remember: L.remember,
-        components: L.items.map(x => ({ recipe_id: x.recipe_id, unit: x.unit, qty: num(x.qty), basis: x.rule ? { rule: x.rule, source: x.source, status: x.status } : null })) });
+        components: L.items.map(x => ({ recipe_id: x.recipe_id, unit: x.unit, qty: num(x.qty), basis: { rule: x.rule || '', source: x.source || '', status: x.status || 'manual', guests: L.e.guest_count || null } })) });
       delete DRAFT[L.e.id + '|' + L.key]; delete PLAN[L.e.id]; LINK = null; closeSheet();
       await BD.load('catlinks', true).catch(() => {}); if (L.remember) BD.load('cataliases', true).catch(() => {});
       render(true);

@@ -78,3 +78,37 @@ test('a rule Chef saved scales by guests and wins over the sources', () => {
   assert.deepStrictEqual(K.fromAlias(a, 90).map(c => c.qty), [40]);
   assert.strictEqual(K.fromAlias(a, 90)[0].status, 'chef_saved');
 });
+
+// CAT05 — buffet rules confirmed by Chef 07/10 (R1 primi, R2 antipasti, R3 tagliata, R4 lasagna)
+const MASON7 = ['Tuscan Board with Bruschetta, caprese and cantalupe/Parma', 'Penne cacio e pepe with chicken', 'Penne Marinara', 'Beef Lasagna', 'Chicken parmigiana', 'House salad', 'Mini Tiramisu'].map(name => ({ name }));
+const P = (names, n) => K.plan(names.map(name => ({ name })), n);
+test('Mason 45 guests: 3 primi, 1 antipasto (the board), categories', () => {
+  const p = K.plan(MASON7, 45), by = Object.fromEntries(p.map(x => [x.name, x]));
+  assert.deepStrictEqual(p.map(x => x.category), ['antipasto', 'primo', 'primo', 'primo', 'secondo', 'salad', 'dessert']);
+  assert.strictEqual(by['Penne Marinara'].share.std, 7.5);                         // 45 × 0.5 ÷ 3
+  assert.deepStrictEqual(by['Penne cacio e pepe with chicken'].comps.map(c => [c.title, c.qty, c.unit]),
+    [['PENNE CACIO E PEPE Catering', 23, 'portions'], ['Grilled Chicken', 1.5, 'kg']]);   // 7.5 × 120 g = 900 g penne ÷ 40 g = 22.5 → 23
+  assert.deepStrictEqual(by['Penne Marinara'].comps.map(c => [c.title, c.qty]), [['PENNE ARRABBIATA BUFFET', 18]]);  // 900 ÷ 50
+  assert.deepStrictEqual(by['Beef Lasagna'].comps.map(c => [c.title, c.qty]), [['Lasagna', 12]]);   // ceil(45/36) = 2 trays × 6
+  assert.strictEqual(by['Tuscan Board with Bruschetta, caprese and cantalupe/Parma'].share.std, 22.5);  // one antipasto: N/2
+  assert.strictEqual(by['Tuscan Board with Bruschetta, caprese and cantalupe/Parma'].comps.length, 0);   // its standard portion is unknown
+  assert.ok(by['Tuscan Board with Bruschetta, caprese and cantalupe/Parma'].questions[0].includes('ONE standard portion'));
+  assert.strictEqual(by['Chicken parmigiana'].comps.length, 0);
+  assert.deepStrictEqual(by['House salad'].comps.map(c => c.qty), [15]);
+  assert.deepStrictEqual(by['Mini Tiramisu'].comps.map(c => c.qty), [20]);
+});
+test('40 guests: primi split 1/2/3, lasagna trays, antipasti split, tagliata not divided', () => {
+  assert.strictEqual(P(['Penne Marinara'], 40)[0].share.std, 20);
+  assert.deepStrictEqual(P(['Penne Marinara', 'Penne cacio e pepe'], 40).map(x => x.share.std), [10, 10]);
+  assert.deepStrictEqual(P(['Penne Marinara', 'Penne cacio e pepe', 'Beef Lasagna'], 40).map(x => x.share.std), [6.667, 6.667, 6.667]);
+  const tr = ks => P(['Beef Lasagna', 'Penne Marinara', 'Penne cacio e pepe'].slice(0, ks), 40)[0].comps[0].qty / 6;
+  assert.deepStrictEqual([tr(1), tr(2), tr(3)], [4, 2, 2]);                        // ceil(40/12), ceil(40/24), ceil(40/36)
+  const a = n => P(['Caprese', 'Tomato Bruschetta', 'Calamari'].slice(0, n).concat(['Penne Marinara']), 40).filter(x => x.category === 'antipasto').map(x => x.share.std);
+  assert.deepStrictEqual([a(1), a(2), a(3)], [[20], [10, 10], [6.667, 6.667, 6.667]]);
+  assert.deepStrictEqual(P(['NY Strip Tagliata with Arugula', 'Penne Marinara', 'Penne cacio e pepe'], 40)[0].comps.map(c => c.qty), [10]);
+});
+test('hors d\'oeuvre menu (no primi or secondi): antipasti keep the finger rules, R2 not applied', () => {
+  const p = P(['Tomato Bruschetta', 'Caprese skewers', 'Mini Tiramisu'], 40);
+  assert.ok(p.every(x => x.service === 'hors_doeuvre' && !x.share));
+  assert.deepStrictEqual(p[0].comps.map(c => [c.title, c.qty]), [['TOMATO X BRUSCHETTA', 1.56]]);   // 52 slices × 30 g
+});
