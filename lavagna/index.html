@@ -1,0 +1,115 @@
+<!doctype html><html lang="en"><head>
+<meta name="robots" content="noindex"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Kitchen Board</title>
+<style>
+:root{--bg:#e3eaf1;--panel:#ffffff;--card:#fbfcfd;--line:#d6dee7;--fg:#141a21;--sub:#4a5563;--mut:#8a95a3;--edge:#b9c4d0;--urg:#c8524a;--urgbg:#fefaf9;--ok:#3f9a62;--okbg:#f1f8f3;
+--fName:clamp(16px,1.6vw,40px);--fSub:clamp(13px,1.2vw,30px);--fHead:clamp(13px,1.1vw,28px);--fAnn:clamp(14px,1.3vw,32px)}
+*{box-sizing:border-box}html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",system-ui,sans-serif;display:flex;flex-direction:column;overflow:hidden;padding:1.2vw 1.4vw;gap:1vw}
+header{display:flex;align-items:flex-end;gap:1.2vw;flex:0 0 auto}
+header h1{margin:0;font-size:clamp(20px,2vw,48px);letter-spacing:.01em;font-weight:800;line-height:1}
+header .sub{font-size:var(--fHead);color:var(--sub);letter-spacing:.06em;text-transform:uppercase;font-weight:600;margin-bottom:.15vw}
+header .right{margin-left:auto;display:flex;gap:1.2vw;align-items:baseline;font-size:var(--fHead);color:var(--sub);font-weight:700;letter-spacing:.06em}
+#st.off{color:var(--urg)}
+.ann{display:flex;gap:.8vw;flex:0 0 auto;min-height:0}
+.ann span{font-size:var(--fAnn);font-weight:600;padding:.55vw 1.2vw;border-radius:.6vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:34%;color:#2d3742}
+.ann .CATERING{background:#d4e3ef}.ann .SPECIAL{background:#e4e7cf}.ann .CHEF{background:#ecdbe6}
+main{flex:1 1 auto;min-height:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr));grid-auto-flow:column;gap:1vw}
+.stn{background:var(--panel);border:1px solid var(--line);border-radius:.9vw;padding:1vw 1.1vw;display:flex;flex-direction:column;min-height:0;min-width:0;overflow:hidden}
+.stn h2{margin:0 0 .5vw;font-size:var(--fHead);text-transform:uppercase;letter-spacing:.07em;color:#2d3742;font-weight:800;display:flex;align-items:baseline}
+.stn h2 .pg{margin-left:auto;color:var(--mut);font-weight:600;letter-spacing:.04em}
+.stn h2 .ub{margin-left:.6vw;color:var(--urg);font-weight:800;letter-spacing:.04em}
+.stn h2 .ub+.pg{margin-left:.6vw}.stn h2 .ub{margin-left:auto}
+.slots{flex:1;min-height:0;display:grid;grid-template-rows:repeat(4,minmax(0,1fr));gap:.45vw}
+.rot{display:contents}
+.c{border-left:3px solid var(--edge);padding:.15vw .9vw;display:flex;flex-direction:column;justify-content:center;min-width:0;min-height:0;transition:opacity .45s ease}
+.c .n{font-weight:800;font-size:var(--fName);line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.c .s{font-size:var(--fSub);color:var(--sub);line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:.15vw}
+.c .s .unk{color:var(--mut);font-weight:500}
+.c.URGENT{border-left-color:#d98a84;background:var(--urgbg);border-radius:0 .4vw .4vw 0}.c.URGENT .u{color:var(--urg);font-weight:700}
+.c.DONE{border-left-color:var(--ok);background:var(--okbg);border-radius:0 .4vw .4vw 0}
+.c.DONE .n{text-decoration:line-through;text-decoration-thickness:2px;color:#5d6873}.c.DONE .s{color:var(--ok);font-weight:800;letter-spacing:.03em}
+.c.DONE .ck{color:var(--ok);margin-right:.4vw;text-decoration:none;display:inline-block}
+.fade{opacity:0}
+.clear{color:var(--mut);font-size:var(--fSub);align-self:start;padding:.3vw .9vw}
+</style></head><body>
+<header><h1>KITCHEN BOARD</h1><div class="sub">Today's prep &amp; checks</div><div class="right"><span id="clk"></span><span id="st">CONNECTING</span></div></header>
+<div class="ann" id="ann"></div>
+<main id="m"></main>
+<script src="motore.js"></script>
+<script>
+// V4 — 4 colonne × 2 stazioni, max 4 attività visibili per stazione.
+// Rotazione SOLO dentro la stazione (ogni ~20 s) quando ha più di 4 attività; le URGENT e le COMPLETED (60 s) restano ferme.
+const ROTATE_MS = +(new URLSearchParams(location.search).get('rotate') || 20000), SLOTS = 4
+let ver = -1, es = null, data = null
+const rot = {}   // per stazione: { page, nextAt }
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]))
+const fmt = x => (Math.round(x * 10) / 10).toString()
+function line(i) {
+  if (i.tier === 'DONE') return `COMPLETED BY ${esc(i.completed.by.toUpperCase())}`
+  const parts = []
+  if (i.type === 'check') parts.push(/Due by (.*)/.test(i.reason) ? 'Check · by ' + esc(i.reason.match(/Due by (.*)/)[1]) : 'Check')
+  else parts.push(`${fmt(i.min)} ${esc(i.unit)}` + (i.stock?.kind === 'unknown' ? ' <span class="unk">· stock unknown</span>' : ''))   // Chef 20/10: fabbisogno pieno, nota discreta (non è "quanto manca")
+  if (i.tier === 'URGENT') parts.push('<span class="u">Urgent</span>')
+  else if (i.tier === 'UPCOMING') parts.push(/Weekly/.test(i.reason) ? 'Tomorrow' : /Catering/.test(i.reason) ? 'Catering' : 'Plan ahead')
+  else if (/Weekly/.test(i.reason)) parts.push('Weekly')
+  else if (/Catering/.test(i.reason)) parts.push('Catering')
+  return parts.join(' · ')
+}
+const card = i => i.strip
+  ? `<div class="c DONE" data-id="strip"><div class="n"><span class="ck">✓</span>${i.items.map(x => esc(x.name)).join(' · ')}</div><div class="s">COMPLETED BY ${i.items.map(x => esc(x.completed.by.toUpperCase())).join(' · ')}</div></div>`
+  : `<div class="c ${i.tier}" data-id="${esc(i.id)}"><div class="n">${i.tier === 'DONE' ? '<span class="ck">✓</span>' : ''}${esc(i.name)}</div><div class="s">${line(i)}</div></div>`
+// divide le attività della stazione: ferme (COMPLETED + URGENT) e a rotazione (le altre)
+// V5 (Chef 20/10): se COMPLETED + URGENT superano i 4 posti, niente sparisce in silenzio:
+//  - le conferme in corso si raccolgono in UN posto (nomi e cuochi, stessi caratteri), ognuna resta i suoi 60 s;
+//  - le URGENT occupano gli altri posti e, se sono di più, ruotano SOLO tra loro ogni 20 s;
+//  - nell'intestazione della stazione compare "N URGENT" in rosso: si vede sempre quante sono;
+//  - le altre attività (Today / Upcoming) aspettano che si liberi un posto.
+function plan(s, list) {
+  const D = list.filter(i => i.tier === 'DONE'), U = list.filter(i => i.tier === 'URGENT'), R = list.filter(i => i.tier !== 'DONE' && i.tier !== 'URGENT')
+  const r = rot[s] ||= { page: 0, nextAt: 0 }
+  let pinned, pool, free, overflow = false
+  if (D.length + U.length <= SLOTS) { pinned = [...D, ...U]; pool = R; free = SLOTS - pinned.length }
+  else { overflow = true; pinned = D.length === 1 ? D : D.length ? [{ strip: true, items: D }] : []; pool = U; free = SLOTS - pinned.length }
+  const pages = free > 0 && pool.length > free ? Math.ceil(pool.length / free) : 1
+  if (r.page >= pages) r.page = 0
+  const shownU = overflow ? Math.min(free, U.length) : U.length
+  return { pinned, shown: free > 0 ? pool.slice(r.page * free, r.page * free + free) : [], pages, page: r.page, total: list.length, urgent: U.length, urgentBadge: U.length > shownU || (overflow && pages > 1) }
+}
+function stationHTML(s) {
+  const list = (data.stations[s] || []), p = plan(s, list)
+  return `<h2>${esc(s)}${p.urgentBadge ? `<span class="ub">${p.urgent} URGENT</span>` : ''}${p.pages > 1 ? `<span class="pg">${p.page + 1}/${p.pages}</span>` : ''}</h2><div class="slots">${list.length ? p.pinned.map(card).join('') + `<div class="rot">${p.shown.map(card).join('')}</div>` : '<div class="clear">All clear</div>'}</div>`
+}
+function render() {
+  if (!data) return
+  document.getElementById('clk').textContent = new Date(data.clock).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+  document.getElementById('ann').innerHTML = data.announcements.slice(0, 3).map(a => `<span class="${a.kind}">${esc(a.text)}</span>`).join('')
+  const m = document.getElementById('m')
+  if (m.children.length !== data.stationOrder.length) m.innerHTML = data.stationOrder.map(s => `<section class="stn" data-s="${esc(s)}"></section>`).join('')
+  data.stationOrder.forEach((s, k) => { const el = m.children[k], h = stationHTML(s); if (el.innerHTML !== h) el.innerHTML = h })
+}
+// rotazione: ogni stazione gira per conto suo, sfalsata, con dissolvenza solo sulle schede che cambiano
+function tick() {
+  if (!data) return
+  const t = Date.now(), m = document.getElementById('m')
+  data.stationOrder.forEach((s, k) => {
+    const r = rot[s] ||= { page: 0, nextAt: 0 }; if (!r.nextAt) r.nextAt = t + ROTATE_MS + k * (ROTATE_MS / 8)
+    if (t < r.nextAt) return
+    r.nextAt = t + ROTATE_MS
+    const p = plan(s, data.stations[s] || []); if (p.pages < 2) return
+    const el = m.children[k], box = el.querySelector('.rot'); if (!box) return
+    box.querySelectorAll('.c').forEach(c => c.classList.add('fade'))
+    setTimeout(() => { r.page = (r.page + 1) % p.pages; const h = stationHTML(s); el.innerHTML = h; el.querySelectorAll('.rot .c').forEach(c => { c.classList.add('fade'); requestAnimationFrame(() => requestAnimationFrame(() => c.classList.remove('fade'))) }) }, 450)
+  })
+}
+async function load() { data = await (await fetch('/api/board', { cache: 'no-store' })).json(); ver = data.version; render(); setStatus(true) }
+function setStatus(on) { const e = document.getElementById('st'); e.textContent = on ? 'LIVE' : 'RECONNECTING'; e.className = on ? '' : 'off' }
+function connect() {
+  es && es.close(); es = new EventSource('/api/events')
+  es.addEventListener('version', ev => { const v = JSON.parse(ev.data).version; if (v !== ver) load().catch(() => setStatus(false)); else setStatus(true) })
+  es.onerror = () => { setStatus(false); es.close(); setTimeout(connect, 3000) }
+}
+setInterval(async () => { try { const v = await (await fetch('/api/version', { cache: 'no-store' })).json(); if (v.version !== ver) await load(); setStatus(true) } catch { setStatus(false) } }, 10000)
+setInterval(tick, 500)
+load().catch(() => setStatus(false)); connect()
+</script></body></html>
