@@ -276,7 +276,12 @@ let offset, t0, items, log, ctx, ann, layout = PARAMS.get('layout') === 'B' ? 'B
 const now = () => Date.now() + offset;
 function reset() {
   const d = new Date(); d.setHours(9, 30, 0, 0); t0 = d.getTime(); offset = t0 - Date.now();
-  items = demoItems(t0); log = createOfficialLog(); for (const e of demoSeed(t0)) log.append(e);
+  items = demoItems(t0);
+  if (new URLSearchParams(location.search).get('heavy')) {   // PROVA CARICO: molte più preparazioni (nomi inventati) per vedere la rotazione come in cucina
+    const extra = { 'Oven': 17, 'Pasta': 6, 'Fresh Pasta': 2, 'Salad': 5, 'Pastry': 3 };
+    for (const [st, n] of Object.entries(extra)) for (let k = 1; k <= n; k++)
+      items.push({ id: 'h' + st + k, station: st, name: st + ' prep ' + String(k).padStart(2, '0'), type: 'production', unit: 'kg', dailyNeed: 1 + (k % 4), shelfLifeDays: 2, prepMinutes: 30 + 5 * k, coverDays: 2, rule: 'cover' });
+  } log = createOfficialLog(); for (const e of demoSeed(t0)) log.append(e);
   const catering = demoCatering(t0); ctx = { ...DEFAULT_CTX, showMs: 60000, catering }; ann = demoAnnouncements(t0, catering);
 }
 reset();
