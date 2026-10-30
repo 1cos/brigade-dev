@@ -32,10 +32,36 @@ main{flex:1 1 auto;min-height:0;display:grid;grid-template-columns:repeat(4,minm
 .c.DONE .ck{color:var(--ok);margin-right:.4vw;text-decoration:none;display:inline-block}
 .fade{opacity:0}
 .clear{color:var(--mut);font-size:var(--fSub);align-self:start;padding:.3vw .9vw}
+
+header .sub{flex:0 0 auto}
+.tk{display:none;flex:1 1 auto;min-width:0;align-self:center;align-items:center;margin:0 .4vw;background:#ecdbe6;border-radius:.6vw;overflow:hidden;height:2.2em;font-size:var(--fAnn)}
+.tk.on{display:flex}.tk.urg{background:#f3d3cf}
+.tk b{flex:0 0 auto;padding:0 .9vw;font-size:.7em;letter-spacing:.1em;font-weight:800;color:#6b3a5c;border-right:2px solid #d7bccd;height:100%;display:flex;align-items:center}
+.tk.urg b{color:var(--urg);border-color:#e2aaa4}
+.tk .win{flex:1;min-width:0;overflow:hidden;position:relative;height:100%}
+.tk .txt{position:absolute;top:0;left:0;height:100%;display:flex;align-items:center;white-space:nowrap;font-weight:700;color:#2d3742;will-change:transform;animation:tkgo var(--dur,20s) linear infinite}
+@keyframes tkgo{from{transform:translateX(var(--w0,100vw))}to{transform:translateX(-100%)}}
+#pop{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(20,26,33,.45);z-index:50}
+#pop.on{display:flex;animation:popin .35s ease}
+@keyframes popin{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:none}}
+#pop .box{background:#fff;border:.35vw solid var(--urg);border-radius:1.2vw;padding:2.4vw 3.4vw;max-width:70vw;text-align:center;box-shadow:0 1vw 4vw rgba(0,0,0,.3)}
+#pop .from{font-size:clamp(14px,1.3vw,32px);letter-spacing:.14em;font-weight:800;color:var(--urg);margin-bottom:1vw}
+#pop .msg{font-size:clamp(26px,3.6vw,90px);font-weight:800;line-height:1.2;color:#141a21}
+#cmp{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(20,26,33,.45);z-index:60}
+#cmp.on{display:flex}
+#cmp .box{background:#fff;border-radius:1vw;padding:1.6vw;width:min(640px,90vw);font-size:18px}
+#cmp textarea{width:100%;height:110px;font:inherit;padding:10px;border:1px solid var(--edge);border-radius:8px}
+#cmp .row{display:flex;gap:10px;align-items:center;margin-top:10px;flex-wrap:wrap}
+#cmp button{font:inherit;padding:10px 16px;border-radius:8px;border:1px solid var(--edge);background:#f3f6f9}
+#cmp button.go{background:#2d3742;color:#fff;border-color:#2d3742}
+#cmp small{color:var(--mut);display:block;margin-bottom:8px}
 </style></head><body>
-<header><h1>KITCHEN BOARD</h1><div class="sub">Today's prep &amp; checks</div><div class="right"><span id="clk"></span><span id="st">CONNECTING</span></div></header>
+<header><h1>KITCHEN BOARD</h1><div class="sub">Today's prep &amp; checks</div><div class="tk" id="tk"><b id="tkl">CHEF</b><div class="win"><div class="txt" id="tkt"></div></div></div><div class="right"><span id="clk"></span><span id="st">CONNECTING</span></div></header>
 <div class="ann" id="ann"></div>
 <main id="m"></main>
+<div id="pop"><div class="box"><div class="from">MESSAGE FROM CHEF</div><div class="msg" id="popm"></div></div></div>
+<div id="cmp"><div class="box"><small>Prova (laboratorio): scrivi un messaggio per la cucina. In produzione lo scrive T.E.C.</small><textarea id="cmt" placeholder="Es. Family meal at 3:30 — Table 12 allergy: no nuts"></textarea>
+<div class="row"><label><input type="checkbox" id="cmu"> Urgent (pop-up al centro)</label><button class="go" id="cms">Send</button><button id="cmx">Clear message</button><button id="cmc">Close</button></div></div></div>
 <script src="motore.js"></script>
 <script>
 // V4 — 4 colonne × 2 stazioni, max 4 attività visibili per stazione.
@@ -112,4 +138,40 @@ function connect() {
 setInterval(async () => { try { const v = await (await fetch('/api/version', { cache: 'no-store' })).json(); if (v.version !== ver) await load(); setStatus(true) } catch { setStatus(false) } }, 10000)
 setInterval(tick, 500)
 load().catch(() => setStatus(false)); connect()
+// ---- Messaggi dello Chef (fascia accanto al titolo + pop-up per gli urgenti) ----
+// Fonte in produzione: data.messages = [{id,text,urgent,until}] (scritti da T.E.C. dopo il "sì" di Max). In laboratorio: anche dal pannello (tocca "KITCHEN BOARD").
+const POP_EVERY = (+(new URLSearchParams(location.search).get('popevery')) || 300) * 1000, POP_FOR = 10000
+const LKEY = 'kb_lab_msgs'
+const lget = () => { try { return JSON.parse(localStorage.getItem(LKEY) || '[]') } catch { return [] } }
+const lset = v => { try { localStorage.setItem(LKEY, JSON.stringify(v)) } catch { lmem = v } }
+let lmem = null, tkSig = '', popLast = {}, popHideAt = 0
+const msgs = () => (((data && data.messages) || []).concat(lmem || lget())).filter(m => m && m.text && (!m.until || m.until > Date.now()))
+function tkTick() {
+  const ms = msgs(), tk = document.getElementById('tk'), sig = ms.map(m => m.id + m.text).join('|') + (document.querySelector('.tk .win') ? document.querySelector('.tk .win').clientWidth : 0)
+  if (!ms.length) { tk.className = 'tk'; tkSig = ''; hidePop(); return }
+  if (sig !== tkSig) {
+    tkSig = sig; tk.className = 'tk on' + (ms.some(m => m.urgent) ? ' urg' : '')
+    const t = document.getElementById('tkt'), win = tk.querySelector('.win')
+    t.textContent = ms.map(m => m.text).join('      •      ')
+    t.style.setProperty('--w0', win.clientWidth + 'px')
+    t.style.setProperty('--dur', Math.max(12, (t.scrollWidth + win.clientWidth) / (window.innerWidth * 0.05)) + 's')
+    t.style.animation = 'none'; void t.offsetWidth; t.style.animation = ''
+  }
+  const now = Date.now()
+  for (const m of ms) if (m.urgent && (!popLast[m.id] || now - popLast[m.id] >= POP_EVERY)) { popLast[m.id] = now; showPop(m.text) }
+  if (popHideAt && now > popHideAt) hidePop()
+}
+function showPop(t) { document.getElementById('popm').textContent = t; document.getElementById('pop').className = 'on'; popHideAt = Date.now() + POP_FOR }
+function hidePop() { document.getElementById('pop').className = ''; popHideAt = 0 }
+document.getElementById('pop').onclick = hidePop
+document.querySelector('header h1').onclick = () => document.getElementById('cmp').className = 'on'
+document.getElementById('cmc').onclick = () => document.getElementById('cmp').className = ''
+document.getElementById('cmx').onclick = () => { lmem = []; lset([]); popLast = {}; document.getElementById('cmp').className = '' ; tkTick() }
+document.getElementById('cms').onclick = () => {
+  const t = document.getElementById('cmt').value.trim(); if (!t) return
+  const v = [{ id: 'l' + Date.now(), text: t, urgent: document.getElementById('cmu').checked, until: Date.now() + 4 * 3600e3 }]
+  lmem = v; lset(v); popLast = {}; document.getElementById('cmp').className = ''; document.getElementById('cmt').value = ''; tkTick()
+}
+{ const q = new URLSearchParams(location.search); if (q.get('msg')) { lmem = [{ id: 'q', text: q.get('msg'), urgent: q.get('urgent') === '1', until: Date.now() + 4 * 3600e3 }] } }
+setInterval(tkTick, 1000); window.addEventListener('resize', () => { tkSig = '' })
 </script></body></html>
