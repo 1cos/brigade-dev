@@ -10,7 +10,7 @@ header{display:flex;align-items:flex-end;gap:1.2vw;flex:0 0 auto}
 header h1{margin:0;font-size:clamp(20px,2vw,48px);letter-spacing:.01em;font-weight:800;line-height:1}
 header .sub{font-size:var(--fHead);color:var(--sub);letter-spacing:.06em;text-transform:uppercase;font-weight:600;margin-bottom:.15vw}
 header .right{margin-left:auto;display:flex;gap:1.2vw;align-items:baseline;font-size:var(--fHead);color:var(--sub);font-weight:700;letter-spacing:.06em}
-#st.off{color:var(--urg)}
+#snd{cursor:pointer;font-weight:600;letter-spacing:0}#snd.need{color:var(--urg)}#st.off{color:var(--urg)}
 .ann{display:flex;gap:.8vw;flex:0 0 auto;min-height:0}
 .ann span{font-size:var(--fAnn);font-weight:600;padding:.55vw 1.2vw;border-radius:.6vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:34%;color:#2d3742}
 .ann .CATERING{background:#d4e3ef}.ann .SPECIAL{background:#e4e7cf}.ann .CHEF{background:#ecdbe6}
@@ -56,7 +56,7 @@ header .sub{flex:0 0 auto}
 #cmp button.go{background:#2d3742;color:#fff;border-color:#2d3742}
 #cmp small{color:var(--mut);display:block;margin-bottom:8px}
 </style></head><body>
-<header><h1>KITCHEN BOARD</h1><div class="sub">Today's prep &amp; checks</div><div class="tk" id="tk"><b id="tkl">CHEF</b><div class="win"><div class="txt" id="tkt"></div></div></div><div class="right"><span id="clk"></span><span id="st">CONNECTING</span></div></header>
+<header><h1>KITCHEN BOARD</h1><div class="sub">Today's prep &amp; checks</div><div class="tk" id="tk"><b id="tkl">CHEF</b><div class="win"><div class="txt" id="tkt"></div></div></div><div class="right"><span id="snd" title="Tap to turn sound on"></span><span id="clk"></span><span id="st">CONNECTING</span></div></header>
 <div class="ann" id="ann"></div>
 <main id="m"></main>
 <div id="pop"><div class="box"><div class="from">MESSAGE FROM CHEF</div><div class="msg" id="popm"></div></div></div>
@@ -108,6 +108,7 @@ function stationHTML(s) {
 }
 function render() {
   if (!data) return
+  doneWatch()
   document.getElementById('clk').textContent = new Date(data.clock).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
   document.getElementById('ann').innerHTML = data.announcements.slice(0, 3).map(a => `<span class="${a.kind}">${esc(a.text)}</span>`).join('')
   const m = document.getElementById('m')
@@ -138,6 +139,30 @@ function connect() {
 setInterval(async () => { try { const v = await (await fetch('/api/version', { cache: 'no-store' })).json(); if (v.version !== ver) await load(); setStatus(true) } catch { setStatus(false) } }, 10000)
 setInterval(tick, 500)
 load().catch(() => setStatus(false)); connect()
+
+// ---- Suoni: campanella quando una preparazione viene completata; due note un po' più forti per un messaggio urgente nuovo ----
+const VOL = +(new URLSearchParams(location.search).get('vol') || 1)
+let actx = null, seenDone = null, soundOn = !(new URLSearchParams(location.search).get('sound') === '0')
+function audio() { try { if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)(); if (actx.state === 'suspended') actx.resume(); return actx } catch { return null } }
+function note(f, t0, dur, g) {
+  const c = audio(); if (!c || !soundOn) return
+  const o = c.createOscillator(), o2 = c.createOscillator(), v = c.createGain(), t = c.currentTime + t0
+  o.type = 'sine'; o.frequency.value = f; o2.type = 'sine'; o2.frequency.value = f * 2.76   // timbro da campanella
+  v.gain.setValueAtTime(0.0001, t); v.gain.exponentialRampToValueAtTime(g * VOL, t + 0.012); v.gain.exponentialRampToValueAtTime(0.0001, t + dur)
+  o.connect(v); o2.connect(v); v.connect(c.destination); o.start(t); o2.start(t); o.stop(t + dur + .05); o2.stop(t + dur + .05)
+}
+const bellDone = () => { window.__snd = (window.__snd || 0) + 1; note(1568, 0, 0.9, 0.12) }
+const bellUrgent = () => { window.__sndU = (window.__sndU || 0) + 1; note(880, 0, 0.7, 0.28); note(659, 0.28, 1.0, 0.28) }
+function sndStatus() { const e = document.getElementById('snd'); const ok = soundOn && actx && actx.state === 'running'; e.textContent = !soundOn ? '' : ok ? '🔔' : '🔇 tap for sound'; e.className = ok || !soundOn ? '' : 'need' }
+function unlock() { audio(); sndStatus() }
+document.addEventListener('pointerdown', unlock); document.addEventListener('keydown', unlock)
+document.getElementById('snd').onclick = e => { e.stopPropagation(); unlock(); bellDone() }
+setInterval(sndStatus, 1500)
+function doneWatch() {
+  const now = new Set(); for (const s of Object.keys(data.stations || {})) for (const i of data.stations[s]) if (i.tier === 'DONE') now.add(s + '|' + i.id)
+  if (seenDone) { let n = 0; now.forEach(k => { if (!seenDone.has(k)) n++ }); if (n) bellDone() }
+  seenDone = now
+}
 // ---- Messaggi dello Chef (fascia accanto al titolo + pop-up per gli urgenti) ----
 // Fonte in produzione: data.messages = [{id,text,urgent,until}] (scritti da T.E.C. dopo il "sì" di Max). In laboratorio: anche dal pannello (tocca "KITCHEN BOARD").
 const POP_EVERY = (+(new URLSearchParams(location.search).get('popevery')) || 300) * 1000, POP_FOR = 10000
@@ -158,7 +183,7 @@ function tkTick() {
     t.style.animation = 'none'; void t.offsetWidth; t.style.animation = ''
   }
   const now = Date.now()
-  for (const m of ms) if (m.urgent && (!popLast[m.id] || now - popLast[m.id] >= POP_EVERY)) { popLast[m.id] = now; showPop(m.text) }
+  for (const m of ms) if (m.urgent && (!popLast[m.id] || now - popLast[m.id] >= POP_EVERY)) { if (!popLast[m.id]) bellUrgent(); popLast[m.id] = now; showPop(m.text) }
   if (popHideAt && now > popHideAt) hidePop()
 }
 function showPop(t) { document.getElementById('popm').textContent = t; document.getElementById('pop').className = 'on'; popHideAt = Date.now() + POP_FOR }
