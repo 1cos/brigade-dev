@@ -3,7 +3,7 @@
 <title>Kitchen Board</title>
 <style>
 :root{--bg:#e3eaf1;--panel:#ffffff;--card:#fbfcfd;--line:#d6dee7;--fg:#141a21;--sub:#4a5563;--mut:#8a95a3;--edge:#b9c4d0;--urg:#c8524a;--urgbg:#fefaf9;--ok:#3f9a62;--okbg:#f1f8f3;
---fName:clamp(16px,1.6vw,40px);--fSub:clamp(13px,1.2vw,30px);--fHead:clamp(13px,1.1vw,28px);--fAnn:clamp(14px,1.3vw,32px)}
+--k:1.15;--fName:calc(clamp(16px,1.6vw,40px)*var(--k));--fSub:calc(clamp(13px,1.2vw,30px)*var(--k));--fHead:clamp(13px,1.1vw,28px);--fAnn:clamp(14px,1.3vw,32px)}
 *{box-sizing:border-box}html,body{height:100%}
 body{margin:0;background:var(--bg);color:var(--fg);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",system-ui,sans-serif;display:flex;flex-direction:column;overflow:hidden;padding:1.2vw 1.4vw;gap:1vw}
 header{display:flex;align-items:flex-end;gap:1.2vw;flex:0 0 auto}
@@ -66,6 +66,7 @@ header .sub{flex:0 0 auto}
 <script>
 // V4 — 4 colonne × 2 stazioni, max 4 attività visibili per stazione.
 // Rotazione SOLO dentro la stazione (ogni ~20 s) quando ha più di 4 attività; le URGENT e le COMPLETED (60 s) restano ferme.
+{ const k = new URLSearchParams(location.search).get('scale'); if (k) document.documentElement.style.setProperty('--k', k) }   // scritte: 1 = prima, 1.15 = un gradino più grandi
 const ROTATE_MS = +(new URLSearchParams(location.search).get('rotate') || 20000), SLOTS = 4
 let ver = -1, es = null, data = null
 const rot = {}   // per stazione: { page, nextAt }
@@ -140,6 +141,10 @@ setInterval(async () => { try { const v = await (await fetch('/api/version', { c
 setInterval(tick, 500)
 load().catch(() => setStatus(false)); connect()
 
+
+// scritte lunghe: si rimpiccioliscono quel tanto che basta per stare nella riga (mai sotto l'85%), invece di tagliarsi con «…»
+function fit() { document.querySelectorAll('.c .n,.c .s').forEach(e => { if (e.dataset.f || e.scrollWidth <= e.clientWidth + 1) return; e.dataset.f = 1; const f = parseFloat(getComputedStyle(e).fontSize); e.style.fontSize = Math.max(f * .85, f * e.clientWidth / e.scrollWidth * .98) + 'px' }) }
+setInterval(fit, 400)
 // ---- Suoni: campanella quando una preparazione viene completata; due note un po' più forti per un messaggio urgente nuovo ----
 const VOL = +(new URLSearchParams(location.search).get('vol') || 1)
 let actx = null, seenDone = null, soundOn = !(new URLSearchParams(location.search).get('sound') === '0')
